@@ -11,14 +11,14 @@
     "href": "posts/enter-the-tello/index.html",
     "title": "Enter the Tello",
     "section": "",
-    "text": "“Combine the stuff you like” is good advice when looking for a new project to work on. I like to follow good advice and so I brainstormed a bit with ChatGPT to find interesting intersections between my interests. Some of my favorite activities - like sex, meditation, and reading - were not very suitable here. Others had more potential: hiking in nature, coding, learning about new tech."
+    "text": "“Combine the stuff you like” is good advice when looking for a new project to work on. I like to follow good advice and so I brainstormed a bit with ChatGPT to find interesting intersections between my interests. Some of my favorite activities — like sex, meditation, and reading — didn’t quite lend themselves to computer vision projects. Others had more potential: hiking in nature, coding, learning about new tech."
   },
   {
     "objectID": "posts/enter-the-tello/index.html#combine-the-stuff-you-like",
     "href": "posts/enter-the-tello/index.html#combine-the-stuff-you-like",
     "title": "Enter the Tello",
     "section": "",
-    "text": "“Combine the stuff you like” is good advice when looking for a new project to work on. I like to follow good advice and so I brainstormed a bit with ChatGPT to find interesting intersections between my interests. Some of my favorite activities - like sex, meditation, and reading - were not very suitable here. Others had more potential: hiking in nature, coding, learning about new tech."
+    "text": "“Combine the stuff you like” is good advice when looking for a new project to work on. I like to follow good advice and so I brainstormed a bit with ChatGPT to find interesting intersections between my interests. Some of my favorite activities — like sex, meditation, and reading — didn’t quite lend themselves to computer vision projects. Others had more potential: hiking in nature, coding, learning about new tech."
   },
   {
     "objectID": "posts/enter-the-tello/index.html#autonomous-scouting-drone",
@@ -32,14 +32,14 @@
     "href": "posts/enter-the-tello/index.html#getting-ready-big-time",
     "title": "Enter the Tello",
     "section": "Getting ready big time",
-    "text": "Getting ready big time\nLike your typical tech nerd I decided to get ready for my new project in style:\n\nBuy a domain name (most important!)\nGet a logo (as important!)\nBuy the best dev/DIY drone out there\nBuy a top line PC to train models\nBuy another PC to run simulation environments\n\nOK, I’m guilty, I bought the domain name (hello dronelab.dev), but stopped myself there 1 2. I don’t know anything about drones, and might get bored with the project after a couple of weeks, so better start small."
+    "text": "Getting ready big time\nLike any self-respecting tech nerd, I decided to kick things off in style:\n\nBuy a domain name (most important!)\nGet a logo (as important!)\nBuy the best dev/DIY drone out there\nBuy a top line PC to train models\nBuy another PC to run simulation environments\n\nOK, guilty — I bought the domain (hello dronelab.dev), but tried to stop myself there 1 2. I don’t know anything about drones, and might get bored with the project after a couple of weeks, so better start small."
   },
   {
     "objectID": "posts/enter-the-tello/index.html#enter-the-tello",
     "href": "posts/enter-the-tello/index.html#enter-the-tello",
     "title": "Enter the Tello",
     "section": "Enter the Tello",
-    "text": "Enter the Tello\nI found an old (2018 3) little drone that was perfect for my first steps, the DJI Tello! It can fly indoors, is programmable and has a camera.\nThere is an even better version of it with some extra goodies that might come in handy:\n\nan onboard processor\na matrix display\na distance sensor\n\nSo I bought the DJI RoboMaster TT. TT stands for Tello Talent, which refers to very smart kids coding drones at an age I was still coloring books.\nLook at that beauty!\n\n\n\nDJI RoboMaster TT"
+    "text": "Enter the Tello\nI stumbled upon a modest little drone from way back in 2018 3 — the DJI Tello — and it was perfect for my first steps. It can fly indoors, is programmable and has a camera.\nThere is an even better version of it with some extra goodies that might come in handy:\n\nan onboard processor\na matrix display\na distance sensor\n\nSo I bought the DJI RoboMaster TT. TT stands for Tello Talent — basically smart kids coding drones while I was still figuring out crayons.\nLook at that beauty!\n\n\n\nDJI RoboMaster TT"
   },
   {
     "objectID": "posts/enter-the-tello/index.html#whats-next",
