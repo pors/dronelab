@@ -1,0 +1,53 @@
+---
+title: "Enter the Tello"
+author: "Mark Pors"
+date: "2025-04-20"
+categories: [drone]
+image: tt.jpg
+---
+
+## Combine the stuff you like
+
+"Combine the stuff you like" is good advice when looking for a new project to work on. I like to follow good advice and so I brainstormed a bit with ChatGPT to find interesting intersections between my interests. Some of my favorite activities — like sex, meditation, and reading — didn't quite lend themselves to computer vision projects. Others had more potential: hiking in nature, coding, learning about new tech.
+
+## Autonomous scouting drone
+
+Having a drone accompany us on hikes to do some scouting ahead hits the mark for me. It includes hiking and coding, and most important: I need to learn a lot to make a drone do what I want. I have zero experience with drones and very limited experience with computer vision models. 
+
+## Getting ready big time
+
+Like any self-respecting tech nerd, I decided to kick things off in style:
+
+1. Buy a domain name (most important!)
+2. Get a logo (as important!)
+3. Buy the best dev/DIY drone out there
+4. Buy a top line PC to train models
+5. Buy another PC to run simulation environments
+
+OK, guilty — I bought the domain (hello [dronelab.dev](/)), but *tried* to stop myself there [^1] [^2]. I don't know anything about drones, and might get bored with the project after a couple of weeks, so better start small.
+
+## Enter the Tello
+
+I stumbled upon a modest little drone from way back in 2018 [^3] — the DJI Tello — and it was perfect for my first steps. It can fly indoors, is programmable and has a camera. 
+
+There is an even better version of it with some extra goodies that might come in handy: 
+
+* an onboard processor
+* a matrix display
+* a distance sensor
+
+So I bought the DJI RoboMaster TT. TT stands for Tello Talent — basically smart kids coding drones at an age I was still figuring out crayons.
+
+Look at that beauty!
+
+![DJI RoboMaster TT](tt.jpg)
+
+## What's next?
+
+In the next episode I will play with the RoboMaster TT, both with and without code to control it. It includes different ways to crash it. [Read on...](/posts/crash-the-tello)
+
+[^1]: I always buy the domain first, even before I know what I'm doing.
+
+[^2]: I didn't really stop myself there, I also created a logo. Technically ChatGPT did: ![dronelab](logo_high.png)
+
+[^3]: 2018, also the last time I blogged something: [decentralized.blog](https://decentralized.blog/).
