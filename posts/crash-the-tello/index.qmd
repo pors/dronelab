@@ -51,9 +51,56 @@ While flying the drone around a bit in my office, I went up a bit too high and t
 
 OK, time to start the real fun: control the drone with code.
 
-## The Tello SDK
+## The Tello Python SDK
+
+DJI provides an SDK for the Tello drone that can be used with Python. The SDK can be used to control the drone through its API. The API is fairly basic but supports:
+
+- Flight control with takeoff, landing and movement commands
+- Flight status information (battery level, height, acceleration, speed)
+- Stream camera feed
+- Control flight mode (station mode for wifi connection)@@@@@@@@@@@@@@@@@@@@@@
+
+The most popular Python library for using this SDK is [DJITelloPy](https://github.com/damiafuentes/DJITelloPy).
+
+To use this with Python we first need to install djitellopy:
+
+```{python}
+#| label: setup
+#| output: false
+
+import sys
+!{sys.executable} -m pip install djitellopy
+```
 
 
 
+### Take-off, fly, land
+ 
+```{python}
+from djitellopy import tello
+from time import sleep
 
+# me = tello.Tello() # AP mode
+"""me = tello.Tello(host='192.168.1.85') # Stationary/Router mode
+
+me.connect()
+print(me.get_battery())
+me.takeoff()
+me.send_rc_control(0, 50, 0, 0)
+sleep(2)
+me.send_rc_control(30, 0, 0, 0)
+sleep(2)
+me.send_rc_control(0, 0, 0, 0)
+me.land()"""
+```
+
+
+### Use station mode
+
+@@@tip: activate
+
+### Retrieve video frames
+
+
+### Control with keyboard
 
