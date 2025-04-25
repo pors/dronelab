@@ -7,6 +7,7 @@ project:
 website:
   title: "dronelab.dev"
   open-graph: true
+  google-analytics: "G-J790G06FED"
   navbar:
     logo: logo.png
     right:
@@ -21,6 +22,6 @@ format:
       - flatly
     css: styles.css
     title-block-style: none
-google-analytics: "G-J790G06FED"
+
 execute:
   cache: true
