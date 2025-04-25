@@ -85,8 +85,10 @@ gtag('config', 'G-J790G06FED', { 'anonymize_ip': true});
 <link rel="stylesheet" href="../../styles.css">
 <meta property="og:title" content="I’m a Pilot! – dronelab.dev">
 <meta property="og:description" content="Passed the EASA A1/A3 drone pilot exam and built a free web-based practice app. Learn how to prepare for the EASA UAV certification and access open-source study tools.">
-<meta property="og:image" content="pilot.png">
+<meta property="og:image" content="https://dronelab.dev/posts/i-am-a-pilot/pilot.png">
 <meta property="og:site_name" content="dronelab.dev">
+<meta property="og:image:height" content="600">
+<meta property="og:image:width" content="600">
 </head>
 
 <body class="nav-fixed fullcontent quarto-light">
@@ -114,12 +116,17 @@ gtag('config', 'G-J790G06FED', { 'anonymize_ip': true});
 <span class="menu-text">About</span></a>
   </li>  
   <li class="nav-item compact">
-    <a class="nav-link" href="https://github.com/"> <i class="bi bi-github" role="img">
+    <a class="nav-link" href="https://github.com/pors"> <i class="bi bi-github" role="img">
 </i> 
 <span class="menu-text"></span></a>
   </li>  
   <li class="nav-item compact">
-    <a class="nav-link" href="https://twitter.com"> <i class="bi bi-twitter" role="img">
+    <a class="nav-link" href="https://twitter.com/pors"> <i class="bi bi-twitter" role="img">
+</i> 
+<span class="menu-text"></span></a>
+  </li>  
+  <li class="nav-item compact">
+    <a class="nav-link" href="../../index.xml"> <i class="bi bi-rss" role="img">
 </i> 
 <span class="menu-text"></span></a>
   </li>  
@@ -253,7 +260,7 @@ TL;DR
     }
       var localhostRegex = new RegExp(/^(?:http|https):\/\/localhost\:?[0-9]*\//);
       var mailtoRegex = new RegExp(/^mailto:/);
-        var filterRegex = new RegExp('/' + window.location.host + '/');
+        var filterRegex = new RegExp("https:\/\/dronelab\.dev");
       var isInternal = (href) => {
           return filterRegex.test(href) || localhostRegex.test(href) || mailtoRegex.test(href);
       }

@@ -1,0 +1,755 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<rss  xmlns:atom="http://www.w3.org/2005/Atom" 
+      xmlns:media="http://search.yahoo.com/mrss/" 
+      xmlns:content="http://purl.org/rss/1.0/modules/content/" 
+      xmlns:dc="http://purl.org/dc/elements/1.1/" 
+      version="2.0">
+<channel>
+<title>dronelab.dev</title>
+<link>https://dronelab.dev/</link>
+<atom:link href="https://dronelab.dev/index.xml" rel="self" type="application/rss+xml"/>
+<description>DroneLab - Coding Autonomous Drones in Baby Steps.</description>
+<generator>quarto-1.7.27</generator>
+<lastBuildDate>Thu, 24 Apr 2025 21:00:00 GMT</lastBuildDate>
+<item>
+  <title>I’m a Pilot!</title>
+  <dc:creator>Mark Pors</dc:creator>
+  <link>https://dronelab.dev/posts/i-am-a-pilot/</link>
+  <description><![CDATA[ 
+
+<header id="title-block-header">
+
+<p class="author">Mark Pors</p>
+
+<p class="date">2025-04-25</p>
+</header>
+
+
+<div class="callout callout-style-default callout-tip callout-titled">
+<div class="callout-header d-flex align-content-center" data-bs-toggle="collapse" data-bs-target=".callout-1-contents" aria-controls="callout-1" aria-expanded="false" aria-label="Toggle callout">
+<div class="callout-icon-container">
+<i class="callout-icon"></i>
+</div>
+<div class="callout-title-container flex-fill">
+TL;DR
+</div>
+<div class="callout-btn-toggle d-inline-block border-0 py-1 ps-1 pe-0 float-end"><i class="callout-toggle"></i></div>
+</div>
+<div id="callout-1" class="callout-1-contents callout-collapse collapse">
+<div class="callout-body-container callout-body">
+<ul>
+<li>Passed the EASA A1/A3 pilot exam, officially becoming a UAV (drone) pilot—childhood dream “fulfilled.”</li>
+<li>Created a web-based EASA exam practice app to prep for the test, available online for free.</li>
+<li>Shared app’s source code on GitHub for community use.</li>
+</ul>
+</div>
+</div>
+</div>
+<section id="fulfilling-a-dream" class="level2">
+<h2 class="anchored" data-anchor-id="fulfilling-a-dream">Fulfilling a dream</h2>
+<p>As a kid I always wanted to be a pilot (not true, it just makes for a more interesting story), and now I just passed the EASA A1/A3 pilot exam!</p>
+<p>Yeah, I know, this is a certification for UAV’s. UAV stands for Unmanned Aerial Vehicle, where you as a pilot stay on the ground. We can’t have it all.</p>
+<p>I will need this certification to fly drones outdoors, even the tiny Tello requires the ground-bound pilot to have the authorization to fly drones.</p>
+</section>
+<section id="easa-a1a3-exam-practice-app" class="level2">
+<h2 class="anchored" data-anchor-id="easa-a1a3-exam-practice-app">EASA A1/A3 Exam Practice App</h2>
+<p>Anyway, to help me study, I (Claude.ai) created a practice app to go over all possible questions for the exam. I thought it might be handy for others so I put it up online here: <a href="https://dronelab.dev/easa-exam/">EASA A1/A3 exam test app</a>. The source code is <a href="https://github.com/pors/EASA-exam-practice">here</a>.</p>
+<p><small>Beware: the source PDF with questions was used as the basis for the app, and the LLM made some mistakes. I think I have corrected most/all of them, but if you want to be sure please double check.</small></p>
+
+
+</section>
+
+ ]]></description>
+  <category>drone</category>
+  <category>open-source</category>
+  <guid>https://dronelab.dev/posts/i-am-a-pilot/</guid>
+  <pubDate>Thu, 24 Apr 2025 21:00:00 GMT</pubDate>
+  <media:content url="https://dronelab.dev/posts/i-am-a-pilot/pilot.png" medium="image" type="image/png" height="144" width="144"/>
+</item>
+<item>
+  <title>Crash the Tello (with and without code)</title>
+  <dc:creator>Mark Pors</dc:creator>
+  <link>https://dronelab.dev/posts/crash-the-tello/</link>
+  <description><![CDATA[ 
+
+<header id="title-block-header">
+
+<p class="author">Mark Pors</p>
+
+<p class="date">2025-04-24</p>
+</header>
+
+
+<div class="callout callout-style-default callout-tip callout-titled">
+<div class="callout-header d-flex align-content-center" data-bs-toggle="collapse" data-bs-target=".callout-1-contents" aria-controls="callout-1" aria-expanded="false" aria-label="Toggle callout">
+<div class="callout-icon-container">
+<i class="callout-icon"></i>
+</div>
+<div class="callout-title-container flex-fill">
+TL;DR
+</div>
+<div class="callout-btn-toggle d-inline-block border-0 py-1 ps-1 pe-0 float-end"><i class="callout-toggle"></i></div>
+</div>
+<div id="callout-1" class="callout-1-contents callout-collapse collapse">
+<div class="callout-body-container callout-body">
+<ul>
+<li>Unboxed and crashed a DJI Tello drone — first due to a buggy phone app, then because of the infamous “ceiling effect.”</li>
+<li>Recommend using TelloFPV app and GameSir T1d controller for smoother manual flight experiences.</li>
+<li>Explained basic drone movements clearly (throttle, yaw, pitch, roll).</li>
+<li>Introduced DJI’s Python SDK for coding drone flight, setting the stage for further explorations with code.</li>
+</ul>
+</div>
+</div>
+</div>
+<section id="unboxed" class="level2">
+<h2 class="anchored" data-anchor-id="unboxed">Unboxed</h2>
+<p>Now that the drone is out of the box we’re gonna take it for a spin (and yes it crashed). First with the phone app, then with code.</p>
+<div class="quarto-figure quarto-figure-center">
+<figure class="figure">
+<p><img src="https://dronelab.dev/posts/crash-the-tello/crashed-TT.png" class="img-fluid figure-img"></p>
+<figcaption>Crashed RoboMaster TT (generated by ChatGPT)</figcaption>
+</figure>
+</div>
+<p><br></p>
+<div class="callout callout-style-default callout-note callout-titled">
+<div class="callout-header d-flex align-content-center">
+<div class="callout-icon-container">
+<i class="callout-icon"></i>
+</div>
+<div class="callout-title-container flex-fill">
+Note
+</div>
+</div>
+<div class="callout-body-container callout-body">
+<p>These blog posts are intended to be read in order. If you want to follow along on my journey, start here: <a href="../../posts/enter-the-tello/">Enter the Tello</a>. Or ignore this and keep on reading below.</p>
+</div>
+</div>
+</section>
+<section id="first-tt-flight" class="level2">
+<h2 class="anchored" data-anchor-id="first-tt-flight">First TT flight</h2>
+<p>To fly a drone for the first time it is good to have a basic understanding how these quadcopters work, and what the basic movements are:</p>
+<table class="caption-top table">
+<colgroup>
+<col style="width: 20%">
+<col style="width: 79%">
+</colgroup>
+<thead>
+<tr class="header">
+<th>Movement</th>
+<th>Description</th>
+</tr>
+</thead>
+<tbody>
+<tr class="odd">
+<td>throttle</td>
+<td>increases or decreases the height of the drone by adjusting all propellers equally</td>
+</tr>
+<tr class="even">
+<td>yaw</td>
+<td>turns the drone clockwise or counterclockwise by varying propeller speeds</td>
+</tr>
+<tr class="odd">
+<td>pitch</td>
+<td>moves the drone forward or backwards by varying front and back propeller speeds</td>
+</tr>
+<tr class="even">
+<td>roll</td>
+<td>moves the drone left or right by varying left and right propeller speeds</td>
+</tr>
+</tbody>
+</table>
+<p><br> This video explains very clearly how it works: </p><div class="quarto-video ratio ratio-16x9"><iframe data-external="1" src="https://www.youtube.com/embed/C0KBu2ihp-s" title="" frameborder="0" allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture" allowfullscreen=""></iframe></div><p></p>
+<p>The Tello doesn’t come with a controller, we control it with the Tello app. I used the Tello app for iPhone. This app hasn’t been updated for a long time and unfortunately it is useless as it crashes all the time. When the app crashes the drone keeps on hovering in the air, so this first crash is just a software crash.</p>
+<div class="callout callout-style-default callout-tip callout-titled">
+<div class="callout-header d-flex align-content-center">
+<div class="callout-icon-container">
+<i class="callout-icon"></i>
+</div>
+<div class="callout-title-container flex-fill">
+Tip
+</div>
+</div>
+<div class="callout-body-container callout-body">
+<p>If you want to fly the TT or Tello manually I recommend you get the <a href="https://apps.apple.com/us/app/tellofpv/id1545864950">TelloFPV</a>. It’s not free, but doesn’t crash either.</p>
+</div>
+</div>
+<div class="callout callout-style-default callout-tip callout-titled">
+<div class="callout-header d-flex align-content-center">
+<div class="callout-icon-container">
+<i class="callout-icon"></i>
+</div>
+<div class="callout-title-container flex-fill">
+Tip
+</div>
+</div>
+<div class="callout-body-container callout-body">
+<p>To really enjoy flying the TT manually you can get a controller that is customized for the Tello: the <a href="https://gamesir.com/pages/tello-tutorial">GameSir T1d</a>. I got one and it works out of the box, also with the TelloFPV app.</p>
+</div>
+</div>
+<section id="beware-of-the-ceiling-effect" class="level3">
+<h3 class="anchored" data-anchor-id="beware-of-the-ceiling-effect">Beware of the ceiling effect</h3>
+<p>While flying the drone around a bit in my office, I went up a bit too high and the drone crashed when it came near the ceiling. This phenomenon even has a name and is called the “ceiling effect.” Basically, the drone gets <a href="https://aviation.stackexchange.com/questions/59128/what-disadvantages-does-flying-a-drone-close-under-a-ceiling-have">sucked up to the ceiling</a> because there is not enough air to push down through the propellors.</p>
+<p>OK, time to start the real fun: control the drone with code.</p>
+</section>
+</section>
+<section id="the-tello-python-sdk" class="level2">
+<h2 class="anchored" data-anchor-id="the-tello-python-sdk">The Tello Python SDK</h2>
+<p>DJI provides an SDK for the Tello drone that can be used with Python. The SDK can be used to control the drone through its API. The API is fairly basic but supports:</p>
+<ul>
+<li>Flight control with takeoff, landing and movement commands</li>
+<li>Flight status information (battery level, height, acceleration, speed)</li>
+<li>Stream camera feed</li>
+</ul>
+<p>The Python library we will be using for this SDK is <a href="https://github.com/damiafuentes/DJITelloPy">DJITelloPy</a>.</p>
+<p>A couple of useful resources:</p>
+<ul>
+<li><a href="https://dl.djicdn.com/downloads/RoboMaster+TT/Tello_SDK_3.0_User_Guide_en.pdf">SDK 3.0 user guide</a> (includes the API spec).</li>
+<li><a href="https://robomaster-dev.readthedocs.io/en/latest/">RoboMaster Developer Guide</a> (also for RoboMasters on wheels).</li>
+<li><a href="https://github.com/dji-sdk/RoboMaster-SDK">RoboMaster SDK</a> (as provided by DJI).</li>
+<li><a href="https://djitellopy.readthedocs.io/en/latest/tello/">DJITelloPy API Reference</a>.</li>
+</ul>
+<p>To give it a try, let’s first install djitellopy:</p>
+<div id="setup" class="cell" data-execution_count="2">
+<div class="sourceCode cell-code" id="cb1" style="background: #f1f3f5;"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb1-1"><span class="im" style="color: #00769E;
+background-color: null;
+font-style: inherit;">import</span> sys</span>
+<span id="cb1-2"><span class="op" style="color: #5E5E5E;
+background-color: null;
+font-style: inherit;">!</span>{sys.executable} <span class="op" style="color: #5E5E5E;
+background-color: null;
+font-style: inherit;">-</span>m pip install djitellopy</span></code></pre></div>
+</div>
+<section id="take-off-fly-land" class="level3">
+<h3 class="anchored" data-anchor-id="take-off-fly-land">Take-off, fly, land</h3>
+<p>Let’s start with a simple script to take-off, fly, and land the drone.</p>
+<p>To make this work the computer running the script needs to be connected to the Wifi Access Point the Tello provides. The SSID is of the form <code>TELLO-XXXXXX</code>.</p>
+<div id="1765d13e" class="cell" data-execution_count="3">
+<div class="sourceCode cell-code" id="cb2" style="background: #f1f3f5;"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb2-1"><span class="im" style="color: #00769E;
+background-color: null;
+font-style: inherit;">from</span> djitellopy <span class="im" style="color: #00769E;
+background-color: null;
+font-style: inherit;">import</span> tello</span>
+<span id="cb2-2"><span class="im" style="color: #00769E;
+background-color: null;
+font-style: inherit;">from</span> time <span class="im" style="color: #00769E;
+background-color: null;
+font-style: inherit;">import</span> sleep</span>
+<span id="cb2-3"></span>
+<span id="cb2-4">t <span class="op" style="color: #5E5E5E;
+background-color: null;
+font-style: inherit;">=</span> tello.Tello()</span>
+<span id="cb2-5">t.<span class="ex" style="color: null;
+background-color: null;
+font-style: inherit;">connect</span>()</span>
+<span id="cb2-6"></span>
+<span id="cb2-7"><span class="bu" style="color: null;
+background-color: null;
+font-style: inherit;">print</span>(<span class="ss" style="color: #20794D;
+background-color: null;
+font-style: inherit;">f"Bat: </span><span class="sc" style="color: #5E5E5E;
+background-color: null;
+font-style: inherit;">{</span>t<span class="sc" style="color: #5E5E5E;
+background-color: null;
+font-style: inherit;">.</span>get_battery()<span class="sc" style="color: #5E5E5E;
+background-color: null;
+font-style: inherit;">}</span><span class="ss" style="color: #20794D;
+background-color: null;
+font-style: inherit;">"</span>)</span>
+<span id="cb2-8"><span class="bu" style="color: null;
+background-color: null;
+font-style: inherit;">print</span>(<span class="ss" style="color: #20794D;
+background-color: null;
+font-style: inherit;">f"Temp: </span><span class="sc" style="color: #5E5E5E;
+background-color: null;
+font-style: inherit;">{</span>t<span class="sc" style="color: #5E5E5E;
+background-color: null;
+font-style: inherit;">.</span>get_temperature()<span class="sc" style="color: #5E5E5E;
+background-color: null;
+font-style: inherit;">}</span><span class="ss" style="color: #20794D;
+background-color: null;
+font-style: inherit;">"</span>)</span>
+<span id="cb2-9"></span>
+<span id="cb2-10">t.takeoff()</span>
+<span id="cb2-11"></span>
+<span id="cb2-12"><span class="co" style="color: #5E5E5E;
+background-color: null;
+font-style: inherit;">"""Send RC control via four channels. Command is sent every self.TIME_BTW_RC_CONTROL_COMMANDS seconds.</span></span>
+<span id="cb2-13"><span class="co" style="color: #5E5E5E;
+background-color: null;
+font-style: inherit;">Arguments:</span></span>
+<span id="cb2-14"><span class="co" style="color: #5E5E5E;
+background-color: null;
+font-style: inherit;">    left_right_velocity: -100~100 (left/right)</span></span>
+<span id="cb2-15"><span class="co" style="color: #5E5E5E;
+background-color: null;
+font-style: inherit;">    forward_backward_velocity: -100~100 (forward/backward)</span></span>
+<span id="cb2-16"><span class="co" style="color: #5E5E5E;
+background-color: null;
+font-style: inherit;">    up_down_velocity: -100~100 (up/down)</span></span>
+<span id="cb2-17"><span class="co" style="color: #5E5E5E;
+background-color: null;
+font-style: inherit;">    yaw_velocity: -100~100 (yaw)</span></span>
+<span id="cb2-18"><span class="co" style="color: #5E5E5E;
+background-color: null;
+font-style: inherit;">"""</span></span>
+<span id="cb2-19">t.send_rc_control(<span class="dv" style="color: #AD0000;
+background-color: null;
+font-style: inherit;">0</span>, <span class="dv" style="color: #AD0000;
+background-color: null;
+font-style: inherit;">50</span>, <span class="dv" style="color: #AD0000;
+background-color: null;
+font-style: inherit;">0</span>, <span class="dv" style="color: #AD0000;
+background-color: null;
+font-style: inherit;">0</span>)</span>
+<span id="cb2-20">sleep(<span class="dv" style="color: #AD0000;
+background-color: null;
+font-style: inherit;">2</span>)</span>
+<span id="cb2-21">t.send_rc_control(<span class="dv" style="color: #AD0000;
+background-color: null;
+font-style: inherit;">30</span>, <span class="dv" style="color: #AD0000;
+background-color: null;
+font-style: inherit;">0</span>, <span class="dv" style="color: #AD0000;
+background-color: null;
+font-style: inherit;">0</span>, <span class="dv" style="color: #AD0000;
+background-color: null;
+font-style: inherit;">0</span>)</span>
+<span id="cb2-22">sleep(<span class="dv" style="color: #AD0000;
+background-color: null;
+font-style: inherit;">2</span>)</span>
+<span id="cb2-23">t.send_rc_control(<span class="dv" style="color: #AD0000;
+background-color: null;
+font-style: inherit;">0</span>, <span class="dv" style="color: #AD0000;
+background-color: null;
+font-style: inherit;">0</span>, <span class="dv" style="color: #AD0000;
+background-color: null;
+font-style: inherit;">0</span>, <span class="dv" style="color: #AD0000;
+background-color: null;
+font-style: inherit;">0</span>) <span class="co" style="color: #5E5E5E;
+background-color: null;
+font-style: inherit;"># don't forget this!</span></span>
+<span id="cb2-24"></span>
+<span id="cb2-25">t.land()</span>
+<span id="cb2-26">t.end()</span></code></pre></div>
+</div>
+<div class="cell-output cell-output-stdout">
+<pre class="text"><code>[INFO] tello.py - 129 - Tello instance was initialized. Host: '192.168.1.85'. Port: '8889'.
+[INFO] tello.py - 438 - Send command: 'command'
+[INFO] tello.py - 462 - Response command: 'ok'
+Bat: 100
+Temp: 45.0
+[INFO] tello.py - 438 - Send command: 'takeoff'
+[INFO] tello.py - 462 - Response takeoff: 'ok'
+[INFO] tello.py - 471 - Send command (no response expected): 'rc 0 50 0 0'
+[INFO] tello.py - 471 - Send command (no response expected): 'rc 30 0 0 0'
+[INFO] tello.py - 471 - Send command (no response expected): 'rc 0 0 0 0'
+[INFO] tello.py - 438 - Send command: 'land'
+[INFO] tello.py - 462 - Response land: 'ok'</code></pre>
+</div>
+<p>It is pretty straightforward. My first attempt made the drone crash though: not having the <code>t.send_rc_control(0, 0, 0, 0)</code> command there tells the drone to move sideways (to the right) while landing, with the expected result.</p>
+<div class="callout callout-style-default callout-note callout-titled">
+<div class="callout-header d-flex align-content-center">
+<div class="callout-icon-container">
+<i class="callout-icon"></i>
+</div>
+<div class="callout-title-container flex-fill">
+Note
+</div>
+</div>
+<div class="callout-body-container callout-body">
+<p>The code above was executed in my code editor and the output you see there is the actual output. Similar to a frozen Jupyter notebook. This is possible because this blog is powered by <a href="https://quarto.org">Quarto</a>. If you haven’t tried Quarto, maybe check it out.</p>
+</div>
+</div>
+</section>
+<section id="using-router-mode" class="level3">
+<h3 class="anchored" data-anchor-id="using-router-mode">Using router mode</h3>
+<p>It is quite annoying that the computer you are working on is not connected to the Internet while testing the code (it is connected to the wifi of the drone). Every five seconds I MUST check with Claude/ChatGPT if I am doing things right, no?</p>
+<p>For the original Tello there is nothing we can do about that, but the RoboMaster TT has two <a href="https://robomaster-dev.readthedocs.io/en/latest/third_part_comm.html#wi-fi-connection">wifi connection modes</a>:</p>
+<ul>
+<li>Direct connection mode (aka AP mode): this is what we did so far, the Tello provides an access point and the computer connects to that.</li>
+<li>Router mode (aka STA mode): both the TT and the computer connect to the same wifi router, so we are still online if that router is our home router.</li>
+</ul>
+<p>The TT has an expansion kit that contains a small microprocessor that provides wifi and Bluetooth connectivity: <a href="https://www.espressif.com/sites/default/files/documentation/esp32_datasheet_en.pdf">ESP32-D2WD</a>. We will have a look later to see what we can do with it, for now we just use the wifi in router mode. There is a tiny switch on the expansion unit that we can toggle between the two modes. It does involve a couple of other steps though, which are outlined here: <a href="https://robomaster-dev.readthedocs.io/en/latest/text_sdk/connection.html#connection-examples">Connection examples</a>. It didn’t work for me (there is no QR code I can get from the Tello app), so I will show you what I did:</p>
+<div class="callout callout-style-default callout-tip callout-titled">
+<div class="callout-header d-flex align-content-center">
+<div class="callout-icon-container">
+<i class="callout-icon"></i>
+</div>
+<div class="callout-title-container flex-fill">
+Tip
+</div>
+</div>
+<div class="callout-body-container callout-body">
+<p>Before continuing, the controller needs to be activated from the Tello app! This happens after the firmware update of this controller. This cost me a couple of days of my life, so next time I’ll RTFM.</p>
+</div>
+</div>
+<section id="step-1." class="level4">
+<h4 class="anchored" data-anchor-id="step-1.">Step 1.</h4>
+<p>Set the switch to AP mode first (down).</p>
+</section>
+<section id="step-2." class="level4">
+<h4 class="anchored" data-anchor-id="step-2.">Step 2.</h4>
+<p>Connect the PC to the RMTT-xxx network. We are now in direct connection mode, provided by the Wifi on the expansion kit.</p>
+</section>
+<section id="step-4" class="level4">
+<h4 class="anchored" data-anchor-id="step-4">Step 4:</h4>
+<p>Run this script:</p>
+<div id="0c6affc6" class="cell" data-execution_count="4">
+<div class="sourceCode cell-code" id="cb4" style="background: #f1f3f5;"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb4-1"><span class="im" style="color: #00769E;
+background-color: null;
+font-style: inherit;">import</span> socket</span>
+<span id="cb4-2"><span class="im" style="color: #00769E;
+background-color: null;
+font-style: inherit;">import</span> time</span>
+<span id="cb4-3"><span class="im" style="color: #00769E;
+background-color: null;
+font-style: inherit;">import</span> getpass</span>
+<span id="cb4-4"><span class="im" style="color: #00769E;
+background-color: null;
+font-style: inherit;">import</span> os</span>
+<span id="cb4-5"></span>
+<span id="cb4-6"><span class="co" style="color: #5E5E5E;
+background-color: null;
+font-style: inherit;"># Environment variables for Wi-Fi credentials just to make it run in a notebook</span></span>
+<span id="cb4-7">os.environ[<span class="st" style="color: #20794D;
+background-color: null;
+font-style: inherit;">"WIFI_SSID"</span>] <span class="op" style="color: #5E5E5E;
+background-color: null;
+font-style: inherit;">=</span> <span class="st" style="color: #20794D;
+background-color: null;
+font-style: inherit;">"MyNetwork"</span></span>
+<span id="cb4-8">os.environ[<span class="st" style="color: #20794D;
+background-color: null;
+font-style: inherit;">"WIFI_PASSWORD"</span>] <span class="op" style="color: #5E5E5E;
+background-color: null;
+font-style: inherit;">=</span> <span class="st" style="color: #20794D;
+background-color: null;
+font-style: inherit;">"SuperSecret"</span></span>
+<span id="cb4-9"></span>
+<span id="cb4-10">sock <span class="op" style="color: #5E5E5E;
+background-color: null;
+font-style: inherit;">=</span> socket.socket(socket.AF_INET, socket.SOCK_DGRAM)</span>
+<span id="cb4-11">sock.settimeout(<span class="dv" style="color: #AD0000;
+background-color: null;
+font-style: inherit;">5</span>)</span>
+<span id="cb4-12"></span>
+<span id="cb4-13"></span>
+<span id="cb4-14"><span class="kw" style="color: #003B4F;
+background-color: null;
+font-weight: bold;
+font-style: inherit;">def</span> get_wifi_credentials():</span>
+<span id="cb4-15">    <span class="cf" style="color: #003B4F;
+background-color: null;
+font-weight: bold;
+font-style: inherit;">try</span>:</span>
+<span id="cb4-16">        ssid <span class="op" style="color: #5E5E5E;
+background-color: null;
+font-style: inherit;">=</span> <span class="bu" style="color: null;
+background-color: null;
+font-style: inherit;">input</span>(<span class="st" style="color: #20794D;
+background-color: null;
+font-style: inherit;">"Wi-Fi SSID: "</span>)</span>
+<span id="cb4-17">        password <span class="op" style="color: #5E5E5E;
+background-color: null;
+font-style: inherit;">=</span> getpass.getpass(<span class="st" style="color: #20794D;
+background-color: null;
+font-style: inherit;">"Wi-Fi Password: "</span>)</span>
+<span id="cb4-18">    <span class="cf" style="color: #003B4F;
+background-color: null;
+font-weight: bold;
+font-style: inherit;">except</span> (<span class="pp" style="color: #AD0000;
+background-color: null;
+font-style: inherit;">EOFError</span>, getpass.GetPassWarning, <span class="pp" style="color: #AD0000;
+background-color: null;
+font-style: inherit;">Exception</span>):</span>
+<span id="cb4-19">        <span class="co" style="color: #5E5E5E;
+background-color: null;
+font-style: inherit;"># Fall back to environment variables</span></span>
+<span id="cb4-20">        <span class="bu" style="color: null;
+background-color: null;
+font-style: inherit;">print</span>(<span class="st" style="color: #20794D;
+background-color: null;
+font-style: inherit;">"Interactive input not available. Falling back to environment variables."</span>)</span>
+<span id="cb4-21">        ssid <span class="op" style="color: #5E5E5E;
+background-color: null;
+font-style: inherit;">=</span> os.getenv(<span class="st" style="color: #20794D;
+background-color: null;
+font-style: inherit;">"WIFI_SSID"</span>)</span>
+<span id="cb4-22">        password <span class="op" style="color: #5E5E5E;
+background-color: null;
+font-style: inherit;">=</span> os.getenv(<span class="st" style="color: #20794D;
+background-color: null;
+font-style: inherit;">"WIFI_PASSWORD"</span>)</span>
+<span id="cb4-23"></span>
+<span id="cb4-24">        <span class="cf" style="color: #003B4F;
+background-color: null;
+font-weight: bold;
+font-style: inherit;">if</span> <span class="kw" style="color: #003B4F;
+background-color: null;
+font-weight: bold;
+font-style: inherit;">not</span> ssid <span class="kw" style="color: #003B4F;
+background-color: null;
+font-weight: bold;
+font-style: inherit;">or</span> <span class="kw" style="color: #003B4F;
+background-color: null;
+font-weight: bold;
+font-style: inherit;">not</span> password:</span>
+<span id="cb4-25">            <span class="cf" style="color: #003B4F;
+background-color: null;
+font-weight: bold;
+font-style: inherit;">raise</span> <span class="pp" style="color: #AD0000;
+background-color: null;
+font-style: inherit;">RuntimeError</span>(</span>
+<span id="cb4-26">                <span class="st" style="color: #20794D;
+background-color: null;
+font-style: inherit;">"Missing WIFI_SSID or WIFI_PASSWORD environment variable."</span></span>
+<span id="cb4-27">            )</span>
+<span id="cb4-28"></span>
+<span id="cb4-29">    <span class="cf" style="color: #003B4F;
+background-color: null;
+font-weight: bold;
+font-style: inherit;">return</span> ssid, password</span>
+<span id="cb4-30"></span>
+<span id="cb4-31"></span>
+<span id="cb4-32"><span class="co" style="color: #5E5E5E;
+background-color: null;
+font-style: inherit;"># Step 1: Enter SDK mode</span></span>
+<span id="cb4-33">sock.sendto(<span class="st" style="color: #20794D;
+background-color: null;
+font-style: inherit;">b"command"</span>, (<span class="st" style="color: #20794D;
+background-color: null;
+font-style: inherit;">"192.168.10.1"</span>, <span class="dv" style="color: #AD0000;
+background-color: null;
+font-style: inherit;">8889</span>))</span>
+<span id="cb4-34"><span class="cf" style="color: #003B4F;
+background-color: null;
+font-weight: bold;
+font-style: inherit;">try</span>:</span>
+<span id="cb4-35">    response, _ <span class="op" style="color: #5E5E5E;
+background-color: null;
+font-style: inherit;">=</span> sock.recvfrom(<span class="dv" style="color: #AD0000;
+background-color: null;
+font-style: inherit;">1024</span>)</span>
+<span id="cb4-36">    <span class="bu" style="color: null;
+background-color: null;
+font-style: inherit;">print</span>(<span class="st" style="color: #20794D;
+background-color: null;
+font-style: inherit;">"Response 1:"</span>, response)</span>
+<span id="cb4-37"><span class="cf" style="color: #003B4F;
+background-color: null;
+font-weight: bold;
+font-style: inherit;">except</span> <span class="pp" style="color: #AD0000;
+background-color: null;
+font-style: inherit;">Exception</span> <span class="im" style="color: #00769E;
+background-color: null;
+font-style: inherit;">as</span> e:</span>
+<span id="cb4-38">    <span class="bu" style="color: null;
+background-color: null;
+font-style: inherit;">print</span>(<span class="st" style="color: #20794D;
+background-color: null;
+font-style: inherit;">"No response to command:"</span>, e)</span>
+<span id="cb4-39"></span>
+<span id="cb4-40">time.sleep(<span class="dv" style="color: #AD0000;
+background-color: null;
+font-style: inherit;">1</span>)</span>
+<span id="cb4-41"></span>
+<span id="cb4-42"><span class="co" style="color: #5E5E5E;
+background-color: null;
+font-style: inherit;"># Step 2: Send ap command</span></span>
+<span id="cb4-43">ssid, password <span class="op" style="color: #5E5E5E;
+background-color: null;
+font-style: inherit;">=</span> get_wifi_credentials()</span>
+<span id="cb4-44">sock.sendto(<span class="st" style="color: #20794D;
+background-color: null;
+font-style: inherit;">b"ap %s %s"</span> <span class="op" style="color: #5E5E5E;
+background-color: null;
+font-style: inherit;">%</span> (ssid.encode(), password.encode()), (<span class="st" style="color: #20794D;
+background-color: null;
+font-style: inherit;">"192.168.10.1"</span>, <span class="dv" style="color: #AD0000;
+background-color: null;
+font-style: inherit;">8889</span>))</span>
+<span id="cb4-45"><span class="cf" style="color: #003B4F;
+background-color: null;
+font-weight: bold;
+font-style: inherit;">try</span>:</span>
+<span id="cb4-46">    response, _ <span class="op" style="color: #5E5E5E;
+background-color: null;
+font-style: inherit;">=</span> sock.recvfrom(<span class="dv" style="color: #AD0000;
+background-color: null;
+font-style: inherit;">1024</span>)</span>
+<span id="cb4-47">    <span class="bu" style="color: null;
+background-color: null;
+font-style: inherit;">print</span>(<span class="st" style="color: #20794D;
+background-color: null;
+font-style: inherit;">"Response 2:"</span>, response)</span>
+<span id="cb4-48"><span class="cf" style="color: #003B4F;
+background-color: null;
+font-weight: bold;
+font-style: inherit;">except</span> <span class="pp" style="color: #AD0000;
+background-color: null;
+font-style: inherit;">Exception</span> <span class="im" style="color: #00769E;
+background-color: null;
+font-style: inherit;">as</span> e:</span>
+<span id="cb4-49">    <span class="bu" style="color: null;
+background-color: null;
+font-style: inherit;">print</span>(<span class="st" style="color: #20794D;
+background-color: null;
+font-style: inherit;">"No response to ap:"</span>, e)</span></code></pre></div>
+</div>
+</section>
+<section id="step-5" class="level4">
+<h4 class="anchored" data-anchor-id="step-5">Step 5:</h4>
+<p>Toggle the switch to STA mode (up).</p>
+</section>
+<section id="step-6" class="level4">
+<h4 class="anchored" data-anchor-id="step-6">Step 6:</h4>
+<p>Connect the PC to the wifi network you provided in the script above.</p>
+</section>
+<section id="step-7" class="level4">
+<h4 class="anchored" data-anchor-id="step-7">Step 7:</h4>
+<p>Find the IP address that was assigned to the TT (e.g.&nbsp;in your home router admin settings).</p>
+</section>
+<section id="step-8" class="level4">
+<h4 class="anchored" data-anchor-id="step-8">Step 8:</h4>
+<p>Use this IP address every time you connect to the Tello in your code:</p>
+<div id="c6d45296" class="cell" data-execution_count="5">
+<div class="sourceCode cell-code" id="cb5" style="background: #f1f3f5;"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb5-1">t <span class="op" style="color: #5E5E5E;
+background-color: null;
+font-style: inherit;">=</span> tello.Tello(host<span class="op" style="color: #5E5E5E;
+background-color: null;
+font-style: inherit;">=</span><span class="st" style="color: #20794D;
+background-color: null;
+font-style: inherit;">"192.168.1.85"</span>) <span class="co" style="color: #5E5E5E;
+background-color: null;
+font-style: inherit;"># the IP address from step 7</span></span>
+<span id="cb5-2"></span>
+<span id="cb5-3">t.<span class="ex" style="color: null;
+background-color: null;
+font-style: inherit;">connect</span>()</span></code></pre></div>
+</div>
+<p>From here on we can connect to the TT and also be connected to the Internet. Yay!</p>
+</section>
+</section>
+<section id="thanks" class="level3">
+<h3 class="anchored" data-anchor-id="thanks">Thanks!</h3>
+<p>I want to thank <a href="https://github.com/murtazahassan">Murtaza Hassan</a> for getting me started through this video: <a href="https://www.youtube.com/watch?v=LmEcyQnfpDA">Drone Programming With Python Course</a>.</p>
+<hr>
+</section>
+</section>
+<section id="whats-next" class="level2">
+<h2 class="anchored" data-anchor-id="whats-next">What’s Next</h2>
+<p>In the next episode I’m going to implement keyboard control and stream video frames to the PC and save them on disk on demand (“inspired” by Murtaza <sup>1</sup>).</p>
+
+
+</section>
+
+
+<div id="quarto-appendix" class="default"><section id="footnotes" class="footnotes footnotes-end-of-document"><h2 class="anchored quarto-appendix-heading">Footnotes</h2>
+
+<ol>
+<li id="fn1"><p>Borrowed is the real word here. No: stolen!↩︎</p></li>
+</ol>
+</section></div> ]]></description>
+  <category>drone</category>
+  <category>code</category>
+  <guid>https://dronelab.dev/posts/crash-the-tello/</guid>
+  <pubDate>Wed, 23 Apr 2025 21:00:00 GMT</pubDate>
+  <media:content url="https://dronelab.dev/posts/crash-the-tello/crashed-TT2.png" medium="image" type="image/png" height="96" width="144"/>
+</item>
+<item>
+  <title>Enter the Tello</title>
+  <dc:creator>Mark Pors</dc:creator>
+  <link>https://dronelab.dev/posts/enter-the-tello/</link>
+  <description><![CDATA[ 
+
+<header id="title-block-header">
+
+<p class="author">Mark Pors</p>
+
+<p class="date">2025-04-20</p>
+</header>
+
+
+<div class="callout callout-style-default callout-tip callout-titled">
+<div class="callout-header d-flex align-content-center" data-bs-toggle="collapse" data-bs-target=".callout-1-contents" aria-controls="callout-1" aria-expanded="false" aria-label="Toggle callout">
+<div class="callout-icon-container">
+<i class="callout-icon"></i>
+</div>
+<div class="callout-title-container flex-fill">
+TL;DR
+</div>
+<div class="callout-btn-toggle d-inline-block border-0 py-1 ps-1 pe-0 float-end"><i class="callout-toggle"></i></div>
+</div>
+<div id="callout-1" class="callout-1-contents callout-collapse collapse">
+<div class="callout-body-container callout-body">
+<ul>
+<li>Combined interests in hiking, coding, and new tech led to a drone project idea</li>
+<li>Goal: build an autonomous scouting drone for hiking adventures</li>
+<li>Started with no drone or computer vision experience</li>
+<li>Resisted the urge to over-invest at first (just bought the domain dronelab.dev)</li>
+<li>Chose the DJI RoboMaster TT as a beginner-friendly, programmable drone</li>
+<li>Next steps: experiment with the RoboMaster TT, both manually and with code</li>
+</ul>
+</div>
+</div>
+</div>
+<section id="combine-the-stuff-you-like" class="level2">
+<h2 class="anchored" data-anchor-id="combine-the-stuff-you-like">Combine the stuff you like</h2>
+<p>“Combine the stuff you like” is good advice when looking for a new project to work on. I like to follow good advice and so I brainstormed a bit with ChatGPT to find interesting intersections between my interests. Some of my favorite activities — like sex, meditation, and reading — didn’t quite lend themselves to computer vision projects. Others had more potential: hiking in nature, coding, learning about new tech.</p>
+</section>
+<section id="autonomous-scouting-drone" class="level2">
+<h2 class="anchored" data-anchor-id="autonomous-scouting-drone">Autonomous scouting drone</h2>
+<p>Having a drone accompany us on hikes to do some scouting ahead hits the mark for me. It includes hiking and coding, and most important: I need to learn a lot to make a drone do what I want. I have zero experience with drones and very limited experience with computer vision models.</p>
+</section>
+<section id="getting-ready-big-time" class="level2">
+<h2 class="anchored" data-anchor-id="getting-ready-big-time">Getting ready big time</h2>
+<p>Like any self-respecting tech nerd, I decided to kick things off in style:</p>
+<ol type="1">
+<li>Buy a domain name (most important!)</li>
+<li>Get a logo (as important!)</li>
+<li>Buy the best dev/DIY drone out there</li>
+<li>Buy a top line PC to train models</li>
+<li>Buy another PC to run simulation environments</li>
+</ol>
+<p>OK, guilty — I bought the domain (hello <a href="../..">dronelab.dev</a>), but <em>tried</em> to stop myself there <sup>1</sup> <sup>2</sup>. I don’t know anything about drones, and might get bored with the project after a couple of weeks, so better start small.</p>
+</section>
+<section id="enter-the-tello" class="level2">
+<h2 class="anchored" data-anchor-id="enter-the-tello">Enter the Tello</h2>
+<p>I stumbled upon a modest little drone from way back in 2018 <sup>3</sup> — the DJI Tello — and it was perfect for my first steps. It can fly indoors, is programmable and has a camera.</p>
+<p>There is an even better version of it with some extra goodies that might come in handy:</p>
+<ul>
+<li>an onboard processor</li>
+<li>a matrix display</li>
+<li>a distance sensor</li>
+</ul>
+<p>So I bought the DJI RoboMaster TT. TT stands for Tello Talent — basically smart kids coding drones at an age I was still figuring out crayons.</p>
+<p>Look at that beauty!</p>
+<div class="quarto-figure quarto-figure-center">
+<figure class="figure">
+<p><img src="https://dronelab.dev/posts/enter-the-tello/tt.jpg" class="img-fluid figure-img"></p>
+<figcaption>DJI RoboMaster TT</figcaption>
+</figure>
+</div>
+</section>
+<section id="whats-next" class="level2">
+<h2 class="anchored" data-anchor-id="whats-next">What’s next?</h2>
+<p>In the next episode I will play with the RoboMaster TT, both with and without code to control it. It includes different ways to crash it. <a href="../../posts/crash-the-tello">Read on…</a></p>
+
+
+</section>
+
+
+<div id="quarto-appendix" class="default"><section id="footnotes" class="footnotes footnotes-end-of-document"><h2 class="anchored quarto-appendix-heading">Footnotes</h2>
+
+<ol>
+<li id="fn1"><p>I always buy the domain first, even before I know what I’m doing.↩︎</p></li>
+<li id="fn2"><p>I didn’t really stop myself there, I also created a logo. Technically ChatGPT did: <img src="https://dronelab.dev/posts/enter-the-tello/logo_high.png" class="img-fluid" alt="dronelab">↩︎</p></li>
+<li id="fn3"><p>2018, also the last time I blogged something: <a href="https://decentralized.blog/">decentralized.blog</a>.↩︎</p></li>
+</ol>
+</section></div> ]]></description>
+  <category>drone</category>
+  <guid>https://dronelab.dev/posts/enter-the-tello/</guid>
+  <pubDate>Sat, 19 Apr 2025 21:00:00 GMT</pubDate>
+  <media:content url="https://dronelab.dev/posts/enter-the-tello/tt.jpg" medium="image" type="image/jpeg"/>
+</item>
+</channel>
+</rss>

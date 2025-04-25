@@ -2,20 +2,25 @@ project:
   type: website
   output-dir: docs
   resources:
-    - easa-exam/**   
+    - easa-exam/**
+    - CNAME
 
 website:
   title: "dronelab.dev"
   open-graph: true
   google-analytics: "G-J790G06FED"
+  site-url: https://dronelab.dev
+  description: "DroneLab - Coding Autonomous Drones in Baby Steps."
   navbar:
     logo: logo.png
     right:
       - about.qmd
       - icon: github
-        href: https://github.com/
+        href: https://github.com/pors
       - icon: twitter
-        href: https://twitter.com
+        href: https://twitter.com/pors
+      - icon: rss
+        href: index.xml
 format:
   html:
     theme:

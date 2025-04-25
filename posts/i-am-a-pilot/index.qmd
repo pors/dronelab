@@ -2,7 +2,7 @@
 title: "I'm a Pilot!"
 author: "Mark Pors"
 date: "2025-04-25"
-categories: [drone]
+categories: [drone, open-source]
 image: pilot.png
 description: "Passed the EASA A1/A3 drone pilot exam and built a free web-based practice app. Learn how to prepare for the EASA UAV certification and access open-source study tools."
 description-meta: "Guide to passing the EASA A1/A3 drone pilot exam. Includes a free online practice app, study tips, and open-source resources for aspiring UAV pilots."
