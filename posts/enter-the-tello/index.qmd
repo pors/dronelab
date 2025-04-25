@@ -6,6 +6,16 @@ categories: [drone]
 image: tt.jpg
 ---
 
+::: {.callout-tip collapse="true"}
+## TL;DR
+* Combined interests in hiking, coding, and new tech led to a drone project idea
+* Goal: build an autonomous scouting drone for hiking adventures
+* Started with no drone or computer vision experience
+* Resisted the urge to over-invest at first (just bought the domain dronelab.dev)
+* Chose the DJI RoboMaster TT as a beginner-friendly, programmable drone
+* Next steps: experiment with the RoboMaster TT, both manually and with code
+:::
+
 ## Combine the stuff you like
 
 "Combine the stuff you like" is good advice when looking for a new project to work on. I like to follow good advice and so I brainstormed a bit with ChatGPT to find interesting intersections between my interests. Some of my favorite activities — like sex, meditation, and reading — didn't quite lend themselves to computer vision projects. Others had more potential: hiking in nature, coding, learning about new tech.
