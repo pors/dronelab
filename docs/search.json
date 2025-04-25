@@ -11,7 +11,7 @@
     "href": "posts/enter-the-tello/index.html",
     "title": "Enter the Tello",
     "section": "",
-    "text": "TL;DR\n\n\n\n\n\n\nCombined interests in hiking, coding, and new tech led to a drone project idea\nGoal: build an autonomous scouting drone for hiking adventures\nStarted with no drone or computer vision experience\nResisted the urge to over-invest at first (just bought the domain dronelab.dev)\nChose the DJI RoboMaster TT as a beginner-friendly, programmable drone\nNext steps: experiment with the RoboMaster TT, both manually and with code"
+    "text": "Mark Pors\n\n2025-04-20"
   },
   {
     "objectID": "posts/enter-the-tello/index.html#combine-the-stuff-you-like",
@@ -60,7 +60,7 @@
     "href": "posts/i-am-a-pilot/index.html",
     "title": "I’m a Pilot!",
     "section": "",
-    "text": "TL;DR\n\n\n\n\n\n\nPassed the EASA A1/A3 pilot exam, officially becoming a UAV (drone) pilot—childhood dream “fulfilled.”\nCreated a web-based EASA exam practice app to prep for the test, available online for free.\nShared app’s source code on GitHub for community use."
+    "text": "Mark Pors\n\n2025-04-25"
   },
   {
     "objectID": "posts/i-am-a-pilot/index.html#fulfilling-a-dream",
@@ -81,7 +81,7 @@
     "href": "posts/crash-the-tello/index.html",
     "title": "Crash the Tello (with and without code)",
     "section": "",
-    "text": "TL;DR\n\n\n\n\n\n\nUnboxed and crashed a DJI Tello drone — first due to a buggy phone app, then because of the infamous “ceiling effect.”\nRecommend using TelloFPV app and GameSir T1d controller for smoother manual flight experiences.\nExplained basic drone movements clearly (throttle, yaw, pitch, roll).\nIntroduced DJI’s Python SDK for coding drone flight, setting the stage for further explorations with code."
+    "text": "Mark Pors\n\n2025-04-24"
   },
   {
     "objectID": "posts/crash-the-tello/index.html#unboxed",
@@ -123,6 +123,6 @@
     "href": "index.html",
     "title": "DroneLab - Coding Autonomous Drones in Baby Steps",
     "section": "",
-    "text": "I’m a Pilot!\n\n\n\ndrone\n\n\n\n\n\n\n\n\n\nApr 25, 2025\n\n\nMark Pors\n\n\n\n\n\n\n\n\n\n\n\n\nCrash the Tello (with and without code)\n\n\n\ndrone\n\ncode\n\n\n\n\n\n\n\n\n\nApr 24, 2025\n\n\nMark Pors\n\n\n\n\n\n\n\n\n\n\n\n\nEnter the Tello\n\n\n\ndrone\n\n\n\n\n\n\n\n\n\nApr 20, 2025\n\n\nMark Pors\n\n\n\n\n\nNo matching items"
+    "text": "Game controller FTW\n\n\n\ndrone\n\ncode\n\n\n\n\n\n\n\n\n\nApr 20, 2030\n\n\nMark Pors\n\n\n\n\n\n\n\n\n\n\n\n\nKey navigation & Video snapshots\n\n\n\ndrone\n\ncode\n\n\n\n\n\n\n\n\n\nApr 20, 2030\n\n\nMark Pors\n\n\n\n\n\n\n\n\n\n\n\n\nI’m a Pilot!\n\n\n\ndrone\n\n\n\nPassed the EASA A1/A3 drone pilot exam and built a free web-based practice app. Learn how to prepare for the EASA UAV certification and access open-source study tools.\n\n\n\n\n\nApr 25, 2025\n\n\nMark Pors\n\n\n\n\n\n\n\n\n\n\n\n\nCrash the Tello (with and without code)\n\n\n\ndrone\n\ncode\n\n\n\nLearn how to fly and program the DJI Tello (RoboMaster TT) drone, avoid common beginner crashes, and get started with Python coding using the Tello SDK.\n\n\n\n\n\nApr 24, 2025\n\n\nMark Pors\n\n\n\n\n\n\n\n\n\n\n\n\nEnter the Tello\n\n\n\ndrone\n\n\n\nDiscover how to start building an autonomous scouting drone for hiking using the DJI RoboMaster TT (Tello Talent). Follow a beginner’s journey into drones, coding, and computer vision.\n\n\n\n\n\nApr 20, 2025\n\n\nMark Pors\n\n\n\n\n\nNo matching items"
   }
 ]

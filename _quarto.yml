@@ -21,6 +21,6 @@ format:
       - flatly
     css: styles.css
     title-block-style: none
-
+google-analytics: "G-J790G06FED"
 execute:
   cache: true

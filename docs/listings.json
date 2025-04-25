@@ -2,6 +2,8 @@
   {
     "listing": "/index.html",
     "items": [
+      "/posts/controller/index.html",
+      "/posts/key-navigation-video-snapshots/index.html",
       "/posts/i-am-a-pilot/index.html",
       "/posts/crash-the-tello/index.html",
       "/posts/enter-the-tello/index.html"
