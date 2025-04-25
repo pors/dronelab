@@ -2,6 +2,7 @@
   {
     "listing": "/index.html",
     "items": [
+      "/posts/i-am-a-pilot/index.html",
       "/posts/crash-the-tello/index.html",
       "/posts/enter-the-tello/index.html"
     ]

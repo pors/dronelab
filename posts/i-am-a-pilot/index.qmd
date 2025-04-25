@@ -1,28 +1,29 @@
 ---
 title: "I'm a Pilot!"
 author: "Mark Pors"
-date: "2025-04-26"
+date: "2025-04-25"
 categories: [drone]
 image: pilot.png
-draft: true
 ---
 
 ::: {.callout-tip collapse="true"}
 ## TL;DR
-@@@ Write a complete TL;DR covering the most important parts of the post. Use bullet points to make it easy to read.
+* Passed the EASA A1/A3 pilot exam, officially becoming a UAV (drone) pilot—childhood dream “fulfilled.”
+* Created a web-based EASA exam practice app to prep for the test, available online for free.
+* Shared app’s source code on GitHub for community use.
 :::
 
 ## Fulfilling a dream
 
-As a young kid I always wanted to be a pilot (not true, it just makes for a more interesting story), and now I just passed the EASA A1/A3 pilot exam!
+As a kid I always wanted to be a pilot (not true, it just makes for a more interesting story), and now I just passed the EASA A1/A3 pilot exam!
 
-Yeah, this is a certification for UAV's. UAV stands for Unmanned Aerial Vehicle, where you as a pilot stay on the ground. We can't have it all.
+Yeah, I know, this is a certification for UAV's. UAV stands for Unmanned Aerial Vehicle, where you as a pilot stay on the ground. We can't have it all.
 
-I will need this certification to fly drones outdoors, even the tiny Tello requires the pilot to have the authorization to fly drones.
+I will need this certification to fly drones outdoors, even the tiny Tello requires the ground-bound pilot to have the authorization to fly drones.
 
-Anyway, to study I (Claude.ai) created a study app to go over all possible questions for the exam. I thought it might be handy for others so I put it up online here: [EASA A1/A3 exam test app](@@@). The source code is [here]().
+## EASA A1/A3 Exam Practice App
 
-@@@ https://chatgpt.com/c/6809fca6-d048-8011-96fa-a8d5ba2f19b0
+Anyway, to help me study, I (Claude.ai) created a practice app to go over all possible questions for the exam. I thought it might be handy for others so I put it up online here: [EASA A1/A3 exam test app](https://dronelab.dev/easa-exam/). The source code is [here](https://github.com/pors/EASA-exam-practice).
 
 <small>Beware: the source PDF with questions was used as the basis for the app, and the LLM made some mistakes. I think I have corrected most/all of them, but if you want to be sure please double check.</small>
 
