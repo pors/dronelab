@@ -4,6 +4,9 @@ author: "Mark Pors"
 date: "2025-04-25"
 categories: [drone]
 image: pilot.png
+description: "Passed the EASA A1/A3 drone pilot exam and built a free web-based practice app. Learn how to prepare for the EASA UAV certification and access open-source study tools."
+description-meta: "Guide to passing the EASA A1/A3 drone pilot exam. Includes a free online practice app, study tips, and open-source resources for aspiring UAV pilots."
+keywords: "EASA A1/A3, drone pilot exam, UAV certification, drone license, EASA exam practice, free drone exam app, open-source, study guide, drone regulations, unmanned aerial vehicle"
 ---
 
 ::: {.callout-tip collapse="true"}

@@ -4,6 +4,10 @@ author: "Mark Pors"
 date: "2025-04-20"
 categories: [drone]
 image: tt.jpg
+description: "Discover how to start building an autonomous scouting drone for hiking using the DJI RoboMaster TT (Tello Talent). Follow a beginner's journey into drones, coding, and computer vision."
+description-meta: "Beginner's guide to programmable drones: Learn how to use the DJI RoboMaster TT (Tello Talent) for autonomous hiking scouts, coding, and computer vision experiments."
+keywords: "DJI RoboMaster TT, Tello Talent, programmable drone, autonomous drone, hiking drone, beginner drone project, computer vision, drone coding, dronelab"
+
 ---
 
 ::: {.callout-tip collapse="true"}

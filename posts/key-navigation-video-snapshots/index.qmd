@@ -1,0 +1,26 @@
+---
+title: "Key navigation & Video snapshots"
+author: "Mark Pors"
+date: "2030-04-20"
+categories: [drone, code]
+image: snapshots.png
+draft: true
+---
+
+@@@ replace draft:true with SEO headings
+
+::: {.callout-tip collapse="true"}
+## TL;DR
+@@@ Write a tight, high-signal TL;DR summarizing the key takeaways from this post. Focus on what the reader *learns* or *does*, not just what happens. Use bullet points, be clear, concise, and engaging. Reader might use this to decide to continue reading.
+:::
+
+@@@ Add navigation in playlist https://chatgpt.com/c/680b6d25-08c0-8011-ae4d-6981194568bb (bottom of chat)
+
+## Keyboard navigation
+
+Now that we can control the TT with code, let's extend that to a human in the ground-bound pilot seat. The most simple approach is to use specific keyboard strokes to map to drone navigation commands.
+
+@@@ https://github.com/damiafuentes/DJITelloPy/tree/master/examples!!!
+
+@@@ Here: https://claude.ai/chat/849e5585-6df9-47af-b8e6-654e5573e6d8 (open in CLaude app)
+

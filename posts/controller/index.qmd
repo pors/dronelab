@@ -1,0 +1,22 @@
+---
+title: "Game controller FTW"
+author: "Mark Pors"
+date: "2030-04-20"
+categories: [drone, code]
+image: GameSir-T1d.png
+draft: true
+---
+
+@@@ replace draft:true with SEO headings
+
+::: {.callout-tip collapse="true"}
+## TL;DR
+@@@ Write a tight, high-signal TL;DR summarizing the key takeaways from this post. Focus on what the reader *learns* or *does*, not just what happens. Use bullet points, be clear, concise, and engaging. Reader might use this to decide to continue reading.
+:::
+
+@@@ Add navigation in playlist https://chatgpt.com/c/680b6d25-08c0-8011-ae4d-6981194568bb (bottom of chat)
+
+## Controller @@@ navigation
+
+@@@ Here: https://claude.ai/chat/b8f8640e-29be-4ea2-bdd3-11d0d5a02156 (open in CLaude chrome)
+
