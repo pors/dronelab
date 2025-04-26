@@ -1,7 +1,7 @@
 ---
 title: "Key navigation & Video snapshots"
 author: "Mark Pors"
-date: "2030-04-20"
+date: "2025-04-27"
 categories: [drone, code]
 image: snapshots.png
 draft: true
@@ -20,7 +20,260 @@ draft: true
 
 Now that we can control the TT with code, let's extend that to a human in the ground-bound pilot seat. The most simple approach is to use specific keyboard strokes to map to drone navigation commands.
 
-@@@ https://github.com/damiafuentes/DJITelloPy/tree/master/examples!!!
+Keyboard navigation is implemented as an example in the DJSTelloPy repo: [manual-control-pygame.py](https://github.com/damiafuentes/DJITelloPy/blob/master/examples/manual-control-pygame.py). This is quite a cool piece of code. It uses pygame, which I never used before, so lets go through some of the interesting parts of the code.
 
-@@@ Here: https://claude.ai/chat/849e5585-6df9-47af-b8e6-654e5573e6d8 (open in CLaude app)
+### The secret sauce: Event-based controls
 
+The example uses pygame's event system rather than simple polling, and this creates nice and responsive controls. 
+
+```{python}
+#| eval: false
+# Set up a timer that triggers events at the specified frame rate
+pygame.time.set_timer(pygame.USEREVENT + 1, 1000 // FPS)
+
+# In the main loop, process all pending events
+for event in pygame.event.get():
+    if event.type == pygame.USEREVENT + 1:
+        self.update()
+    elif event.type == pygame.KEYDOWN:
+        self.keydown(event.key)
+    elif event.type == pygame.KEYUP:
+        self.keyup(event.key)
+```
+
+Instead of constantly checking "is this key pressed?" in a loop, the code waits for pygame to tell it when keys are pressed or released. This means:
+
+1. no missed keypresses, even if they happen very quickly
+2. immediate detection of key events
+3. clear separation between "key is pressed" and "key is released" logic
+
+Pretty cool.
+
+### Smooth flying with velocity controls
+
+Another interesting bit from the example code is how smoothly it makes the drone fly. This is done through velocity-based control (not up, down, left etc. commands).
+
+```python
+# Initialize velocity variables
+self.for_back_velocity = 0   # Forward/backward
+self.left_right_velocity = 0  # Left/right
+self.up_down_velocity = 0     # Up/down
+self.yaw_velocity = 0         # Rotation
+
+# When UP arrow is pressed
+def keydown(self, key):
+    if key == pygame.K_UP:
+        self.for_back_velocity = S  # Set to speed value (60)
+    # ...other keys...
+
+# When UP arrow is released
+def keyup(self, key):
+    if key == pygame.K_UP or key == pygame.K_DOWN:
+        self.for_back_velocity = 0  # Stop movement
+    # ...other keys...
+```
+
+Instead of sending a "move forward" command when we press UP, it sets a forward velocity that remains until we release the key. This creates a very natural movement, especially when:
+
+- moving diagonally (pressing UP and RIGHT simultaneously)
+- transitioning between movements (release UP while still holding RIGHT)
+- making subtle adjustments to flight path
+
+### The Heartbeat: Why frame rate matters
+
+Something that reminds me of my hardware/telco days: the pygame library work synchronously with fixed time intervals. This line sets the heartbeat:
+
+```python
+pygame.time.set_timer(pygame.USEREVENT + 1, 1000 // FPS)
+```
+
+Basically at each interval it listens for user events and handles them as needed. At 120 FPS, it generates an event every 8.3 milliseconds, triggering e.g. our update function:
+
+```python
+def update(self):
+    if self.send_rc_control:
+        self.tello.send_rc_control(
+            self.left_right_velocity,
+            self.for_back_velocity,
+            self.up_down_velocity, 
+            self.yaw_velocity
+        )
+```
+
+### Why not send commands immediately?
+
+The naive alternative is to have a `while True:` loop that reads key strokes and react to that instantly. What's wrong with that?
+
+1. **Command Rate Control**: Drones can get overwhelmed if we send too many commands too quickly
+2. **Command Combination**: If we press multiple keys in one frame, they're combined into a single efficient command
+3. **Smooth Motion**: Even, regular command timing creates more natural drone movement
+
+I tried the `while True` approach and it doesn't work that great. There is no feel between pressing keys and the drone following up on that.
+
+So, I learned something new: `pygame`, which I'm sure will come in handy soon (spoiler alert: after this I want to use the GameSire controller to fly the Tello. Guess which library is great to speak to gaming consoles!).
+
+## Video streaming & snapshots
+
+There is no autonomous flying without vision, and now is the first time we can have a peek at streaming video and capturing it.
+
+The same example from above contains the video streaming as well.
+
+### Video streaming
+
+#### Setting Up the Stream
+
+First, the code initializes the video stream:
+
+```python
+# Make sure streaming is off before we start
+self.tello.streamoff()
+# Then turn streaming on
+self.tello.streamon()
+
+# Get the object that will give us frames
+frame_read = self.tello.get_frame_read()
+```
+
+This pattern of turning streaming off then on again is a good practice to ensure we're starting with a clean slate. I had it hang a couple of times before applying this trick.
+
+#### Capturing and processing frames
+
+In the main loop, the code grabs frames from the drone and processes them:
+
+```python
+# Get the latest frame
+frame = frame_read.frame
+
+# Add battery information to the frame
+text = "Battery: {}%".format(self.tello.get_battery())
+cv2.putText(frame, text, (5, 720 - 5),
+    cv2.FONT_HERSHEY_SIMPLEX, 1, (0, 0, 255), 2)
+```
+
+This overlays the battery percentage in red text at the bottom left of the frame. A handy feature when we're flying!
+
+#### Frame transformation
+
+The next three lines are needed for displaying the frame correctly in pygame:
+
+```python
+# OpenCV uses BGR, pygame needs RGB
+frame = cv2.cvtColor(frame, cv2.COLOR_BGR2RGB)
+
+# Rotate the frame 90 degrees
+frame = np.rot90(frame)
+
+# Flip the frame upside down
+frame = np.flipud(frame)
+```
+
+Why all this transformation? Cameras often capture images in orientations or color formats that aren't immediately displayable. OpenCV uses BGR color format while pygame expects RGB, and the Tello camera orientation needs adjusting to appear correctly on screen.
+
+#### Displaying in pygame
+
+Finally, the frame is displayed in the pygame window:
+
+```python
+# Convert numpy array to a pygame surface
+frame = pygame.surfarray.make_surface(frame)
+
+# Draw the surface to the screen
+self.screen.blit(frame, (0, 0))
+
+# Update the display
+pygame.display.update()
+```
+
+This process happens every frame (120 times per second with the default settings), creating a smooth video feed.
+
+### Video snapshots
+
+Not part of the example code is the feature to take a snapshot by hitting a key and storing the current frame on disk.
+
+So let's add it:
+
+#### 1. First, add the necessary imports
+
+At the top of the file, make sure we have:
+
+```python
+import time
+import os
+```
+
+#### 2. Create a directory to store images
+
+Add this near the beginning of our `__init__` method:
+
+```python
+# Create a directory to store images if it doesn't exist
+if not os.path.exists('tello_images'):
+    os.makedirs('tello_images')
+```
+
+#### 3. Add a key handler for taking snapshots
+
+In the `keyup` method, add a case for a new key (I'll use 'p' for "picture"):
+
+```python
+def keyup(self, key):
+    """ Update velocities based on key released """
+    if key == pygame.K_UP or key == pygame.K_DOWN:  # set zero forward/backward velocity
+        self.for_back_velocity = 0
+    elif key == pygame.K_LEFT or key == pygame.K_RIGHT:  # set zero left/right velocity
+        self.left_right_velocity = 0
+    elif key == pygame.K_w or key == pygame.K_s:  # set zero up/down velocity
+        self.up_down_velocity = 0
+    elif key == pygame.K_a or key == pygame.K_d:  # set zero yaw velocity
+        self.yaw_velocity = 0
+    elif key == pygame.K_t:  # takeoff
+        self.tello.takeoff()
+        self.send_rc_control = True
+    elif key == pygame.K_l:  # land
+        not self.tello.land()
+        self.send_rc_control = False
+    elif key == pygame.K_p:  # take a snapshot
+        self.take_snapshot()
+```
+
+#### 4. Add the snapshot method
+
+Add this new method to our `FrontEnd` class:
+
+```python
+def take_snapshot(self):
+    """
+    Take a snapshot of the current frame and save it to disk
+    """
+    # Get the current frame
+    frame = self.tello.get_frame_read().frame
+    
+    if frame is not None:
+        # Create a filename with timestamp
+        timestamp = time.strftime("%Y%m%d-%H%M%S")
+        filename = f"tello_images/tello_snapshot_{timestamp}.jpg"
+        
+        # Save the image - note we save the original frame before any transformations
+        cv2.imwrite(filename, frame)
+        
+        print(f"Snapshot saved: {filename}")
+```
+
+Let's try it out!
+
+@@@@@@@ Try and show some snapshots
+@@@ Add stuff about the image resolution and how we can change that (both at the source and when streamed, see old code).
+
+::: {layout-ncol=3}
+![](snapshots/image-1745142617.967533.jpg){width=250}
+
+![](snapshots/image-1745142635.818627.jpg){width=250}
+
+![](snapshots/image-1745142638.978236.jpg){width=250}
+
+![](snapshots/image-1745142643.129198.jpg){width=250}
+
+![](snapshots/image-1745142653.1736279.jpg){width=250}
+
+![](snapshots/image-1745142683.295296.jpg){width=250}
+:::
