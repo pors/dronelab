@@ -206,12 +206,23 @@ TL;DR
 <li>Explained basic drone movements clearly (throttle, yaw, pitch, roll).</li>
 <li>Introduced DJI’s Python SDK for coding drone flight, setting the stage for further explorations with code.</li>
 </ul>
+<div style="text-align: center;">
+<p><strong>Series: <a href="../../series/">Code, Fly &amp; AI</a></strong></p>
+</div>
+<div style="display: flex; justify-content: space-between; margin-top: 0.5em;">
+<div>
+<a href="../../posts/enter-the-tello/">← Previous: Enter the Tello</a>
+</div>
+<div>
+<a href="../../posts/key-navigation-video-snapshots/">Next: Key navigation &amp; Video snapshots →</a>
+</div>
+</div>
 </div>
 </div>
 </div>
 <section id="unboxed" class="level2">
 <h2 class="anchored" data-anchor-id="unboxed">Unboxed</h2>
-<p>Now that the drone is out of the box we’re gonna take it for a spin (and yes it crashed). First with the phone app, then with code.</p>
+<p>Now that the drone is out of the box, we’re gonna take it for a spin (and yes it crashed). First with the phone app, then with code.</p>
 <div class="quarto-figure quarto-figure-center">
 <figure class="figure">
 <p><img src="crashed-TT.png" class="img-fluid figure-img"></p>
@@ -258,7 +269,7 @@ Note
 </tr>
 <tr class="odd">
 <td>pitch</td>
-<td>moves the drone forward or backwards by varying front and back propeller speeds</td>
+<td>moves the drone forward or backward by changing speeds between front and back propellers</td>
 </tr>
 <tr class="even">
 <td>roll</td>
@@ -267,7 +278,7 @@ Note
 </tbody>
 </table>
 <p><br> This video explains very clearly how it works: </p><div class="quarto-video ratio ratio-16x9"><iframe data-external="1" src="https://www.youtube.com/embed/C0KBu2ihp-s" title="" frameborder="0" allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture" allowfullscreen=""></iframe></div><p></p>
-<p>The Tello doesn’t come with a controller, we control it with the Tello app. I used the Tello app for iPhone. This app hasn’t been updated for a long time and unfortunately it is useless as it crashes all the time. When the app crashes the drone keeps on hovering in the air, so this first crash is just a software crash.</p>
+<p>The Tello doesn’t come with a controller, we fly it through the Tello app. I used the Tello app for iPhone. This app hasn’t been updated for a long time and unfortunately it is useless as it crashes all the time. When the app crashes the drone keeps on hovering in the air, so this first crash is just a software crash.</p>
 <div class="callout callout-style-default callout-tip callout-titled">
 <div class="callout-header d-flex align-content-center">
 <div class="callout-icon-container">
@@ -291,13 +302,13 @@ Tip
 </div>
 </div>
 <div class="callout-body-container callout-body">
-<p>To really enjoy flying the TT manually you can get a controller that is customized for the Tello: the <a href="https://gamesir.com/pages/tello-tutorial">GameSir T1d</a>. I got one and it works out of the box, also with the TelloFPV app.</p>
+<p>To really enjoy flying the TT manually you can get a controller that is customized for the Tello: the <a href="https://gamesir.com/pages/tello-tutorial">GameSir T1d</a>. I got one, and it works straight out of the box — even with the TelloFPV app.</p>
 </div>
 </div>
 <section id="beware-of-the-ceiling-effect" class="level3">
 <h3 class="anchored" data-anchor-id="beware-of-the-ceiling-effect">Beware of the ceiling effect</h3>
-<p>While flying the drone around a bit in my office, I went up a bit too high and the drone crashed when it came near the ceiling. This phenomenon even has a name and is called the “ceiling effect.” Basically, the drone gets <a href="https://aviation.stackexchange.com/questions/59128/what-disadvantages-does-flying-a-drone-close-under-a-ceiling-have">sucked up to the ceiling</a> because there is not enough air to push down through the propellors.</p>
-<p>OK, time to start the real fun: control the drone with code.</p>
+<p>While flying the drone around a bit in my office, I went up a bit too high and the drone crashed when it came near the ceiling. This phenomenon even has a name and is called the “ceiling effect.” Basically, the drone gets <a href="https://aviation.stackexchange.com/questions/59128/what-disadvantages-does-flying-a-drone-close-under-a-ceiling-have">sucked up to the ceiling</a> because there is not enough air to push down through the propellers.</p>
+<p>Alright, now for the real fun — controlling the drone with code.</p>
 </section>
 </section>
 <section id="the-tello-python-sdk" class="level2">
@@ -499,6 +510,26 @@ Tip
 <section id="whats-next" class="level2">
 <h2 class="anchored" data-anchor-id="whats-next">What’s Next</h2>
 <p>In the next episode I’m going to implement keyboard control and stream video frames to the PC and save them on disk on demand (“inspired” by Murtaza <a href="#fn1" class="footnote-ref" id="fnref1" role="doc-noteref"><sup>1</sup></a>).</p>
+<div class="callout callout-style-simple callout-note no-icon">
+<div class="callout-body d-flex">
+<div class="callout-icon-container">
+<i class="callout-icon no-icon"></i>
+</div>
+<div class="callout-body-container">
+<div style="text-align: center;">
+<p><strong>Series: <a href="../../series/">Code, Fly &amp; AI</a></strong></p>
+</div>
+<div style="display: flex; justify-content: space-between; margin-top: 0.5em;">
+<div>
+<a href="../../posts/enter-the-tello/">← Previous: Enter the Tello</a>
+</div>
+<div>
+<a href="../../posts/key-navigation-video-snapshots/">Next: Key navigation &amp; Video snapshots →</a>
+</div>
+</div>
+</div>
+</div>
+</div>
 
 
 </section>

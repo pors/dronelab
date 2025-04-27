@@ -1,0 +1,20 @@
+---
+title: "Code, Fly & AI Series"
+listing:
+  contents: ../posts/**/*.qmd  # Adjust this path to wherever your posts are located
+  type: default  # You can choose default, grid, or table
+  sort: "order"  # Sort by the custom order field
+  include:
+    series: "Code, Fly & AI"  # Only include posts with this series tag
+  fields: [date, title, image, description]  # Customize displayed fields
+---
+
+Welcome to the **Code, Fly & AI** series — a blog journey into coding autonomous drones with baby steps.
+
+Follow along as I:
+
+* Learn to fly (and crash) drones
+* Hack with Python and SDKs
+* Use AI to give them brains
+
+👇 Posts in this series:

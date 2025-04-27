@@ -4,17 +4,32 @@ author: "Mark Pors"
 date: "2025-04-27"
 categories: [drone, code]
 image: snapshots.png
-draft: true
+description: "Hands-on guide to controlling a Tello drone with Python and pygame: learn responsive keyboard navigation, smooth velocity-based movement, live video streaming, and how to capture snapshots from the drone feed."
+description-meta: "Master Tello drone control using Python and pygame. This post covers event-based keyboard navigation, smooth velocity commands, live video streaming, overlaying status info, and saving video snapshots."
+keywords: "Tello drone, Python, pygame, keyboard navigation, velocity control, video streaming, snapshot, OpenCV, real-time control, drone programming"
+series: "Code, Fly & AI"
+order: 3
 ---
-
-@@@ replace draft:true with SEO headings
 
 ::: {.callout-tip collapse="true"}
 ## TL;DR
-@@@ Write a tight, high-signal TL;DR summarizing the key takeaways from this post. Focus on what the reader *learns* or *does*, not just what happens. Use bullet points, be clear, concise, and engaging. Reader might use this to decide to continue reading.
+* Learn how to control a Tello drone using keyboard navigation with responsive, event-based controls in Python (via pygame).
+* Understand why velocity-based commands and fixed frame-rate updates create smoother, more natural drone movement.
+* See how to stream live video from the drone, process frames, and overlay status info (like battery level).
+* Get step-by-step instructions to add a keyboard shortcut for saving video snapshots directly from the drone feed.
+* Discover practical tips for reliable streaming and why naive command loops don’t work well for real-time control.
+* Preview what’s next: moving from keyboard to game controller navigation for even better piloting.
+
+<div style="text-align: center;">
+<strong>Series: <a href="/series/">Code, Fly & AI</a></strong>
+</div>
+
+<div style="display: flex; justify-content: space-between; margin-top: 0.5em;">
+  <div>[← Previous: Crash the Tello](/posts/crash-the-tello/)</div>
+  <div></div>
+</div>
 :::
 
-@@@ Add navigation in playlist https://chatgpt.com/c/680b6d25-08c0-8011-ae4d-6981194568bb (bottom of chat)
 
 ## Keyboard navigation
 
@@ -188,16 +203,15 @@ This process happens every frame (120 times per second with the default settings
 
 ### Video snapshots
 
-Not part of the example code is the feature to take a snapshot by hitting a key and storing the current frame on disk.
+Not included in the example code is the ability to take a snapshot by pressing a key and saving the current frame to disk.
 
 So let's add it:
 
-#### 1. First, add the necessary imports
+#### 1. First, add the necessary import
 
 At the top of the file, make sure we have:
 
 ```python
-import time
 import os
 ```
 
@@ -259,10 +273,11 @@ def take_snapshot(self):
         print(f"Snapshot saved: {filename}")
 ```
 
-Let's try it out!
+The resulting code can be found [here](https://github.com/pors/tello-play/blob/main/manual-control-pygame.py).
 
-@@@@@@@ Try and show some snapshots
-@@@ Add stuff about the image resolution and how we can change that (both at the source and when streamed, see old code).
+### Let's try it out!
+
+It all works just fine, here are some low res snapshots I made:
 
 ::: {layout-ncol=3}
 ![](snapshots/image-1745142617.967533.jpg){width=250}
@@ -276,4 +291,22 @@ Let's try it out!
 ![](snapshots/image-1745142653.1736279.jpg){width=250}
 
 ![](snapshots/image-1745142683.295296.jpg){width=250}
+:::
+
+Navigating with a keyboard is a disaster, so....
+
+
+## What's next
+
+To improve navigation we are going to hook up the GameSir 1Td, [read on..](/posts/controller/index.qmd).
+
+::: {.callout-note appearance="minimal"}
+<div style="text-align: center;">
+<strong>Series: <a href="/series/">Code, Fly & AI</a></strong>
+</div>
+
+<div style="display: flex; justify-content: space-between; margin-top: 0.5em;">
+  <div>[← Previous: Crash the Tello](/posts/crash-the-tello/)</div>
+  <div></div>
+</div>
 :::

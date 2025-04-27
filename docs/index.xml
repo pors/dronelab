@@ -10,7 +10,746 @@
 <atom:link href="https://dronelab.dev/index.xml" rel="self" type="application/rss+xml"/>
 <description>DroneLab - Coding Autonomous Drones in Baby Steps.</description>
 <generator>quarto-1.7.27</generator>
-<lastBuildDate>Thu, 24 Apr 2025 21:00:00 GMT</lastBuildDate>
+<lastBuildDate>Sat, 26 Apr 2025 21:00:00 GMT</lastBuildDate>
+<item>
+  <title>Key navigation &amp; Video snapshots</title>
+  <dc:creator>Mark Pors</dc:creator>
+  <link>https://dronelab.dev/posts/key-navigation-video-snapshots/</link>
+  <description><![CDATA[ 
+
+<header id="title-block-header">
+
+<p class="author">Mark Pors</p>
+
+<p class="date">2025-04-27</p>
+</header>
+
+
+<div class="callout callout-style-default callout-tip callout-titled">
+<div class="callout-header d-flex align-content-center" data-bs-toggle="collapse" data-bs-target=".callout-1-contents" aria-controls="callout-1" aria-expanded="false" aria-label="Toggle callout">
+<div class="callout-icon-container">
+<i class="callout-icon"></i>
+</div>
+<div class="callout-title-container flex-fill">
+TL;DR
+</div>
+<div class="callout-btn-toggle d-inline-block border-0 py-1 ps-1 pe-0 float-end"><i class="callout-toggle"></i></div>
+</div>
+<div id="callout-1" class="callout-1-contents callout-collapse collapse">
+<div class="callout-body-container callout-body">
+<ul>
+<li>Learn how to control a Tello drone using keyboard navigation with responsive, event-based controls in Python (via pygame).</li>
+<li>Understand why velocity-based commands and fixed frame-rate updates create smoother, more natural drone movement.</li>
+<li>See how to stream live video from the drone, process frames, and overlay status info (like battery level).</li>
+<li>Get step-by-step instructions to add a keyboard shortcut for saving video snapshots directly from the drone feed.</li>
+<li>Discover practical tips for reliable streaming and why naive command loops don’t work well for real-time control.</li>
+<li>Preview what’s next: moving from keyboard to game controller navigation for even better piloting.</li>
+</ul>
+<div style="text-align: center;">
+<p><strong>Series: <a href="../../series/">Code, Fly &amp; AI</a></strong></p>
+</div>
+<div style="display: flex; justify-content: space-between; margin-top: 0.5em;">
+<div>
+<a href="../../posts/crash-the-tello//">← Previous: Crash the Tello</a>
+</div>
+<div>
+
+</div>
+</div>
+</div>
+</div>
+</div>
+<section id="keyboard-navigation" class="level2">
+<h2 class="anchored" data-anchor-id="keyboard-navigation">Keyboard navigation</h2>
+<p>Now that we can control the TT with code, let’s extend that to a human in the ground-bound pilot seat. The most simple approach is to use specific keyboard strokes to map to drone navigation commands.</p>
+<p>Keyboard navigation is implemented as an example in the DJSTelloPy repo: <a href="https://github.com/damiafuentes/DJITelloPy/blob/master/examples/manual-control-pygame.py">manual-control-pygame.py</a>. This is quite a cool piece of code. It uses pygame, which I never used before, so lets go through some of the interesting parts of the code.</p>
+<section id="the-secret-sauce-event-based-controls" class="level3">
+<h3 class="anchored" data-anchor-id="the-secret-sauce-event-based-controls">The secret sauce: Event-based controls</h3>
+<p>The example uses pygame’s event system rather than simple polling, and this creates nice and responsive controls.</p>
+<div id="8d77cf63" class="cell" data-execution_count="2">
+<div class="sourceCode cell-code" id="cb1" style="background: #f1f3f5;"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb1-1"><span class="co" style="color: #5E5E5E;
+background-color: null;
+font-style: inherit;"># Set up a timer that triggers events at the specified frame rate</span></span>
+<span id="cb1-2">pygame.time.set_timer(pygame.USEREVENT <span class="op" style="color: #5E5E5E;
+background-color: null;
+font-style: inherit;">+</span> <span class="dv" style="color: #AD0000;
+background-color: null;
+font-style: inherit;">1</span>, <span class="dv" style="color: #AD0000;
+background-color: null;
+font-style: inherit;">1000</span> <span class="op" style="color: #5E5E5E;
+background-color: null;
+font-style: inherit;">//</span> FPS)</span>
+<span id="cb1-3"></span>
+<span id="cb1-4"><span class="co" style="color: #5E5E5E;
+background-color: null;
+font-style: inherit;"># In the main loop, process all pending events</span></span>
+<span id="cb1-5"><span class="cf" style="color: #003B4F;
+background-color: null;
+font-weight: bold;
+font-style: inherit;">for</span> event <span class="kw" style="color: #003B4F;
+background-color: null;
+font-weight: bold;
+font-style: inherit;">in</span> pygame.event.get():</span>
+<span id="cb1-6">    <span class="cf" style="color: #003B4F;
+background-color: null;
+font-weight: bold;
+font-style: inherit;">if</span> event.<span class="bu" style="color: null;
+background-color: null;
+font-style: inherit;">type</span> <span class="op" style="color: #5E5E5E;
+background-color: null;
+font-style: inherit;">==</span> pygame.USEREVENT <span class="op" style="color: #5E5E5E;
+background-color: null;
+font-style: inherit;">+</span> <span class="dv" style="color: #AD0000;
+background-color: null;
+font-style: inherit;">1</span>:</span>
+<span id="cb1-7">        <span class="va" style="color: #111111;
+background-color: null;
+font-style: inherit;">self</span>.update()</span>
+<span id="cb1-8">    <span class="cf" style="color: #003B4F;
+background-color: null;
+font-weight: bold;
+font-style: inherit;">elif</span> event.<span class="bu" style="color: null;
+background-color: null;
+font-style: inherit;">type</span> <span class="op" style="color: #5E5E5E;
+background-color: null;
+font-style: inherit;">==</span> pygame.KEYDOWN:</span>
+<span id="cb1-9">        <span class="va" style="color: #111111;
+background-color: null;
+font-style: inherit;">self</span>.keydown(event.key)</span>
+<span id="cb1-10">    <span class="cf" style="color: #003B4F;
+background-color: null;
+font-weight: bold;
+font-style: inherit;">elif</span> event.<span class="bu" style="color: null;
+background-color: null;
+font-style: inherit;">type</span> <span class="op" style="color: #5E5E5E;
+background-color: null;
+font-style: inherit;">==</span> pygame.KEYUP:</span>
+<span id="cb1-11">        <span class="va" style="color: #111111;
+background-color: null;
+font-style: inherit;">self</span>.keyup(event.key)</span></code></pre></div>
+</div>
+<p>Instead of constantly checking “is this key pressed?” in a loop, the code waits for pygame to tell it when keys are pressed or released. This means:</p>
+<ol type="1">
+<li>no missed keypresses, even if they happen very quickly</li>
+<li>immediate detection of key events</li>
+<li>clear separation between “key is pressed” and “key is released” logic</li>
+</ol>
+<p>Pretty cool.</p>
+</section>
+<section id="smooth-flying-with-velocity-controls" class="level3">
+<h3 class="anchored" data-anchor-id="smooth-flying-with-velocity-controls">Smooth flying with velocity controls</h3>
+<p>Another interesting bit from the example code is how smoothly it makes the drone fly. This is done through velocity-based control (not up, down, left etc. commands).</p>
+<div class="sourceCode" id="cb2" style="background: #f1f3f5;"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb2-1"><span class="co" style="color: #5E5E5E;
+background-color: null;
+font-style: inherit;"># Initialize velocity variables</span></span>
+<span id="cb2-2"><span class="va" style="color: #111111;
+background-color: null;
+font-style: inherit;">self</span>.for_back_velocity <span class="op" style="color: #5E5E5E;
+background-color: null;
+font-style: inherit;">=</span> <span class="dv" style="color: #AD0000;
+background-color: null;
+font-style: inherit;">0</span>   <span class="co" style="color: #5E5E5E;
+background-color: null;
+font-style: inherit;"># Forward/backward</span></span>
+<span id="cb2-3"><span class="va" style="color: #111111;
+background-color: null;
+font-style: inherit;">self</span>.left_right_velocity <span class="op" style="color: #5E5E5E;
+background-color: null;
+font-style: inherit;">=</span> <span class="dv" style="color: #AD0000;
+background-color: null;
+font-style: inherit;">0</span>  <span class="co" style="color: #5E5E5E;
+background-color: null;
+font-style: inherit;"># Left/right</span></span>
+<span id="cb2-4"><span class="va" style="color: #111111;
+background-color: null;
+font-style: inherit;">self</span>.up_down_velocity <span class="op" style="color: #5E5E5E;
+background-color: null;
+font-style: inherit;">=</span> <span class="dv" style="color: #AD0000;
+background-color: null;
+font-style: inherit;">0</span>     <span class="co" style="color: #5E5E5E;
+background-color: null;
+font-style: inherit;"># Up/down</span></span>
+<span id="cb2-5"><span class="va" style="color: #111111;
+background-color: null;
+font-style: inherit;">self</span>.yaw_velocity <span class="op" style="color: #5E5E5E;
+background-color: null;
+font-style: inherit;">=</span> <span class="dv" style="color: #AD0000;
+background-color: null;
+font-style: inherit;">0</span>         <span class="co" style="color: #5E5E5E;
+background-color: null;
+font-style: inherit;"># Rotation</span></span>
+<span id="cb2-6"></span>
+<span id="cb2-7"><span class="co" style="color: #5E5E5E;
+background-color: null;
+font-style: inherit;"># When UP arrow is pressed</span></span>
+<span id="cb2-8"><span class="kw" style="color: #003B4F;
+background-color: null;
+font-weight: bold;
+font-style: inherit;">def</span> keydown(<span class="va" style="color: #111111;
+background-color: null;
+font-style: inherit;">self</span>, key):</span>
+<span id="cb2-9">    <span class="cf" style="color: #003B4F;
+background-color: null;
+font-weight: bold;
+font-style: inherit;">if</span> key <span class="op" style="color: #5E5E5E;
+background-color: null;
+font-style: inherit;">==</span> pygame.K_UP:</span>
+<span id="cb2-10">        <span class="va" style="color: #111111;
+background-color: null;
+font-style: inherit;">self</span>.for_back_velocity <span class="op" style="color: #5E5E5E;
+background-color: null;
+font-style: inherit;">=</span> S  <span class="co" style="color: #5E5E5E;
+background-color: null;
+font-style: inherit;"># Set to speed value (60)</span></span>
+<span id="cb2-11">    <span class="co" style="color: #5E5E5E;
+background-color: null;
+font-style: inherit;"># ...other keys...</span></span>
+<span id="cb2-12"></span>
+<span id="cb2-13"><span class="co" style="color: #5E5E5E;
+background-color: null;
+font-style: inherit;"># When UP arrow is released</span></span>
+<span id="cb2-14"><span class="kw" style="color: #003B4F;
+background-color: null;
+font-weight: bold;
+font-style: inherit;">def</span> keyup(<span class="va" style="color: #111111;
+background-color: null;
+font-style: inherit;">self</span>, key):</span>
+<span id="cb2-15">    <span class="cf" style="color: #003B4F;
+background-color: null;
+font-weight: bold;
+font-style: inherit;">if</span> key <span class="op" style="color: #5E5E5E;
+background-color: null;
+font-style: inherit;">==</span> pygame.K_UP <span class="kw" style="color: #003B4F;
+background-color: null;
+font-weight: bold;
+font-style: inherit;">or</span> key <span class="op" style="color: #5E5E5E;
+background-color: null;
+font-style: inherit;">==</span> pygame.K_DOWN:</span>
+<span id="cb2-16">        <span class="va" style="color: #111111;
+background-color: null;
+font-style: inherit;">self</span>.for_back_velocity <span class="op" style="color: #5E5E5E;
+background-color: null;
+font-style: inherit;">=</span> <span class="dv" style="color: #AD0000;
+background-color: null;
+font-style: inherit;">0</span>  <span class="co" style="color: #5E5E5E;
+background-color: null;
+font-style: inherit;"># Stop movement</span></span>
+<span id="cb2-17">    <span class="co" style="color: #5E5E5E;
+background-color: null;
+font-style: inherit;"># ...other keys...</span></span></code></pre></div>
+<p>Instead of sending a “move forward” command when we press UP, it sets a forward velocity that remains until we release the key. This creates a very natural movement, especially when:</p>
+<ul>
+<li>moving diagonally (pressing UP and RIGHT simultaneously)</li>
+<li>transitioning between movements (release UP while still holding RIGHT)</li>
+<li>making subtle adjustments to flight path</li>
+</ul>
+</section>
+<section id="the-heartbeat-why-frame-rate-matters" class="level3">
+<h3 class="anchored" data-anchor-id="the-heartbeat-why-frame-rate-matters">The Heartbeat: Why frame rate matters</h3>
+<p>Something that reminds me of my hardware/telco days: the pygame library work synchronously with fixed time intervals. This line sets the heartbeat:</p>
+<div class="sourceCode" id="cb3" style="background: #f1f3f5;"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb3-1">pygame.time.set_timer(pygame.USEREVENT <span class="op" style="color: #5E5E5E;
+background-color: null;
+font-style: inherit;">+</span> <span class="dv" style="color: #AD0000;
+background-color: null;
+font-style: inherit;">1</span>, <span class="dv" style="color: #AD0000;
+background-color: null;
+font-style: inherit;">1000</span> <span class="op" style="color: #5E5E5E;
+background-color: null;
+font-style: inherit;">//</span> FPS)</span></code></pre></div>
+<p>Basically at each interval it listens for user events and handles them as needed. At 120 FPS, it generates an event every 8.3 milliseconds, triggering e.g.&nbsp;our update function:</p>
+<div class="sourceCode" id="cb4" style="background: #f1f3f5;"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb4-1"><span class="kw" style="color: #003B4F;
+background-color: null;
+font-weight: bold;
+font-style: inherit;">def</span> update(<span class="va" style="color: #111111;
+background-color: null;
+font-style: inherit;">self</span>):</span>
+<span id="cb4-2">    <span class="cf" style="color: #003B4F;
+background-color: null;
+font-weight: bold;
+font-style: inherit;">if</span> <span class="va" style="color: #111111;
+background-color: null;
+font-style: inherit;">self</span>.send_rc_control:</span>
+<span id="cb4-3">        <span class="va" style="color: #111111;
+background-color: null;
+font-style: inherit;">self</span>.tello.send_rc_control(</span>
+<span id="cb4-4">            <span class="va" style="color: #111111;
+background-color: null;
+font-style: inherit;">self</span>.left_right_velocity,</span>
+<span id="cb4-5">            <span class="va" style="color: #111111;
+background-color: null;
+font-style: inherit;">self</span>.for_back_velocity,</span>
+<span id="cb4-6">            <span class="va" style="color: #111111;
+background-color: null;
+font-style: inherit;">self</span>.up_down_velocity, </span>
+<span id="cb4-7">            <span class="va" style="color: #111111;
+background-color: null;
+font-style: inherit;">self</span>.yaw_velocity</span>
+<span id="cb4-8">        )</span></code></pre></div>
+</section>
+<section id="why-not-send-commands-immediately" class="level3">
+<h3 class="anchored" data-anchor-id="why-not-send-commands-immediately">Why not send commands immediately?</h3>
+<p>The naive alternative is to have a <code>while True:</code> loop that reads key strokes and react to that instantly. What’s wrong with that?</p>
+<ol type="1">
+<li><strong>Command Rate Control</strong>: Drones can get overwhelmed if we send too many commands too quickly</li>
+<li><strong>Command Combination</strong>: If we press multiple keys in one frame, they’re combined into a single efficient command</li>
+<li><strong>Smooth Motion</strong>: Even, regular command timing creates more natural drone movement</li>
+</ol>
+<p>I tried the <code>while True</code> approach and it doesn’t work that great. There is no feel between pressing keys and the drone following up on that.</p>
+<p>So, I learned something new: <code>pygame</code>, which I’m sure will come in handy soon (spoiler alert: after this I want to use the GameSire controller to fly the Tello. Guess which library is great to speak to gaming consoles!).</p>
+</section>
+</section>
+<section id="video-streaming-snapshots" class="level2">
+<h2 class="anchored" data-anchor-id="video-streaming-snapshots">Video streaming &amp; snapshots</h2>
+<p>There is no autonomous flying without vision, and now is the first time we can have a peek at streaming video and capturing it.</p>
+<p>The same example from above contains the video streaming as well.</p>
+<section id="video-streaming" class="level3">
+<h3 class="anchored" data-anchor-id="video-streaming">Video streaming</h3>
+<section id="setting-up-the-stream" class="level4">
+<h4 class="anchored" data-anchor-id="setting-up-the-stream">Setting Up the Stream</h4>
+<p>First, the code initializes the video stream:</p>
+<div class="sourceCode" id="cb5" style="background: #f1f3f5;"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb5-1"><span class="co" style="color: #5E5E5E;
+background-color: null;
+font-style: inherit;"># Make sure streaming is off before we start</span></span>
+<span id="cb5-2"><span class="va" style="color: #111111;
+background-color: null;
+font-style: inherit;">self</span>.tello.streamoff()</span>
+<span id="cb5-3"><span class="co" style="color: #5E5E5E;
+background-color: null;
+font-style: inherit;"># Then turn streaming on</span></span>
+<span id="cb5-4"><span class="va" style="color: #111111;
+background-color: null;
+font-style: inherit;">self</span>.tello.streamon()</span>
+<span id="cb5-5"></span>
+<span id="cb5-6"><span class="co" style="color: #5E5E5E;
+background-color: null;
+font-style: inherit;"># Get the object that will give us frames</span></span>
+<span id="cb5-7">frame_read <span class="op" style="color: #5E5E5E;
+background-color: null;
+font-style: inherit;">=</span> <span class="va" style="color: #111111;
+background-color: null;
+font-style: inherit;">self</span>.tello.get_frame_read()</span></code></pre></div>
+<p>This pattern of turning streaming off then on again is a good practice to ensure we’re starting with a clean slate. I had it hang a couple of times before applying this trick.</p>
+</section>
+<section id="capturing-and-processing-frames" class="level4">
+<h4 class="anchored" data-anchor-id="capturing-and-processing-frames">Capturing and processing frames</h4>
+<p>In the main loop, the code grabs frames from the drone and processes them:</p>
+<div class="sourceCode" id="cb6" style="background: #f1f3f5;"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb6-1"><span class="co" style="color: #5E5E5E;
+background-color: null;
+font-style: inherit;"># Get the latest frame</span></span>
+<span id="cb6-2">frame <span class="op" style="color: #5E5E5E;
+background-color: null;
+font-style: inherit;">=</span> frame_read.frame</span>
+<span id="cb6-3"></span>
+<span id="cb6-4"><span class="co" style="color: #5E5E5E;
+background-color: null;
+font-style: inherit;"># Add battery information to the frame</span></span>
+<span id="cb6-5">text <span class="op" style="color: #5E5E5E;
+background-color: null;
+font-style: inherit;">=</span> <span class="st" style="color: #20794D;
+background-color: null;
+font-style: inherit;">"Battery: </span><span class="sc" style="color: #5E5E5E;
+background-color: null;
+font-style: inherit;">{}</span><span class="st" style="color: #20794D;
+background-color: null;
+font-style: inherit;">%"</span>.<span class="bu" style="color: null;
+background-color: null;
+font-style: inherit;">format</span>(<span class="va" style="color: #111111;
+background-color: null;
+font-style: inherit;">self</span>.tello.get_battery())</span>
+<span id="cb6-6">cv2.putText(frame, text, (<span class="dv" style="color: #AD0000;
+background-color: null;
+font-style: inherit;">5</span>, <span class="dv" style="color: #AD0000;
+background-color: null;
+font-style: inherit;">720</span> <span class="op" style="color: #5E5E5E;
+background-color: null;
+font-style: inherit;">-</span> <span class="dv" style="color: #AD0000;
+background-color: null;
+font-style: inherit;">5</span>),</span>
+<span id="cb6-7">    cv2.FONT_HERSHEY_SIMPLEX, <span class="dv" style="color: #AD0000;
+background-color: null;
+font-style: inherit;">1</span>, (<span class="dv" style="color: #AD0000;
+background-color: null;
+font-style: inherit;">0</span>, <span class="dv" style="color: #AD0000;
+background-color: null;
+font-style: inherit;">0</span>, <span class="dv" style="color: #AD0000;
+background-color: null;
+font-style: inherit;">255</span>), <span class="dv" style="color: #AD0000;
+background-color: null;
+font-style: inherit;">2</span>)</span></code></pre></div>
+<p>This overlays the battery percentage in red text at the bottom left of the frame. A handy feature when we’re flying!</p>
+</section>
+<section id="frame-transformation" class="level4">
+<h4 class="anchored" data-anchor-id="frame-transformation">Frame transformation</h4>
+<p>The next three lines are needed for displaying the frame correctly in pygame:</p>
+<div class="sourceCode" id="cb7" style="background: #f1f3f5;"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb7-1"><span class="co" style="color: #5E5E5E;
+background-color: null;
+font-style: inherit;"># OpenCV uses BGR, pygame needs RGB</span></span>
+<span id="cb7-2">frame <span class="op" style="color: #5E5E5E;
+background-color: null;
+font-style: inherit;">=</span> cv2.cvtColor(frame, cv2.COLOR_BGR2RGB)</span>
+<span id="cb7-3"></span>
+<span id="cb7-4"><span class="co" style="color: #5E5E5E;
+background-color: null;
+font-style: inherit;"># Rotate the frame 90 degrees</span></span>
+<span id="cb7-5">frame <span class="op" style="color: #5E5E5E;
+background-color: null;
+font-style: inherit;">=</span> np.rot90(frame)</span>
+<span id="cb7-6"></span>
+<span id="cb7-7"><span class="co" style="color: #5E5E5E;
+background-color: null;
+font-style: inherit;"># Flip the frame upside down</span></span>
+<span id="cb7-8">frame <span class="op" style="color: #5E5E5E;
+background-color: null;
+font-style: inherit;">=</span> np.flipud(frame)</span></code></pre></div>
+<p>Why all this transformation? Cameras often capture images in orientations or color formats that aren’t immediately displayable. OpenCV uses BGR color format while pygame expects RGB, and the Tello camera orientation needs adjusting to appear correctly on screen.</p>
+</section>
+<section id="displaying-in-pygame" class="level4">
+<h4 class="anchored" data-anchor-id="displaying-in-pygame">Displaying in pygame</h4>
+<p>Finally, the frame is displayed in the pygame window:</p>
+<div class="sourceCode" id="cb8" style="background: #f1f3f5;"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb8-1"><span class="co" style="color: #5E5E5E;
+background-color: null;
+font-style: inherit;"># Convert numpy array to a pygame surface</span></span>
+<span id="cb8-2">frame <span class="op" style="color: #5E5E5E;
+background-color: null;
+font-style: inherit;">=</span> pygame.surfarray.make_surface(frame)</span>
+<span id="cb8-3"></span>
+<span id="cb8-4"><span class="co" style="color: #5E5E5E;
+background-color: null;
+font-style: inherit;"># Draw the surface to the screen</span></span>
+<span id="cb8-5"><span class="va" style="color: #111111;
+background-color: null;
+font-style: inherit;">self</span>.screen.blit(frame, (<span class="dv" style="color: #AD0000;
+background-color: null;
+font-style: inherit;">0</span>, <span class="dv" style="color: #AD0000;
+background-color: null;
+font-style: inherit;">0</span>))</span>
+<span id="cb8-6"></span>
+<span id="cb8-7"><span class="co" style="color: #5E5E5E;
+background-color: null;
+font-style: inherit;"># Update the display</span></span>
+<span id="cb8-8">pygame.display.update()</span></code></pre></div>
+<p>This process happens every frame (120 times per second with the default settings), creating a smooth video feed.</p>
+</section>
+</section>
+<section id="video-snapshots" class="level3">
+<h3 class="anchored" data-anchor-id="video-snapshots">Video snapshots</h3>
+<p>Not included in the example code is the ability to take a snapshot by pressing a key and saving the current frame to disk.</p>
+<p>So let’s add it:</p>
+<section id="first-add-the-necessary-import" class="level4">
+<h4 class="anchored" data-anchor-id="first-add-the-necessary-import">1. First, add the necessary import</h4>
+<p>At the top of the file, make sure we have:</p>
+<div class="sourceCode" id="cb9" style="background: #f1f3f5;"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb9-1"><span class="im" style="color: #00769E;
+background-color: null;
+font-style: inherit;">import</span> os</span></code></pre></div>
+</section>
+<section id="create-a-directory-to-store-images" class="level4">
+<h4 class="anchored" data-anchor-id="create-a-directory-to-store-images">2. Create a directory to store images</h4>
+<p>Add this near the beginning of our <code>__init__</code> method:</p>
+<div class="sourceCode" id="cb10" style="background: #f1f3f5;"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb10-1"><span class="co" style="color: #5E5E5E;
+background-color: null;
+font-style: inherit;"># Create a directory to store images if it doesn't exist</span></span>
+<span id="cb10-2"><span class="cf" style="color: #003B4F;
+background-color: null;
+font-weight: bold;
+font-style: inherit;">if</span> <span class="kw" style="color: #003B4F;
+background-color: null;
+font-weight: bold;
+font-style: inherit;">not</span> os.path.exists(<span class="st" style="color: #20794D;
+background-color: null;
+font-style: inherit;">'tello_images'</span>):</span>
+<span id="cb10-3">    os.makedirs(<span class="st" style="color: #20794D;
+background-color: null;
+font-style: inherit;">'tello_images'</span>)</span></code></pre></div>
+</section>
+<section id="add-a-key-handler-for-taking-snapshots" class="level4">
+<h4 class="anchored" data-anchor-id="add-a-key-handler-for-taking-snapshots">3. Add a key handler for taking snapshots</h4>
+<p>In the <code>keyup</code> method, add a case for a new key (I’ll use ‘p’ for “picture”):</p>
+<div class="sourceCode" id="cb11" style="background: #f1f3f5;"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb11-1"><span class="kw" style="color: #003B4F;
+background-color: null;
+font-weight: bold;
+font-style: inherit;">def</span> keyup(<span class="va" style="color: #111111;
+background-color: null;
+font-style: inherit;">self</span>, key):</span>
+<span id="cb11-2">    <span class="co" style="color: #5E5E5E;
+background-color: null;
+font-style: inherit;">""" Update velocities based on key released """</span></span>
+<span id="cb11-3">    <span class="cf" style="color: #003B4F;
+background-color: null;
+font-weight: bold;
+font-style: inherit;">if</span> key <span class="op" style="color: #5E5E5E;
+background-color: null;
+font-style: inherit;">==</span> pygame.K_UP <span class="kw" style="color: #003B4F;
+background-color: null;
+font-weight: bold;
+font-style: inherit;">or</span> key <span class="op" style="color: #5E5E5E;
+background-color: null;
+font-style: inherit;">==</span> pygame.K_DOWN:  <span class="co" style="color: #5E5E5E;
+background-color: null;
+font-style: inherit;"># set zero forward/backward velocity</span></span>
+<span id="cb11-4">        <span class="va" style="color: #111111;
+background-color: null;
+font-style: inherit;">self</span>.for_back_velocity <span class="op" style="color: #5E5E5E;
+background-color: null;
+font-style: inherit;">=</span> <span class="dv" style="color: #AD0000;
+background-color: null;
+font-style: inherit;">0</span></span>
+<span id="cb11-5">    <span class="cf" style="color: #003B4F;
+background-color: null;
+font-weight: bold;
+font-style: inherit;">elif</span> key <span class="op" style="color: #5E5E5E;
+background-color: null;
+font-style: inherit;">==</span> pygame.K_LEFT <span class="kw" style="color: #003B4F;
+background-color: null;
+font-weight: bold;
+font-style: inherit;">or</span> key <span class="op" style="color: #5E5E5E;
+background-color: null;
+font-style: inherit;">==</span> pygame.K_RIGHT:  <span class="co" style="color: #5E5E5E;
+background-color: null;
+font-style: inherit;"># set zero left/right velocity</span></span>
+<span id="cb11-6">        <span class="va" style="color: #111111;
+background-color: null;
+font-style: inherit;">self</span>.left_right_velocity <span class="op" style="color: #5E5E5E;
+background-color: null;
+font-style: inherit;">=</span> <span class="dv" style="color: #AD0000;
+background-color: null;
+font-style: inherit;">0</span></span>
+<span id="cb11-7">    <span class="cf" style="color: #003B4F;
+background-color: null;
+font-weight: bold;
+font-style: inherit;">elif</span> key <span class="op" style="color: #5E5E5E;
+background-color: null;
+font-style: inherit;">==</span> pygame.K_w <span class="kw" style="color: #003B4F;
+background-color: null;
+font-weight: bold;
+font-style: inherit;">or</span> key <span class="op" style="color: #5E5E5E;
+background-color: null;
+font-style: inherit;">==</span> pygame.K_s:  <span class="co" style="color: #5E5E5E;
+background-color: null;
+font-style: inherit;"># set zero up/down velocity</span></span>
+<span id="cb11-8">        <span class="va" style="color: #111111;
+background-color: null;
+font-style: inherit;">self</span>.up_down_velocity <span class="op" style="color: #5E5E5E;
+background-color: null;
+font-style: inherit;">=</span> <span class="dv" style="color: #AD0000;
+background-color: null;
+font-style: inherit;">0</span></span>
+<span id="cb11-9">    <span class="cf" style="color: #003B4F;
+background-color: null;
+font-weight: bold;
+font-style: inherit;">elif</span> key <span class="op" style="color: #5E5E5E;
+background-color: null;
+font-style: inherit;">==</span> pygame.K_a <span class="kw" style="color: #003B4F;
+background-color: null;
+font-weight: bold;
+font-style: inherit;">or</span> key <span class="op" style="color: #5E5E5E;
+background-color: null;
+font-style: inherit;">==</span> pygame.K_d:  <span class="co" style="color: #5E5E5E;
+background-color: null;
+font-style: inherit;"># set zero yaw velocity</span></span>
+<span id="cb11-10">        <span class="va" style="color: #111111;
+background-color: null;
+font-style: inherit;">self</span>.yaw_velocity <span class="op" style="color: #5E5E5E;
+background-color: null;
+font-style: inherit;">=</span> <span class="dv" style="color: #AD0000;
+background-color: null;
+font-style: inherit;">0</span></span>
+<span id="cb11-11">    <span class="cf" style="color: #003B4F;
+background-color: null;
+font-weight: bold;
+font-style: inherit;">elif</span> key <span class="op" style="color: #5E5E5E;
+background-color: null;
+font-style: inherit;">==</span> pygame.K_t:  <span class="co" style="color: #5E5E5E;
+background-color: null;
+font-style: inherit;"># takeoff</span></span>
+<span id="cb11-12">        <span class="va" style="color: #111111;
+background-color: null;
+font-style: inherit;">self</span>.tello.takeoff()</span>
+<span id="cb11-13">        <span class="va" style="color: #111111;
+background-color: null;
+font-style: inherit;">self</span>.send_rc_control <span class="op" style="color: #5E5E5E;
+background-color: null;
+font-style: inherit;">=</span> <span class="va" style="color: #111111;
+background-color: null;
+font-style: inherit;">True</span></span>
+<span id="cb11-14">    <span class="cf" style="color: #003B4F;
+background-color: null;
+font-weight: bold;
+font-style: inherit;">elif</span> key <span class="op" style="color: #5E5E5E;
+background-color: null;
+font-style: inherit;">==</span> pygame.K_l:  <span class="co" style="color: #5E5E5E;
+background-color: null;
+font-style: inherit;"># land</span></span>
+<span id="cb11-15">        <span class="kw" style="color: #003B4F;
+background-color: null;
+font-weight: bold;
+font-style: inherit;">not</span> <span class="va" style="color: #111111;
+background-color: null;
+font-style: inherit;">self</span>.tello.land()</span>
+<span id="cb11-16">        <span class="va" style="color: #111111;
+background-color: null;
+font-style: inherit;">self</span>.send_rc_control <span class="op" style="color: #5E5E5E;
+background-color: null;
+font-style: inherit;">=</span> <span class="va" style="color: #111111;
+background-color: null;
+font-style: inherit;">False</span></span>
+<span id="cb11-17">    <span class="cf" style="color: #003B4F;
+background-color: null;
+font-weight: bold;
+font-style: inherit;">elif</span> key <span class="op" style="color: #5E5E5E;
+background-color: null;
+font-style: inherit;">==</span> pygame.K_p:  <span class="co" style="color: #5E5E5E;
+background-color: null;
+font-style: inherit;"># take a snapshot</span></span>
+<span id="cb11-18">        <span class="va" style="color: #111111;
+background-color: null;
+font-style: inherit;">self</span>.take_snapshot()</span></code></pre></div>
+</section>
+<section id="add-the-snapshot-method" class="level4">
+<h4 class="anchored" data-anchor-id="add-the-snapshot-method">4. Add the snapshot method</h4>
+<p>Add this new method to our <code>FrontEnd</code> class:</p>
+<div class="sourceCode" id="cb12" style="background: #f1f3f5;"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb12-1"><span class="kw" style="color: #003B4F;
+background-color: null;
+font-weight: bold;
+font-style: inherit;">def</span> take_snapshot(<span class="va" style="color: #111111;
+background-color: null;
+font-style: inherit;">self</span>):</span>
+<span id="cb12-2">    <span class="co" style="color: #5E5E5E;
+background-color: null;
+font-style: inherit;">"""</span></span>
+<span id="cb12-3"><span class="co" style="color: #5E5E5E;
+background-color: null;
+font-style: inherit;">    Take a snapshot of the current frame and save it to disk</span></span>
+<span id="cb12-4"><span class="co" style="color: #5E5E5E;
+background-color: null;
+font-style: inherit;">    """</span></span>
+<span id="cb12-5">    <span class="co" style="color: #5E5E5E;
+background-color: null;
+font-style: inherit;"># Get the current frame</span></span>
+<span id="cb12-6">    frame <span class="op" style="color: #5E5E5E;
+background-color: null;
+font-style: inherit;">=</span> <span class="va" style="color: #111111;
+background-color: null;
+font-style: inherit;">self</span>.tello.get_frame_read().frame</span>
+<span id="cb12-7">    </span>
+<span id="cb12-8">    <span class="cf" style="color: #003B4F;
+background-color: null;
+font-weight: bold;
+font-style: inherit;">if</span> frame <span class="kw" style="color: #003B4F;
+background-color: null;
+font-weight: bold;
+font-style: inherit;">is</span> <span class="kw" style="color: #003B4F;
+background-color: null;
+font-weight: bold;
+font-style: inherit;">not</span> <span class="va" style="color: #111111;
+background-color: null;
+font-style: inherit;">None</span>:</span>
+<span id="cb12-9">        <span class="co" style="color: #5E5E5E;
+background-color: null;
+font-style: inherit;"># Create a filename with timestamp</span></span>
+<span id="cb12-10">        timestamp <span class="op" style="color: #5E5E5E;
+background-color: null;
+font-style: inherit;">=</span> time.strftime(<span class="st" style="color: #20794D;
+background-color: null;
+font-style: inherit;">"%Y%m</span><span class="sc" style="color: #5E5E5E;
+background-color: null;
+font-style: inherit;">%d</span><span class="st" style="color: #20794D;
+background-color: null;
+font-style: inherit;">-%H%M%S"</span>)</span>
+<span id="cb12-11">        filename <span class="op" style="color: #5E5E5E;
+background-color: null;
+font-style: inherit;">=</span> <span class="ss" style="color: #20794D;
+background-color: null;
+font-style: inherit;">f"tello_images/tello_snapshot_</span><span class="sc" style="color: #5E5E5E;
+background-color: null;
+font-style: inherit;">{</span>timestamp<span class="sc" style="color: #5E5E5E;
+background-color: null;
+font-style: inherit;">}</span><span class="ss" style="color: #20794D;
+background-color: null;
+font-style: inherit;">.jpg"</span></span>
+<span id="cb12-12">        </span>
+<span id="cb12-13">        <span class="co" style="color: #5E5E5E;
+background-color: null;
+font-style: inherit;"># Save the image - note we save the original frame before any transformations</span></span>
+<span id="cb12-14">        cv2.imwrite(filename, frame)</span>
+<span id="cb12-15">        </span>
+<span id="cb12-16">        <span class="bu" style="color: null;
+background-color: null;
+font-style: inherit;">print</span>(<span class="ss" style="color: #20794D;
+background-color: null;
+font-style: inherit;">f"Snapshot saved: </span><span class="sc" style="color: #5E5E5E;
+background-color: null;
+font-style: inherit;">{</span>filename<span class="sc" style="color: #5E5E5E;
+background-color: null;
+font-style: inherit;">}</span><span class="ss" style="color: #20794D;
+background-color: null;
+font-style: inherit;">"</span>)</span></code></pre></div>
+<p>The resulting code can be found <a href="https://github.com/pors/tello-play/blob/main/manual-control-pygame.py">here</a>.</p>
+</section>
+</section>
+<section id="lets-try-it-out" class="level3">
+<h3 class="anchored" data-anchor-id="lets-try-it-out">Let’s try it out!</h3>
+<p>It all works just fine, here are some low res snapshots I made:</p>
+<div class="quarto-layout-panel" data-layout-ncol="3">
+<div class="quarto-layout-row">
+<div class="quarto-layout-cell" style="flex-basis: 33.3%;justify-content: center;">
+<p><img src="https://dronelab.dev/posts/key-navigation-video-snapshots/snapshots/image-1745142617.967533.jpg" class="img-fluid" width="250"></p>
+</div>
+<div class="quarto-layout-cell" style="flex-basis: 33.3%;justify-content: center;">
+<p><img src="https://dronelab.dev/posts/key-navigation-video-snapshots/snapshots/image-1745142635.818627.jpg" class="img-fluid" width="250"></p>
+</div>
+<div class="quarto-layout-cell" style="flex-basis: 33.3%;justify-content: center;">
+<p><img src="https://dronelab.dev/posts/key-navigation-video-snapshots/snapshots/image-1745142638.978236.jpg" class="img-fluid" width="250"></p>
+</div>
+</div>
+<div class="quarto-layout-row">
+<div class="quarto-layout-cell" style="flex-basis: 33.3%;justify-content: center;">
+<p><img src="https://dronelab.dev/posts/key-navigation-video-snapshots/snapshots/image-1745142643.129198.jpg" class="img-fluid" width="250"></p>
+</div>
+<div class="quarto-layout-cell" style="flex-basis: 33.3%;justify-content: center;">
+<p><img src="https://dronelab.dev/posts/key-navigation-video-snapshots/snapshots/image-1745142653.1736279.jpg" class="img-fluid" width="250"></p>
+</div>
+<div class="quarto-layout-cell" style="flex-basis: 33.3%;justify-content: center;">
+<p><img src="https://dronelab.dev/posts/key-navigation-video-snapshots/snapshots/image-1745142683.295296.jpg" class="img-fluid" width="250"></p>
+</div>
+</div>
+</div>
+<p>Navigating with a keyboard is a disaster, so….</p>
+</section>
+</section>
+<section id="whats-next" class="level2">
+<h2 class="anchored" data-anchor-id="whats-next">What’s next</h2>
+<p>To improve navigation we are going to hook up the GameSir 1Td, read on...</p>
+<div class="callout callout-style-simple callout-note no-icon">
+<div class="callout-body d-flex">
+<div class="callout-icon-container">
+<i class="callout-icon no-icon"></i>
+</div>
+<div class="callout-body-container">
+<div style="text-align: center;">
+<p><strong>Series: <a href="../../series/">Code, Fly &amp; AI</a></strong></p>
+</div>
+<div style="display: flex; justify-content: space-between; margin-top: 0.5em;">
+<div>
+<a href="../../posts/crash-the-tello/">← Previous: Crash the Tello</a>
+</div>
+<div>
+
+</div>
+</div>
+</div>
+</div>
+</div>
+
+
+</section>
+
+ ]]></description>
+  <category>drone</category>
+  <category>code</category>
+  <guid>https://dronelab.dev/posts/key-navigation-video-snapshots/</guid>
+  <pubDate>Sat, 26 Apr 2025 21:00:00 GMT</pubDate>
+  <media:content url="https://dronelab.dev/posts/key-navigation-video-snapshots/snapshots.png" medium="image" type="image/png" height="91" width="144"/>
+</item>
 <item>
   <title>I’m a Pilot!</title>
   <dc:creator>Mark Pors</dc:creator>
@@ -98,12 +837,23 @@ TL;DR
 <li>Explained basic drone movements clearly (throttle, yaw, pitch, roll).</li>
 <li>Introduced DJI’s Python SDK for coding drone flight, setting the stage for further explorations with code.</li>
 </ul>
+<div style="text-align: center;">
+<p><strong>Series: <a href="../../series/">Code, Fly &amp; AI</a></strong></p>
+</div>
+<div style="display: flex; justify-content: space-between; margin-top: 0.5em;">
+<div>
+<a href="../../posts/enter-the-tello/">← Previous: Enter the Tello</a>
+</div>
+<div>
+<a href="../../posts/key-navigation-video-snapshots/">Next: Key navigation &amp; Video snapshots →</a>
+</div>
+</div>
 </div>
 </div>
 </div>
 <section id="unboxed" class="level2">
 <h2 class="anchored" data-anchor-id="unboxed">Unboxed</h2>
-<p>Now that the drone is out of the box we’re gonna take it for a spin (and yes it crashed). First with the phone app, then with code.</p>
+<p>Now that the drone is out of the box, we’re gonna take it for a spin (and yes it crashed). First with the phone app, then with code.</p>
 <div class="quarto-figure quarto-figure-center">
 <figure class="figure">
 <p><img src="https://dronelab.dev/posts/crash-the-tello/crashed-TT.png" class="img-fluid figure-img"></p>
@@ -150,7 +900,7 @@ Note
 </tr>
 <tr class="odd">
 <td>pitch</td>
-<td>moves the drone forward or backwards by varying front and back propeller speeds</td>
+<td>moves the drone forward or backward by changing speeds between front and back propellers</td>
 </tr>
 <tr class="even">
 <td>roll</td>
@@ -159,7 +909,7 @@ Note
 </tbody>
 </table>
 <p><br> This video explains very clearly how it works: </p><div class="quarto-video ratio ratio-16x9"><iframe data-external="1" src="https://www.youtube.com/embed/C0KBu2ihp-s" title="" frameborder="0" allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture" allowfullscreen=""></iframe></div><p></p>
-<p>The Tello doesn’t come with a controller, we control it with the Tello app. I used the Tello app for iPhone. This app hasn’t been updated for a long time and unfortunately it is useless as it crashes all the time. When the app crashes the drone keeps on hovering in the air, so this first crash is just a software crash.</p>
+<p>The Tello doesn’t come with a controller, we fly it through the Tello app. I used the Tello app for iPhone. This app hasn’t been updated for a long time and unfortunately it is useless as it crashes all the time. When the app crashes the drone keeps on hovering in the air, so this first crash is just a software crash.</p>
 <div class="callout callout-style-default callout-tip callout-titled">
 <div class="callout-header d-flex align-content-center">
 <div class="callout-icon-container">
@@ -183,13 +933,13 @@ Tip
 </div>
 </div>
 <div class="callout-body-container callout-body">
-<p>To really enjoy flying the TT manually you can get a controller that is customized for the Tello: the <a href="https://gamesir.com/pages/tello-tutorial">GameSir T1d</a>. I got one and it works out of the box, also with the TelloFPV app.</p>
+<p>To really enjoy flying the TT manually you can get a controller that is customized for the Tello: the <a href="https://gamesir.com/pages/tello-tutorial">GameSir T1d</a>. I got one, and it works straight out of the box — even with the TelloFPV app.</p>
 </div>
 </div>
 <section id="beware-of-the-ceiling-effect" class="level3">
 <h3 class="anchored" data-anchor-id="beware-of-the-ceiling-effect">Beware of the ceiling effect</h3>
-<p>While flying the drone around a bit in my office, I went up a bit too high and the drone crashed when it came near the ceiling. This phenomenon even has a name and is called the “ceiling effect.” Basically, the drone gets <a href="https://aviation.stackexchange.com/questions/59128/what-disadvantages-does-flying-a-drone-close-under-a-ceiling-have">sucked up to the ceiling</a> because there is not enough air to push down through the propellors.</p>
-<p>OK, time to start the real fun: control the drone with code.</p>
+<p>While flying the drone around a bit in my office, I went up a bit too high and the drone crashed when it came near the ceiling. This phenomenon even has a name and is called the “ceiling effect.” Basically, the drone gets <a href="https://aviation.stackexchange.com/questions/59128/what-disadvantages-does-flying-a-drone-close-under-a-ceiling-have">sucked up to the ceiling</a> because there is not enough air to push down through the propellers.</p>
+<p>Alright, now for the real fun — controlling the drone with code.</p>
 </section>
 </section>
 <section id="the-tello-python-sdk" class="level2">
@@ -638,6 +1388,26 @@ font-style: inherit;">connect</span>()</span></code></pre></div>
 <section id="whats-next" class="level2">
 <h2 class="anchored" data-anchor-id="whats-next">What’s Next</h2>
 <p>In the next episode I’m going to implement keyboard control and stream video frames to the PC and save them on disk on demand (“inspired” by Murtaza <sup>1</sup>).</p>
+<div class="callout callout-style-simple callout-note no-icon">
+<div class="callout-body d-flex">
+<div class="callout-icon-container">
+<i class="callout-icon no-icon"></i>
+</div>
+<div class="callout-body-container">
+<div style="text-align: center;">
+<p><strong>Series: <a href="../../series/">Code, Fly &amp; AI</a></strong></p>
+</div>
+<div style="display: flex; justify-content: space-between; margin-top: 0.5em;">
+<div>
+<a href="../../posts/enter-the-tello/">← Previous: Enter the Tello</a>
+</div>
+<div>
+<a href="../../posts/key-navigation-video-snapshots/">Next: Key navigation &amp; Video snapshots →</a>
+</div>
+</div>
+</div>
+</div>
+</div>
 
 
 </section>
@@ -689,6 +1459,17 @@ TL;DR
 <li>Chose the DJI RoboMaster TT as a beginner-friendly, programmable drone</li>
 <li>Next steps: experiment with the RoboMaster TT, both manually and with code</li>
 </ul>
+<div style="text-align: center;">
+<p><strong>Series: <a href="../../series/">Code, Fly &amp; AI</a></strong></p>
+</div>
+<div style="display: flex; justify-content: space-between; margin-top: 0.5em;">
+<div>
+
+</div>
+<div>
+<a href="../../posts/crash-the-tello/">Next: Crash the Tello →</a>
+</div>
+</div>
 </div>
 </div>
 </div>
@@ -733,6 +1514,26 @@ TL;DR
 <section id="whats-next" class="level2">
 <h2 class="anchored" data-anchor-id="whats-next">What’s next?</h2>
 <p>In the next episode I will play with the RoboMaster TT, both with and without code to control it. It includes different ways to crash it. <a href="../../posts/crash-the-tello">Read on…</a></p>
+<div class="callout callout-style-simple callout-note no-icon">
+<div class="callout-body d-flex">
+<div class="callout-icon-container">
+<i class="callout-icon no-icon"></i>
+</div>
+<div class="callout-body-container">
+<div style="text-align: center;">
+<p><strong>Series: <a href="../../series/">Code, Fly &amp; AI</a></strong></p>
+</div>
+<div style="display: flex; justify-content: space-between; margin-top: 0.5em;">
+<div>
+
+</div>
+<div>
+<a href="../../posts/crash-the-tello/">Next: Crash the Tello →</a>
+</div>
+</div>
+</div>
+</div>
+</div>
 
 
 </section>

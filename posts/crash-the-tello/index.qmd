@@ -7,6 +7,8 @@ image: "crashed-TT2.png"
 description: "Learn how to fly and program the DJI Tello (RoboMaster TT) drone, avoid common beginner crashes, and get started with Python coding using the Tello SDK."
 description-meta: "Step-by-step guide to flying and coding the DJI Tello (RoboMaster TT) drone. Covers manual flight tips, common pitfalls, and Python SDK programming for beginners."
 keywords: "DJI Tello, RoboMaster TT, drone programming, Tello SDK, Python drone code, beginner drone guide, drone crashes, TelloFPV, GameSir T1d, autonomous drone, drone tutorial"
+series: "Code, Fly & AI"
+order: 2
 ---
 
 ::: {.callout-tip collapse="true"}
@@ -15,6 +17,15 @@ keywords: "DJI Tello, RoboMaster TT, drone programming, Tello SDK, Python drone 
 * Recommend using TelloFPV app and GameSir T1d controller for smoother manual flight experiences.
 * Explained basic drone movements clearly (throttle, yaw, pitch, roll).
 * Introduced DJI’s Python SDK for coding drone flight, setting the stage for further explorations with code.
+
+<div style="text-align: center;">
+<strong>Series: <a href="/series/">Code, Fly & AI</a></strong>
+</div>
+
+<div style="display: flex; justify-content: space-between; margin-top: 0.5em;">
+  <div>[← Previous: Enter the Tello](/posts/enter-the-tello/)</div>
+  <div>[Next: Key navigation & Video snapshots →](/posts/key-navigation-video-snapshots/)</div>
+</div>
 :::
 
 ## Unboxed
@@ -268,5 +279,17 @@ I want to thank [Murtaza Hassan](https://github.com/murtazahassan) for getting m
 ## What's Next
 
 In the next episode I'm going to implement keyboard control and stream video frames to the PC and save them on disk on demand ("inspired" by Murtaza [^1]).
+
+::: {.callout-note appearance="minimal"}
+<div style="text-align: center;">
+<strong>Series: <a href="/series/">Code, Fly & AI</a></strong>
+</div>
+
+<div style="display: flex; justify-content: space-between; margin-top: 0.5em;">
+  <div>[← Previous: Enter the Tello](/posts/enter-the-tello/)</div>
+  <div>[Next: Key navigation & Video snapshots →](/posts/key-navigation-video-snapshots/)</div>
+</div>
+:::
+
 
 [^1]: Borrowed is the real word here. No: stolen!

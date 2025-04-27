@@ -7,7 +7,8 @@ image: tt.jpg
 description: "Discover how to start building an autonomous scouting drone for hiking using the DJI RoboMaster TT (Tello Talent). Follow a beginner's journey into drones, coding, and computer vision."
 description-meta: "Beginner's guide to programmable drones: Learn how to use the DJI RoboMaster TT (Tello Talent) for autonomous hiking scouts, coding, and computer vision experiments."
 keywords: "DJI RoboMaster TT, Tello Talent, programmable drone, autonomous drone, hiking drone, beginner drone project, computer vision, drone coding, dronelab"
-
+series: "Code, Fly & AI"
+order: 1
 ---
 
 ::: {.callout-tip collapse="true"}
@@ -18,6 +19,16 @@ keywords: "DJI RoboMaster TT, Tello Talent, programmable drone, autonomous drone
 * Resisted the urge to over-invest at first (just bought the domain dronelab.dev)
 * Chose the DJI RoboMaster TT as a beginner-friendly, programmable drone
 * Next steps: experiment with the RoboMaster TT, both manually and with code
+
+
+<div style="text-align: center;">
+<strong>Series: <a href="/series/">Code, Fly & AI</a></strong>
+</div>
+
+<div style="display: flex; justify-content: space-between; margin-top: 0.5em;">
+  <div></div>
+  <div>[Next: Crash the Tello →](/posts/crash-the-tello/)</div>
+</div>
 :::
 
 ## Combine the stuff you like
@@ -65,3 +76,15 @@ In the next episode I will play with the RoboMaster TT, both with and without co
 [^2]: I didn't really stop myself there, I also created a logo. Technically ChatGPT did: ![dronelab](logo_high.png)
 
 [^3]: 2018, also the last time I blogged something: [decentralized.blog](https://decentralized.blog/).
+
+
+::: {.callout-note appearance="minimal"}
+<div style="text-align: center;">
+<strong>Series: <a href="/series/">Code, Fly & AI</a></strong>
+</div>
+
+<div style="display: flex; justify-content: space-between; margin-top: 0.5em;">
+  <div></div>
+  <div>[Next: Crash the Tello →](/posts/crash-the-tello/)</div>
+</div>
+:::
