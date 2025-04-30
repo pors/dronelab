@@ -1,0 +1,397 @@
+---
+title: "Game controller FTW"
+author: "Mark Pors"
+date: "2025-05-10"
+categories: [drone, code]
+image: GameSir-T1d.png
+series: "Code, Fly & AI"
+order: 4
+draft: true
+---
+
+@@@ replace draft:true with SEO headings
+
+::: {.callout-tip collapse="true"}
+## TL;DR
+@@@ Write a tight, high-signal TL;DR summarizing the key takeaways from this post. Focus on what the reader *learns* or *does*, not just what happens. Use bullet points, be clear, concise, and engaging. Reader might use this to decide to continue reading.
+:::
+
+@@@ Add navigation in playlist https://chatgpt.com/c/680b6d25-08c0-8011-ae4d-6981194568bb (bottom of chat)
+
+![GameSir T1d controller](GameSir-T1d.png)
+
+## Hook up the GameSir T1d
+
+Initially this seems like a no-brainer, and I was surprised why no-one else hadn't done it yet: replace the keyboard strokes with signals from the GameSir T1d controller. It turns out that this controller was specifically adapted to connect ONLY through the Tello app.
+
+Normally this is enough to connect to a game controller from a python script:
+
+```python
+import pygame
+
+pygame.init()
+pygame.joystick.init()
+
+# Check for connected controllers
+joystick_count = pygame.joystick.get_count()
+
+if joystick_count == 0:
+    print("No controller detected. Please connect your GameSir T1d controller.")
+    return None
+
+# Initialize the first controller detected
+joystick = pygame.joystick.Joystick(0)
+joystick.init()
+```
+
+In this case the output was:
+
+```txt
+No controller detected. Please connect your GameSir T1d controller.
+```
+
+Oh oh, problem!
+
+## Hack it!
+
+After some searching and LLM'ing it became clear that there is a way to make it work. **Pfew!** For Internet historians, here is the evolution of the hack:
+
+1. https://cloud.tencent.com/developer/article/1756298 (python 2)
+2. https://github.com/Diallomm/hack_GamesirT1d/tree/main (python 3)
+3. https://gist.github.com/ElishaAz/a83dfa8f2d53497d7d1d0bca03bfced2 (using bleak)
+4. https://gist.github.com/Cacti-Master/89f0f397a13f28ada046ec42477bc9fd (refactor)
+
+## Version 5
+
+I'm honored to step in the footsteps of these four hackers and try to get iteration five to work!
+
+First we need to get the controller to connect. Simply pairing via Bluetooth won't work. 
+
+The GameSir T1d gets into pairing mode by simply powering it on. The four white power LEDs start blinking when trying to connect. At that state we run the script below.
+
+::: {.panel-tabset}
+## BLE Controller Connection Preview
+
+```python
+import asyncio
+from bleak import BleakClient, BleakScanner
+
+# The name our controller should broadcast as
+CONTROLLER_NAME = "Gamesir-T1d"
+
+async def main():
+    print("Starting BLE scan for GameSir-T1d controller...")
+```
+
+## Full script
+
+```python
+import asyncio
+from bleak import BleakClient, BleakScanner
+
+# The name our controller should broadcast as
+CONTROLLER_NAME = "Gamesir-T1d"
+
+async def main():
+    print("Starting BLE scan for GameSir-T1d controller...")
+
+    # First, scan for all available BLE devices
+    print("Scanning for BLE devices...")
+    devices = await BleakScanner.discover()
+
+    # Print all found devices to help with debugging
+    print(f"Found {len(devices)} Bluetooth devices:")
+    for i, device in enumerate(devices):
+        print(f"{i+1}. Name: {device.name}, Address: {device.address}")
+
+    # Try to find our controller
+    target_device = None
+    for device in devices:
+        if device.name and CONTROLLER_NAME.lower() in device.name.lower():
+            target_device = device
+            print(f"Found controller: {device.name}, Address: {device.address}")
+            break
+
+    if not target_device:
+        print(f"No device found with name containing '{CONTROLLER_NAME}'")
+        print("Is the controller turned on and in pairing mode?")
+        return
+
+    # Try to connect to the controller
+    print(f"Attempting to connect to {target_device.name}...")
+    try:
+        async with BleakClient(target_device.address, timeout=10.0) as client:
+            if client.is_connected:
+                print(f"Successfully connected to {target_device.name}!")
+
+                # List available services and characteristics
+                print("\nAvailable services and characteristics:")
+                for service in client.services:
+                    print(f"Service: {service.uuid}")
+                    for char in service.characteristics:
+                        print(f"  Characteristic: {char.uuid}")
+                        print(f"    Properties: {char.properties}")
+
+                # Wait a moment so we can see the connection is established
+                print("\nConnection successful. Press Ctrl+C to exit...")
+                await asyncio.sleep(10)
+            else:
+                print("Failed to connect")
+    except Exception as e:
+        print(f"Error connecting to device: {e}")
+
+
+if __name__ == "__main__":
+    # Make sure controller is in pairing mode before running this
+    print("Make sure the GameSir-T1d controller is turned on and in pairing mode.")
+    print("(Typically hold power button until LEDs flash rapidly)")
+    input("Press Enter to start scanning...")
+
+    # Run the async main function
+    asyncio.run(main())
+```
+
+## Output
+
+```text
+Make sure the GameSir-T1d controller is turned on and in pairing mode.
+(Typically hold power button until LEDs flash rapidly)
+Press Enter to start scanning...
+Starting BLE scan for GameSir-T1d controller...
+Scanning for BLE devices...
+Found 11 Bluetooth devices:
+1. Name: Gamesir-T1d-39BD, Address: FDF00BC3-1DEE-1525-0B34-7E2D3391C401
+2. Name: None, Address: 3A2C8191-D3F5-F471-BC81-75AFE2DB0D60
+3. Name: None, Address: 772F5433-AAE9-D456-209C-DEA32D192E10
+...
+11. Name: None, Address: 80334171-1943-B3DE-7DDD-773753B852C3
+Found controller: Gamesir-T1d-39BD, Address: FDF00BC3-1DEE-1525-0B34-7E2D3391C401
+Attempting to connect to Gamesir-T1d-39BD...
+Successfully connected to Gamesir-T1d-39BD!
+
+Available services and characteristics:
+Service: 00008650-0000-1000-8000-00805f9b34fb
+  Characteristic: 00008651-0000-1000-8000-00805f9b34fb
+    Properties: ['read', 'write', 'notify', 'indicate']
+  Characteristic: 00008655-0000-1000-8000-00805f9b34fb
+    Properties: ['read', 'write', 'notify', 'indicate']
+  Characteristic: 0000865f-0000-1000-8000-00805f9b34fb
+    Properties: ['read', 'write', 'notify', 'indicate']
+Service: 0000180a-0000-1000-8000-00805f9b34fb
+  Characteristic: 00002a24-0000-1000-8000-00805f9b34fb
+    Properties: ['read']
+  Characteristic: 00002a25-0000-1000-8000-00805f9b34fb
+    Properties: ['read']
+  Characteristic: 00002a27-0000-1000-8000-00805f9b34fb
+    Properties: ['read']
+  Characteristic: 00002a26-0000-1000-8000-00805f9b34fb
+    Properties: ['read']
+  Characteristic: 00002a50-0000-1000-8000-00805f9b34fb
+    Properties: ['read']
+
+Connection successful. Press Ctrl+C to exit...
+```
+
+:::
+
+If you have inspected the output tab, you see we succeeded! Yay, let's move on.
+
+## Read the controller state
+
+
+
+::: {.panel-tabset}
+## Read Controller State Preview
+
+```python
+import asyncio
+from bleak import BleakClient, BleakScanner
+
+# The exact name our controller showed up as
+CONTROLLER_NAME = "Gamesir-T1d-39BD"
+# The characteristic we want to read
+CHARACTERISTIC_UUID = "00008651-0000-1000-8000-00805f9b34fb"
+
+class GameSirT1d:
+```
+
+## Full script
+
+```python
+import asyncio
+from bleak import BleakClient, BleakScanner
+
+# The exact name our controller showed up as
+CONTROLLER_NAME = "Gamesir-T1d-39BD"
+# The characteristic we want to read
+CHARACTERISTIC_UUID = "00008651-0000-1000-8000-00805f9b34fb"
+
+class GameSirT1d:
+    def __init__(self):
+        # Joystick values (0-1023, with 512 as center)
+        self.lx = 512
+        self.ly = 512
+        self.rx = 512
+        self.ry = 512
+        
+        # Analog triggers (0-255)
+        self.l2 = 0
+        self.r2 = 0
+        
+        # Digital buttons (0 or 1)
+        self.a = 0
+        self.b = 0
+        self.x = 0
+        self.y = 0
+        self.l1 = 0
+        self.r1 = 0
+        self.select = 0  # C1 in original code
+        self.start = 0   # C2 in original code
+        self.menu = 0
+        
+        # D-pad
+        self.dpad_up = 0
+        self.dpad_down = 0
+        self.dpad_left = 0
+        self.dpad_right = 0
+        
+        # Connection state
+        self.connected = False
+        self._client = None
+    
+    def parse_data(self, data):
+        """Parse the raw data from the controller"""
+        if len(data) < 12:
+            return False
+        
+        # Parse joysticks
+        self.lx = ((data[2]) << 2) | (data[3] >> 6)
+        self.ly = ((data[3] & 0x3f) << 4) + (data[4] >> 4)
+        self.rx = ((data[4] & 0xf) << 6) | (data[5] >> 2)
+        self.ry = ((data[5] & 0x3) << 8) + ((data[6]))
+        
+        # Parse triggers
+        self.l2 = data[7]
+        self.r2 = data[8]
+        
+        # Parse buttons from byte 9
+        buttons = data[9]
+        self.a = int(bool(buttons & 0x01))
+        self.b = int(bool(buttons & 0x02))
+        self.menu = int(bool(buttons & 0x04))
+        self.x = int(bool(buttons & 0x08))
+        self.y = int(bool(buttons & 0x10))
+        self.l1 = int(bool(buttons & 0x40))
+        self.r1 = int(bool(buttons & 0x80))
+        
+        # Parse more buttons from byte 10
+        buttons2 = data[10]
+        self.select = int(bool(buttons2 & 0x04))  # C1
+        self.start = int(bool(buttons2 & 0x08))   # C2
+        
+        # Parse D-pad from byte 11
+        dpad = data[11]
+        self.dpad_up = int(dpad == 0x01)
+        self.dpad_right = int(dpad == 0x03)
+        self.dpad_down = int(dpad == 0x05)
+        self.dpad_left = int(dpad == 0x07)
+        
+        return True
+    
+    def __str__(self):
+        """Return a string representation of the controller state"""
+        return (
+            f"Joysticks: LX={self.lx}, LY={self.ly}, RX={self.rx}, RY={self.ry}\n"
+            f"Triggers: L2={self.l2}, R2={self.r2}\n"
+            f"Buttons: A={self.a}, B={self.b}, X={self.x}, Y={self.y}, "
+            f"L1={self.l1}, R1={self.r1}, Select={self.select}, Start={self.start}, Menu={self.menu}\n"
+            f"D-pad: Up={self.dpad_up}, Down={self.dpad_down}, Left={self.dpad_left}, Right={self.dpad_right}"
+        )
+    
+    # Add methods to get normalized values (-1.0 to 1.0) for joysticks
+    def get_left_stick(self):
+        """Get normalized values for left stick (-1.0 to 1.0)"""
+        x = (self.lx - 512) / 512  # -1.0 to 1.0
+        y = (self.ly - 512) / 512  # -1.0 to 1.0
+        return (x, y)
+    
+    def get_right_stick(self):
+        """Get normalized values for right stick (-1.0 to 1.0)"""
+        x = (self.rx - 512) / 512  # -1.0 to 1.0
+        y = (self.ry - 512) / 512  # -1.0 to 1.0
+        return (x, y)
+
+async def main():
+    controller = GameSirT1d()
+    
+    print(f"Scanning for {CONTROLLER_NAME}...")
+    device = await BleakScanner.find_device_by_name(CONTROLLER_NAME)
+    
+    if not device:
+        print(f"Could not find {CONTROLLER_NAME}. Is it turned on?")
+        return
+    
+    print(f"Found {CONTROLLER_NAME} at {device.address}")
+    print("Connecting...")
+    
+    try:
+        async with BleakClient(device.address) as client:
+            print("Connected!")
+            controller.connected = True
+            controller._client = client
+            
+            try:
+                while controller.connected:
+                    # Read current state
+                    data = await client.read_gatt_char(CHARACTERISTIC_UUID)
+                    
+                    # Parse the data
+                    if controller.parse_data(data):
+                        # Get normalized stick values for easier use
+                        left_x, left_y = controller.get_left_stick()
+                        right_x, right_y = controller.get_right_stick()
+                        
+                        # Clear the line and print current state
+                        print(f"\rLeft: ({left_x:.2f}, {left_y:.2f}) Right: ({right_x:.2f}, {right_y:.2f}) | "
+                              f"A:{controller.a} B:{controller.b} X:{controller.x} Y:{controller.y} "
+                              f"L1:{controller.l1} R1:{controller.r1} L2:{controller.l2} R2:{controller.r2}", end="")
+                    
+                    # Wait a bit before next reading
+                    await asyncio.sleep(0.05)  # 20Hz polling rate
+                    
+            except KeyboardInterrupt:
+                print("\nStopping...")
+                controller.connected = False
+    
+    except Exception as e:
+        print(f"\nError: {e}")
+        controller.connected = False
+
+if __name__ == "__main__":
+    print("GameSir T1d Controller Test")
+    print("Move joysticks and press buttons to see values")
+    print("Press Ctrl+C to exit")
+    
+    asyncio.run(main())
+```
+
+## Output
+
+```txt
+GameSir T1d Controller Test
+Move joysticks and press buttons to see values
+Press Ctrl+C to exit
+Scanning for Gamesir-T1d-39BD...
+Found Gamesir-T1d-39BD at FDF00BC3-1DEE-1525-0B34-7E2D3391C401
+Connecting...
+Connected!
+Left: (0.05, 0.03) Right: (-0.10, -0.13) | A:1 B:0 X:0 Y:0 L1:0 R1:0 L2:3 R2:155
+Error: disconnected
+```
+
+:::
+
+
+
+@@@ Here: https://claude.ai/chat/b8f8640e-29be-4ea2-bdd3-11d0d5a02156 (open in CLaude chrome)
+
