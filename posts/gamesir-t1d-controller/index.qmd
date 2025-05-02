@@ -1,30 +1,43 @@
 ---
-title: "Game controller FTW"
+title: "GameSir T1d controller & pygame"
 author: "Mark Pors"
-date: "2025-05-10"
+date: "2025-05-02"
 categories: [drone, code]
 image: GameSir-T1d.png
 series: "Code, Fly & AI"
 order: 4
-draft: true
+description: "Learn how to connect and use the GameSir T1d controller with your computer for Tello drone control using Python, BLE hacking, and a pygame-compatible wrapper. Step-by-step guide with working code."
+meta-description: "Step-by-step tutorial to connect the GameSir T1d controller to your computer via Bluetooth, read all inputs using Python and bleak, and create a pygame-compatible interface for precise Tello drone control."
+keywords: [GameSir T1d, Tello drone, BLE, Bluetooth, Python, pygame, controller hacking, bleak, drone control, game controller, DIY, tutorial]
 ---
-
-@@@ replace draft:true with SEO headings
 
 ::: {.callout-tip collapse="true"}
 ## TL;DR
-@@@ Write a tight, high-signal TL;DR summarizing the key takeaways from this post. Focus on what the reader *learns* or *does*, not just what happens. Use bullet points, be clear, concise, and engaging. Reader might use this to decide to continue reading.
+* Connect a GameSir T1d controller to your computer via Bluetooth using a BLE hacking approach (the controller normally only works with the Tello app)
+* Parse controller input data for all buttons, joysticks, and triggers using Python and bleak
+* Create a pygame-compatible wrapper that lets you use the controller in any Python application
+* Control your Tello drone with precise analog joysticks instead of keyboard keys
+* Complete working code provided with step-by-step explanation of the controller hacking process
+
+<div style="text-align: center;">
+<strong>Series: <a href="/series/">Code, Fly & AI</a></strong>
+</div>
+
+<div style="display: flex; justify-content: space-between; margin-top: 0.5em;">
+  <div>[← Previous: Key navigation & video snapshots](/posts/key-navigation-video-snapshots/)</div>
+</div>
+
 :::
 
-@@@ Add navigation in playlist https://chatgpt.com/c/680b6d25-08c0-8011-ae4d-6981194568bb (bottom of chat)
+Controlling a drone with a keyboard is not great, neither is using the touch-screen of a phone. That's why I bought the recommended controller for the Tello: the [GameSir T1d](https://www.manualpdf.in/dji/tello-gamesir-t1d/manual).
 
 ![GameSir T1d controller](GameSir-T1d.png)
 
 ## Hook up the GameSir T1d
 
-Initially this seems like a no-brainer, and I was surprised why no-one else hadn't done it yet: replace the keyboard strokes with signals from the GameSir T1d controller. It turns out that this controller was specifically adapted to connect ONLY through the Tello app.
+Initially this seemed like a no-brainer, and I was surprised why no-one else hadn't done it yet: replace the keyboard strokes with signals from the GameSir T1d controller. It turns out that this controller was specifically modified to connect ONLY through the Tello app.
 
-Normally this is enough to connect to a game controller from a python script:
+Normally the code below is enough to connect to a game controller from a python script:
 
 ```python
 import pygame
@@ -44,7 +57,7 @@ joystick = pygame.joystick.Joystick(0)
 joystick.init()
 ```
 
-In this case the output was:
+In our case the output was:
 
 ```txt
 No controller detected. Please connect your GameSir T1d controller.
@@ -54,20 +67,28 @@ Oh oh, problem!
 
 ## Hack it!
 
-After some searching and LLM'ing it became clear that there is a way to make it work. **Pfew!** For Internet historians, here is the evolution of the hack:
+After some searching and LLM'ing it became clear that there *is* a way to make it work. 
 
-1. https://cloud.tencent.com/developer/article/1756298 (python 2)
-2. https://github.com/Diallomm/hack_GamesirT1d/tree/main (python 3)
-3. https://gist.github.com/ElishaAz/a83dfa8f2d53497d7d1d0bca03bfced2 (using bleak)
-4. https://gist.github.com/Cacti-Master/89f0f397a13f28ada046ec42477bc9fd (refactor)
+**Pfew!** 
 
-## Version 5
+For Internet historians, here is the evolution of the hack:
+
+1. [original Python 2 script](https://cloud.tencent.com/developer/article/1756298)
+2. [ported to Python 3](https://github.com/Diallomm/hack_GamesirT1d/tree/main)
+3. [using bleak](https://gist.github.com/ElishaAz/a83dfa8f2d53497d7d1d0bca03bfced2)
+4. [refactor](https://gist.github.com/Cacti-Master/89f0f397a13f28ada046ec42477bc9fd)
+
+## GameSir T1D hack version 5
 
 I'm honored to step in the footsteps of these four hackers and try to get iteration five to work!
 
 First we need to get the controller to connect. Simply pairing via Bluetooth won't work. 
 
-The GameSir T1d gets into pairing mode by simply powering it on. The four white power LEDs start blinking when trying to connect. At that state we run the script below.
+The GameSir T1d gets into pairing mode by simply powering it on. The four blue power LEDs start blinking when trying to connect. At that state we run the script below (on github: [gamesirT1d-connect.py](https://github.com/pors/tello-play/blob/main/gamesirT1d-connect.py)).
+
+::: {.callout-tip}
+There is a tiny button labeled `pair` above another tiny button labeled `C1`. This `pair` button can be used to pair a new device (great UX!). Clicking it while connected, will cause the Bluetooth connection to be dropped. So don't click it while controlling a drone!
+:::
 
 ::: {.panel-tabset}
 ## BLE Controller Connection Preview
@@ -196,9 +217,20 @@ Connection successful. Press Ctrl+C to exit...
 
 If you have inspected the output tab, you see we succeeded! Yay, let's move on.
 
-## Read the controller state
+## Read the T1d controller state
 
+Now the controller is connected to the computer, let's see if we can read joystick and button changes. 
 
+There's a heap of input elements that need to be read and made compatible with gamepy:
+
+* Both joysticks (LX, LY, RX, RY)
+* Analog triggers (L2, R2)
+* Buttons (A, B, X, Y, L1, R1, C1, C2, Menu)
+* D-pad (Up, Down, Left, Right)
+
+The script below prints the real-time value of each of these inputs while using the controller (on github: [gamesirT1d-read.py](https://github.com/pors/tello-play/blob/main/gamesirT1d-read.py)).
+
+From here on we don't need to pair the controller, we just use the device name that was identified in the previous step.
 
 ::: {.panel-tabset}
 ## Read Controller State Preview
@@ -245,8 +277,8 @@ class GameSirT1d:
         self.y = 0
         self.l1 = 0
         self.r1 = 0
-        self.select = 0  # C1 in original code
-        self.start = 0   # C2 in original code
+        self.c1 = 0
+        self.c2 = 0
         self.menu = 0
         
         # D-pad
@@ -286,8 +318,8 @@ class GameSirT1d:
         
         # Parse more buttons from byte 10
         buttons2 = data[10]
-        self.select = int(bool(buttons2 & 0x04))  # C1
-        self.start = int(bool(buttons2 & 0x08))   # C2
+        self.c1 = int(bool(buttons2 & 0x04))
+        self.c2 = int(bool(buttons2 & 0x08))
         
         # Parse D-pad from byte 11
         dpad = data[11]
@@ -304,7 +336,7 @@ class GameSirT1d:
             f"Joysticks: LX={self.lx}, LY={self.ly}, RX={self.rx}, RY={self.ry}\n"
             f"Triggers: L2={self.l2}, R2={self.r2}\n"
             f"Buttons: A={self.a}, B={self.b}, X={self.x}, Y={self.y}, "
-            f"L1={self.l1}, R1={self.r1}, Select={self.select}, Start={self.start}, Menu={self.menu}\n"
+            f"L1={self.l1}, R1={self.r1}, C1={self.c1}, C2={self.c2}, Menu={self.menu}\n"
             f"D-pad: Up={self.dpad_up}, Down={self.dpad_down}, Left={self.dpad_left}, Right={self.dpad_right}"
         )
     
@@ -386,12 +418,112 @@ Found Gamesir-T1d-39BD at FDF00BC3-1DEE-1525-0B34-7E2D3391C401
 Connecting...
 Connected!
 Left: (0.05, 0.03) Right: (-0.10, -0.13) | A:1 B:0 X:0 Y:0 L1:0 R1:0 L2:3 R2:155
-Error: disconnected
 ```
 
 :::
 
+That seems to work pretty good! Now we can move on and create a wrapper that behaves as if it was part of a gamepy compatible controller.
+
+## GameSir T1d Pygame-Compatible Wrapper
+
+The wrapper functions as a bridge between two worlds:
+
+1. The BLE communication layer that talks directly to our GameSir T1d
+2. A pygame-compatible interface that provides familiar methods like get_axis() and get_button()
+
+This allows our drone control code to interact with the controller as if it were a standard pygame joystick, while the BLE communication happens behind the scenes.
+
+The wrapper code consists of two classes:
+
+1. GameSirT1d: this class parses the raw inputs from the controller and converts it to the format and ranges we expect in a pygame controller.
+2. GameSirT1dPygame: this class implements the BLE interface and provides the pygame compatible wrapper.
+
+The code can be found here: [gamesir_t1d_pygame.py](https://github.com/pors/tello-play/blob/main/gamesir_t1d_pygame.py).
 
 
-@@@ Here: https://claude.ai/chat/b8f8640e-29be-4ea2-bdd3-11d0d5a02156 (open in CLaude chrome)
+## Let's try it out!
 
+With this little example script we can see if the controller (at least the thumpsticks) does what we expect:
+
+```python
+import pygame
+from gamesir_t1d_pygame import GameSirT1dPygame
+
+
+def main(controller_name):
+    # Initialize pygame for window and graphics
+    pygame.init()
+    screen = pygame.display.set_mode((640, 480))
+    pygame.display.set_caption("GameSir T1d Test")
+    clock = pygame.time.Clock()
+
+    # Initialize our custom controller
+    controller = GameSirT1dPygame(controller_name)
+    print("Connecting to controller...")
+    if not controller.init():
+        print("Failed to connect to controller")
+        return
+
+    running = True
+    while running:
+        # Process pygame events
+        for event in pygame.event.get():
+            if event.type == pygame.QUIT:
+                running = False
+
+        # Read joystick values
+        left_x = controller.get_axis(0)
+        left_y = controller.get_axis(1)
+        right_x = controller.get_axis(2)
+        right_y = controller.get_axis(3)
+
+        # Clear screen
+        screen.fill((0, 0, 0))
+
+        # Draw joystick positions
+        pygame.draw.circle(
+            screen, (50, 50, 50), (160, 240), 100
+        )  # Left stick background
+        pygame.draw.circle(
+            screen, (0, 255, 0), (160 + int(left_x * 80), 240 + int(left_y * 80)), 20
+        )  # Left stick position
+
+        pygame.draw.circle(
+            screen, (50, 50, 50), (480, 240), 100
+        )  # Right stick background
+        pygame.draw.circle(
+            screen, (0, 255, 0), (480 + int(right_x * 80), 240 + int(right_y * 80)), 20
+        )  # Right stick position
+
+        # Update display
+        pygame.display.flip()
+
+        # Control frame rate
+        clock.tick(60)
+
+    # Clean up
+    controller.quit()
+    pygame.quit()
+
+if __name__ == "__main__":
+    main("Gamesir-T1d-39BD") # replace with the name of your T1d
+```
+
+Look at that! Pretty responsive!
+
+{{< video https://www.youtube.com/watch?v=7sMoOxHOOcM >}}
+
+
+## What's next?
+
+Now that we have the T1d working with pygame we can implement the interface with the Tello. Read on...
+
+::: {.callout-note appearance="minimal"}
+<div style="text-align: center;">
+<strong>Series: <a href="/series/">Code, Fly & AI</a></strong>
+</div>
+
+<div style="display: flex; justify-content: space-between; margin-top: 0.5em;">
+  <div>[← Previous: Key navigation & video snapshots](/posts/key-navigation-video-snapshots/)</div>
+</div>
+:::

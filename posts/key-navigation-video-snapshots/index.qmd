@@ -26,7 +26,7 @@ order: 3
 
 <div style="display: flex; justify-content: space-between; margin-top: 0.5em;">
   <div>[← Previous: Crash the Tello](/posts/crash-the-tello/)</div>
-  <div></div>
+  <div>[Next: GameSir T1d & pygame →](/posts/gamesir-t1d-controller/)</div>
 </div>
 :::
 
@@ -296,9 +296,9 @@ It all works just fine, here are some low res snapshots I made:
 Navigating with a keyboard is a disaster, so....
 
 
-## What's next
+## What's next?
 
-To improve navigation we are going to hook up the GameSir 1Td, [read on..](/posts/controller/index.qmd).
+To improve navigation we are going to hook up the GameSir T1d, [read on..](/posts/gamesir-t1d-controller/).
 
 ::: {.callout-note appearance="minimal"}
 <div style="text-align: center;">
@@ -307,6 +307,6 @@ To improve navigation we are going to hook up the GameSir 1Td, [read on..](/post
 
 <div style="display: flex; justify-content: space-between; margin-top: 0.5em;">
   <div>[← Previous: Crash the Tello](/posts/crash-the-tello/)</div>
-  <div></div>
+  <div>[Next: GameSir T1d & pygame →](/posts/gamesir-t1d-controller/)</div>
 </div>
 :::

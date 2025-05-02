@@ -1,5 +1,5 @@
 ---
-title: "I'm a Pilot!"
+title: "Interlude: I'm a Pilot!"
 author: "Mark Pors"
 date: "2025-04-25"
 categories: [drone, open-source]
