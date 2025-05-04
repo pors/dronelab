@@ -12,7 +12,7 @@ about:
       href: https://github.com/pors
     - icon: linkedin
       text: LinkedIn
-      href: https://linkedin.com/markpors
+      href: https://linkedin.com/in/markpors
 
 ---
 
