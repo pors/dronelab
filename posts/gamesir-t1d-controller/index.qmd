@@ -2,7 +2,7 @@
 title: "GameSir T1d controller & pygame"
 author: "Mark Pors"
 date: "2025-05-02"
-categories: [drone, code]
+categories: [drone, code, pygame]
 image: GameSir-T1d.png
 series: "Code, Fly & AI"
 order: 4

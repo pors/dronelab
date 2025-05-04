@@ -5,12 +5,19 @@ about:
   template: jolla
   links:
     - icon: twitter
-      text: Twitter
+      text: Twitter / X
       href: https://twitter.com/pors
     - icon: github
       text: Github
       href: https://github.com/pors
+    - icon: linkedin
+      text: LinkedIn
+      href: https://linkedin.com/markpors
 
 ---
 
-About this blog. More soon.
+Hey, I'm Mark. On this blog, I'm exploring machine learning by teaching a drone how to fly itself. I break things down into small steps and share what I discover along the way. 
+
+Hope you find it interesting! Drop me a line if you do: mark [at] pors [dot] net.
+
+Find me on socials below 👇
