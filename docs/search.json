@@ -60,7 +60,7 @@
     "href": "posts/gamesir-t1d-controller/index.html#whats-next",
     "title": "GameSir T1d controller & pygame",
     "section": "What’s next?",
-    "text": "What’s next?\nNow that we have the T1d working with pygame we can implement the interface with the Tello. Read on…\n\n\n\n\n\n\n\nSeries: Code, Fly & AI\n\n\n\n← Previous: Key navigation & video snapshots"
+    "text": "What’s next?\nNow that we have the T1d working with pygame we can implement the interface with the Tello. Read on…\n\n\n\n\n\n\n\nSeries: Code, Fly & AI\n\n\n\n← Previous: Key navigation & video snapshots\n\n\nNext: Tello controller navigation - Part 1 →"
   },
   {
     "objectID": "posts/enter-the-tello/index.html",
@@ -112,6 +112,76 @@
     "text": "Footnotes\n\n\nI always buy the domain first, even before I know what I’m doing.↩︎\nI didn’t really stop myself there, I also created a logo. Technically ChatGPT did: ↩︎\n2018, also the last time I blogged something: decentralized.blog.↩︎"
   },
   {
+    "objectID": "posts/tello-controller-navigation-part-1/index.html",
+    "href": "posts/tello-controller-navigation-part-1/index.html",
+    "title": "Tello controller navigation - Part 1",
+    "section": "",
+    "text": "Mark Pors\n\n2025-05-07"
+  },
+  {
+    "objectID": "posts/tello-controller-navigation-part-1/index.html#what-happened-with-the-tello",
+    "href": "posts/tello-controller-navigation-part-1/index.html#what-happened-with-the-tello",
+    "title": "Tello controller navigation - Part 1",
+    "section": "What happened with the Tello?",
+    "text": "What happened with the Tello?\nThe whole point was to hook up the controller with the Tello/TT, but it was not as simple as I thought. Now that is behind us we can again focus on our original goal: control the RoboMaster TT with the GameSir T1d through a Python script running on a computer."
+  },
+  {
+    "objectID": "posts/tello-controller-navigation-part-1/index.html#simulation-first",
+    "href": "posts/tello-controller-navigation-part-1/index.html#simulation-first",
+    "title": "Tello controller navigation - Part 1",
+    "section": "Simulation first",
+    "text": "Simulation first\nI am traveling right now, and didn’t bring my drone, but I did bring the controller so I could at least get some work done. What can we do without the Tello drone? We ask Claude.ai to whip up a simple simulator!\nI am interested in the using simulators anyway. The software/model development cycle with an actual drone in the loop is a bit of a hassle. Especially later on with a larger drone. So, in the style of this blog, we start very simple with the most basic of simulators."
+  },
+  {
+    "objectID": "posts/tello-controller-navigation-part-1/index.html#the-end-result",
+    "href": "posts/tello-controller-navigation-part-1/index.html#the-end-result",
+    "title": "Tello controller navigation - Part 1",
+    "section": "The end result",
+    "text": "The end result\nBefore we dive into some of the code, let’s see how it looks like:\n\n\n\nTello simulation\n\n\nAnd you can see it in action here: Gamesir T1d controller with Tello drone simulation demo\nIt all looks a bit lame, but it has already been very useful!\nFirst of all there was a nasty bug in the controller package that periodically told the drone to land (it pressed the A key out of nowhere every now and then).\nSecondly, I needed to think about the architecture of the code, which doesn’t really change when we connect the actual drone.\nThe code is here: tello_controller_sim.py."
+  },
+  {
+    "objectID": "posts/tello-controller-navigation-part-1/index.html#how-does-it-work",
+    "href": "posts/tello-controller-navigation-part-1/index.html#how-does-it-work",
+    "title": "Tello controller navigation - Part 1",
+    "section": "How does it work?",
+    "text": "How does it work?\nThe application simulates a Tello drone’s physics and behavior, providing a visual interface that shows:\n\nTop-down and side views of the drone\nTelemetry data (position, rotation, battery)\nController state visualization\nFlight path trail\n\nThe simulation includes realistic features like:\n\nGradual takeoff and landing sequences\nBattery consumption\nPhysical constraints (can’t go below ground)\nInput filtering for smoother control\n\nThe code consists of three classes:\n\nTelloSimulator - Simulates the physics and state of a virtual drone\nFlightController - Handles controller input and sends commands to the drone\nDroneSimulatorApp - Main app that integrates everything with visualization\n\nLet’s have a look at each class in detail:\n\nTelloSimulator\nThis class creates a virtual model of a Tello drone with (more or less) realistic physics. This will be swapped out with the actual drone through the djitellopy library in my next post.\n\nKey Properties:\n\nposition - 3D position vector [x, y, z] in meters\nrotation - Yaw rotation in degrees (0-360°)\nvelocity - 4D vector [left/right, forward/back, up/down, yaw]\nis_connected, is_flying, battery - Drone state tracking\nis_taking_off, is_landing - Transitional states\n\n\n\nKey Methods:\n\nupdate(dt) - Updates position and state based on time delta\ntakeoff() - Initiates gradual ascent to target height\nland() - Initiates gradual descent to ground\nemergency() - Immediately stops motors (safety feature)\nsend_rc_control() - Accepts control values and updates velocity\n\nThe update() method handles all physics calculations:\n\nDifferent behavior during takeoff/landing phases\nVelocity-based position updates with proper trigonometry for directional movement\nBattery drain simulation\nPrevents clipping through the ground\n\n\n\n\nFlightController\nThis class processes raw controller inputs and translates them into drone commands.\n\nKey Features:\n\nInput smoothing with filter_strength (0.8 = heavy smoothing)\ndeadband (0.03) to ignore tiny accidental joystick movements\nSpeed control with speed_multiplier (adjustable via L1/R1 buttons)\nFixed rate command sending (20Hz)\nButton edge detection (reacts to press, not hold)\nMapping follows “European style” (right stick for primary movement)\n\n\n\nMethods:\n\nprocess_input() - Processes controller inputs with filtering\nprocess_buttons() - Handles button presses with edge detection\n\nThe control flow works like this:\n\nRead raw joystick values\nApply deadband (zero out very small inputs)\nApply smoothing filter\nConvert to integer values (-100 to 100)\nSend commands to drone at fixed intervals\n\n\n\n\nDroneSimulatorApp\nThe main application class that brings everything together. It is more or less a pygame application that takes care of the control loop and visualization. The details are not too interesting."
+  },
+  {
+    "objectID": "posts/tello-controller-navigation-part-1/index.html#whats-next",
+    "href": "posts/tello-controller-navigation-part-1/index.html#whats-next",
+    "title": "Tello controller navigation - Part 1",
+    "section": "What’s next?",
+    "text": "What’s next?\nIn Part 2 of the Tello controller navigation I will replace the simulator with my RoboMaster TT. Read on…\n\n\n\n\n\n\n\nSeries: Code, Fly & AI\n\n\n\n← Previous: GameSir T1d controller & pygame"
+  },
+  {
+    "objectID": "posts/i-am-a-pilot/index.html",
+    "href": "posts/i-am-a-pilot/index.html",
+    "title": "Interlude: I’m a Pilot!",
+    "section": "",
+    "text": "Mark Pors\n\n2025-04-25"
+  },
+  {
+    "objectID": "posts/i-am-a-pilot/index.html#fulfilling-a-dream",
+    "href": "posts/i-am-a-pilot/index.html#fulfilling-a-dream",
+    "title": "Interlude: I’m a Pilot!",
+    "section": "Fulfilling a dream",
+    "text": "Fulfilling a dream\nAs a kid I always wanted to be a pilot (not true, it just makes for a more interesting story), and now I just passed the EASA A1/A3 pilot exam!\nYeah, I know, this is a certification for UAV’s. UAV stands for Unmanned Aerial Vehicle, where you as a pilot stay on the ground. We can’t have it all.\nI will need this certification to fly drones outdoors, even the tiny Tello requires the ground-bound pilot to have the authorization to fly drones."
+  },
+  {
+    "objectID": "posts/i-am-a-pilot/index.html#easa-a1a3-exam-practice-app",
+    "href": "posts/i-am-a-pilot/index.html#easa-a1a3-exam-practice-app",
+    "title": "Interlude: I’m a Pilot!",
+    "section": "EASA A1/A3 Exam Practice App",
+    "text": "EASA A1/A3 Exam Practice App\nAnyway, to help me study, I (Claude.ai) created a practice app to go over all possible questions for the exam. I thought it might be handy for others so I put it up online here: EASA A1/A3 exam test app. The source code is here.\nBeware: the source PDF with questions was used as the basis for the app, and the LLM made some mistakes. I think I have corrected most/all of them, but if you want to be sure please double check."
+  },
+  {
+    "objectID": "series/index.html",
+    "href": "series/index.html",
+    "title": "Code, Fly & AI Series",
+    "section": "",
+    "text": "Welcome to the Code, Fly & AI series — a blog journey into coding autonomous drones with baby steps.\nFollow along as I:\n\nLearn to fly (and crash) drones\nHack with Python and SDKs\nUse AI to give them brains\n\n👇 Posts in this series:\n\n\n\n\n\n\n\n\n\n\n\n\n\n\nEnter the Tello\n\n\nDiscover how to start building an autonomous scouting drone for hiking using the DJI RoboMaster TT (Tello Talent). Follow a beginner’s journey into drones, coding, and computer vision.\n\n\n\n\n\nApr 20, 2025\n\n\n\n\n\n\n\n\n\n\n\n\nCrash the Tello (with and without code)\n\n\nLearn how to fly and program the DJI Tello (RoboMaster TT) drone, avoid common beginner crashes, and get started with Python coding using the Tello SDK.\n\n\n\n\n\nApr 24, 2025\n\n\n\n\n\n\n\n\n\n\n\n\nKey navigation & Video snapshots\n\n\nHands-on guide to controlling a Tello drone with Python and pygame: learn responsive keyboard navigation, smooth velocity-based movement, live video streaming, and how to capture snapshots from the drone feed.\n\n\n\n\n\nApr 27, 2025\n\n\n\n\n\n\n\n\n\n\n\n\nGameSir T1d controller & pygame\n\n\nLearn how to connect and use the GameSir T1d controller with your computer for Tello drone control using Python, BLE hacking, and a pygame-compatible wrapper. Step-by-step guide with working code.\n\n\n\n\n\nMay 2, 2025\n\n\n\n\n\n\n\n\n\n\n\n\nTello controller navigation - Part 1\n\n\nSimulate and control a Tello drone using Python, pygame, and a GameSir T1d controller—learn practical code architecture, input smoothing, and debugging techniques for drone development.\n\n\n\n\n\nMay 7, 2025\n\n\n\n\n\nNo matching items"
+  },
+  {
     "objectID": "posts/crash-the-tello/index.html",
     "href": "posts/crash-the-tello/index.html",
     "title": "Crash the Tello (with and without code)",
@@ -152,34 +222,6 @@
     "title": "Crash the Tello (with and without code)",
     "section": "Footnotes",
     "text": "Footnotes\n\n\nBorrowed is the real word here. No: stolen!↩︎"
-  },
-  {
-    "objectID": "series/index.html",
-    "href": "series/index.html",
-    "title": "Code, Fly & AI Series",
-    "section": "",
-    "text": "Welcome to the Code, Fly & AI series — a blog journey into coding autonomous drones with baby steps.\nFollow along as I:\n\nLearn to fly (and crash) drones\nHack with Python and SDKs\nUse AI to give them brains\n\n👇 Posts in this series:\n\n\n\n\n\n\n\n\n\n\n\n\n\n\nEnter the Tello\n\n\nDiscover how to start building an autonomous scouting drone for hiking using the DJI RoboMaster TT (Tello Talent). Follow a beginner’s journey into drones, coding, and computer vision.\n\n\n\n\n\nApr 20, 2025\n\n\n\n\n\n\n\n\n\n\n\n\nCrash the Tello (with and without code)\n\n\nLearn how to fly and program the DJI Tello (RoboMaster TT) drone, avoid common beginner crashes, and get started with Python coding using the Tello SDK.\n\n\n\n\n\nApr 24, 2025\n\n\n\n\n\n\n\n\n\n\n\n\nKey navigation & Video snapshots\n\n\nHands-on guide to controlling a Tello drone with Python and pygame: learn responsive keyboard navigation, smooth velocity-based movement, live video streaming, and how to capture snapshots from the drone feed.\n\n\n\n\n\nApr 27, 2025\n\n\n\n\n\n\n\n\n\n\n\n\nGameSir T1d controller & pygame\n\n\nLearn how to connect and use the GameSir T1d controller with your computer for Tello drone control using Python, BLE hacking, and a pygame-compatible wrapper. Step-by-step guide with working code.\n\n\n\n\n\nMay 2, 2025\n\n\n\n\n\nNo matching items"
-  },
-  {
-    "objectID": "posts/i-am-a-pilot/index.html",
-    "href": "posts/i-am-a-pilot/index.html",
-    "title": "Interlude: I’m a Pilot!",
-    "section": "",
-    "text": "Mark Pors\n\n2025-04-25"
-  },
-  {
-    "objectID": "posts/i-am-a-pilot/index.html#fulfilling-a-dream",
-    "href": "posts/i-am-a-pilot/index.html#fulfilling-a-dream",
-    "title": "Interlude: I’m a Pilot!",
-    "section": "Fulfilling a dream",
-    "text": "Fulfilling a dream\nAs a kid I always wanted to be a pilot (not true, it just makes for a more interesting story), and now I just passed the EASA A1/A3 pilot exam!\nYeah, I know, this is a certification for UAV’s. UAV stands for Unmanned Aerial Vehicle, where you as a pilot stay on the ground. We can’t have it all.\nI will need this certification to fly drones outdoors, even the tiny Tello requires the ground-bound pilot to have the authorization to fly drones."
-  },
-  {
-    "objectID": "posts/i-am-a-pilot/index.html#easa-a1a3-exam-practice-app",
-    "href": "posts/i-am-a-pilot/index.html#easa-a1a3-exam-practice-app",
-    "title": "Interlude: I’m a Pilot!",
-    "section": "EASA A1/A3 Exam Practice App",
-    "text": "EASA A1/A3 Exam Practice App\nAnyway, to help me study, I (Claude.ai) created a practice app to go over all possible questions for the exam. I thought it might be handy for others so I put it up online here: EASA A1/A3 exam test app. The source code is here.\nBeware: the source PDF with questions was used as the basis for the app, and the LLM made some mistakes. I think I have corrected most/all of them, but if you want to be sure please double check."
   },
   {
     "objectID": "posts/key-navigation-video-snapshots/index.html",
@@ -242,6 +284,6 @@
     "href": "index.html",
     "title": "DroneLab - Coding Autonomous Drones in Baby Steps",
     "section": "",
-    "text": "Interlude: GameSir T1d Python package\n\n\n\npygame\n\ncode\n\nopen-source\n\n\n\nStep-by-step guide to packaging, publishing, and using a Python library for the GameSir T1d Bluetooth controller with pygame, using the modern uv toolchain.\n\n\n\n\n\nMay 4, 2025\n\n\nMark Pors\n\n\n\n\n\n\n\n\n\n\n\n\nGameSir T1d controller & pygame\n\n\n\ndrone\n\ncode\n\npygame\n\n\n\nLearn how to connect and use the GameSir T1d controller with your computer for Tello drone control using Python, BLE hacking, and a pygame-compatible wrapper. Step-by-step guide with working code.\n\n\n\n\n\nMay 2, 2025\n\n\nMark Pors\n\n\n\n\n\n\n\n\n\n\n\n\nKey navigation & Video snapshots\n\n\n\ndrone\n\ncode\n\n\n\nHands-on guide to controlling a Tello drone with Python and pygame: learn responsive keyboard navigation, smooth velocity-based movement, live video streaming, and how to capture snapshots from the drone feed.\n\n\n\n\n\nApr 27, 2025\n\n\nMark Pors\n\n\n\n\n\n\n\n\n\n\n\n\nInterlude: I’m a Pilot!\n\n\n\ndrone\n\nopen-source\n\n\n\nPassed the EASA A1/A3 drone pilot exam and built a free web-based practice app. Learn how to prepare for the EASA UAV certification and access open-source study tools.\n\n\n\n\n\nApr 25, 2025\n\n\nMark Pors\n\n\n\n\n\n\n\n\n\n\n\n\nCrash the Tello (with and without code)\n\n\n\ndrone\n\ncode\n\n\n\nLearn how to fly and program the DJI Tello (RoboMaster TT) drone, avoid common beginner crashes, and get started with Python coding using the Tello SDK.\n\n\n\n\n\nApr 24, 2025\n\n\nMark Pors\n\n\n\n\n\n\n\n\n\n\n\n\nEnter the Tello\n\n\n\ndrone\n\n\n\nDiscover how to start building an autonomous scouting drone for hiking using the DJI RoboMaster TT (Tello Talent). Follow a beginner’s journey into drones, coding, and computer vision.\n\n\n\n\n\nApr 20, 2025\n\n\nMark Pors\n\n\n\n\n\nNo matching items"
+    "text": "Tello controller navigation - Part 1\n\n\n\ndrone\n\ncode\n\npygame\n\nsimulator\n\n\n\nSimulate and control a Tello drone using Python, pygame, and a GameSir T1d controller—learn practical code architecture, input smoothing, and debugging techniques for drone development.\n\n\n\n\n\nMay 7, 2025\n\n\nMark Pors\n\n\n\n\n\n\n\n\n\n\n\n\nInterlude: GameSir T1d Python package\n\n\n\npygame\n\ncode\n\nopen-source\n\n\n\nStep-by-step guide to packaging, publishing, and using a Python library for the GameSir T1d Bluetooth controller with pygame, using the modern uv toolchain.\n\n\n\n\n\nMay 4, 2025\n\n\nMark Pors\n\n\n\n\n\n\n\n\n\n\n\n\nGameSir T1d controller & pygame\n\n\n\ndrone\n\ncode\n\npygame\n\n\n\nLearn how to connect and use the GameSir T1d controller with your computer for Tello drone control using Python, BLE hacking, and a pygame-compatible wrapper. Step-by-step guide with working code.\n\n\n\n\n\nMay 2, 2025\n\n\nMark Pors\n\n\n\n\n\n\n\n\n\n\n\n\nKey navigation & Video snapshots\n\n\n\ndrone\n\ncode\n\n\n\nHands-on guide to controlling a Tello drone with Python and pygame: learn responsive keyboard navigation, smooth velocity-based movement, live video streaming, and how to capture snapshots from the drone feed.\n\n\n\n\n\nApr 27, 2025\n\n\nMark Pors\n\n\n\n\n\n\n\n\n\n\n\n\nInterlude: I’m a Pilot!\n\n\n\ndrone\n\nopen-source\n\n\n\nPassed the EASA A1/A3 drone pilot exam and built a free web-based practice app. Learn how to prepare for the EASA UAV certification and access open-source study tools.\n\n\n\n\n\nApr 25, 2025\n\n\nMark Pors\n\n\n\n\n\n\n\n\n\n\n\n\nCrash the Tello (with and without code)\n\n\n\ndrone\n\ncode\n\n\n\nLearn how to fly and program the DJI Tello (RoboMaster TT) drone, avoid common beginner crashes, and get started with Python coding using the Tello SDK.\n\n\n\n\n\nApr 24, 2025\n\n\nMark Pors\n\n\n\n\n\n\n\n\n\n\n\n\nEnter the Tello\n\n\n\ndrone\n\n\n\nDiscover how to start building an autonomous scouting drone for hiking using the DJI RoboMaster TT (Tello Talent). Follow a beginner’s journey into drones, coding, and computer vision.\n\n\n\n\n\nApr 20, 2025\n\n\nMark Pors\n\n\n\n\n\nNo matching items"
   }
 ]

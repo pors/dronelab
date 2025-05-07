@@ -25,6 +25,7 @@ keywords: [GameSir T1d, Tello drone, BLE, Bluetooth, Python, pygame, controller 
 
 <div style="display: flex; justify-content: space-between; margin-top: 0.5em;">
   <div>[← Previous: Key navigation & video snapshots](/posts/key-navigation-video-snapshots/)</div>
+  <div>[Next: Tello controller navigation - Part 1 →](/posts/tello-controller-navigation-part-1/)</div>
 </div>
 
 :::
@@ -525,5 +526,6 @@ Now that we have the T1d working with pygame we can implement the interface with
 
 <div style="display: flex; justify-content: space-between; margin-top: 0.5em;">
   <div>[← Previous: Key navigation & video snapshots](/posts/key-navigation-video-snapshots/)</div>
+  <div>[Next: Tello controller navigation - Part 1 →](/posts/tello-controller-navigation-part-1/)</div>
 </div>
 :::

@@ -1,0 +1,153 @@
+---
+title: "Tello controller navigation - Part 1"
+author: "Mark Pors"
+date: "2025-05-07"
+categories: [drone, code, pygame, simulator]
+image: tello-gamesir-t1d.png
+series: "Code, Fly & AI"
+order: 5
+description: "Simulate and control a Tello drone using Python, pygame, and a GameSir T1d controller—learn practical code architecture, input smoothing, and debugging techniques for drone development."
+meta-description: "Hands-on guide to simulating a Tello drone with Python and pygame, connecting a GameSir T1d controller, and building robust, swappable code for real or virtual drones. Includes code walkthroughs and a live demo."
+keywords: [Tello drone, Python, pygame, drone simulator, GameSir T1d, drone control, input smoothing, code architecture, robotics, simulation, RoboMaster TT]
+---
+
+::: {.callout-tip collapse="true"}
+## TL;DR
+* Learn how to simulate a Tello drone using Python and pygame—no real drone required
+* See how to connect and control the simulator with a GameSir T1d controller
+* Discover practical code architecture for drone control, easily swappable with a real Tello/TT
+* Get insights into input smoothing, command mapping, and realistic flight physics
+* Find out how simulation helps debug controller issues and speeds up development
+* Includes code walkthroughs and a live demo video for hands-on understanding
+
+<div style="text-align: center;">
+<strong>Series: <a href="/series/">Code, Fly & AI</a></strong>
+</div>
+
+<div style="display: flex; justify-content: space-between; margin-top: 0.5em;">
+  <div>[← Previous: GameSir T1d controller & pygame](/posts/gamesir-t1d-controller/)</div>
+</div>
+
+:::
+
+## What happened with the Tello?
+
+The whole point was to hook up the controller with the Tello/TT, but it was [not as simple](/posts/gamesir-t1d-controller/) as I thought. Now that is behind us we can again focus on our original goal: control the RoboMaster TT with the GameSir T1d through a Python script running on a computer.
+
+<div style="text-align: center;">
+![](tello-gamesir-t1d.png)
+</div>
+
+## Simulation first
+
+I am traveling right now, and didn't bring my drone, but I did bring the controller so I could at least get some work done. What can we do without the Tello drone? We ask Claude.ai to whip up a simple simulator!
+
+I am interested in the using simulators anyway. The software/model development cycle with an actual drone in the loop is a bit of a hassle. Especially later on with a larger drone. So, in the style of this blog, we start very simple with the most basic of simulators.
+
+## The end result
+
+Before we dive into some of the code, let's see how it looks like:
+
+![Tello simulation](tello-simulation.png)
+
+And you can see it in action here: [Gamesir T1d controller with Tello drone simulation demo](https://www.youtube.com/watch?v=w1m1eZZjHrk)
+
+It all looks a bit lame, but it has already been very useful! 
+
+First of all there was a nasty bug in the controller package that periodically told the drone to land (it pressed the A key out of nowhere every now and then).
+
+Secondly, I needed to think about the architecture of the code, which doesn't really change when we connect the actual drone.
+
+The code is here: [tello_controller_sim.py](https://github.com/pors/tello-play/blob/main/tello_controller_sim.py).
+
+
+## How does it work?
+
+The application simulates a Tello drone's physics and behavior, providing a visual interface that shows:
+
+- Top-down and side views of the drone
+- Telemetry data (position, rotation, battery)
+- Controller state visualization
+- Flight path trail
+
+The simulation includes realistic features like:
+
+- Gradual takeoff and landing sequences
+- Battery consumption
+- Physical constraints (can't go below ground)
+- Input filtering for smoother control
+
+The code consists of three classes:
+
+1. TelloSimulator - Simulates the physics and state of a virtual drone
+2. FlightController - Handles controller input and sends commands to the drone
+3. DroneSimulatorApp - Main app that integrates everything with visualization
+
+Let's have a look at each class in detail:
+
+### TelloSimulator
+
+This class creates a virtual model of a Tello drone with (more or less) realistic physics. This will be swapped out with the actual drone through the `djitellopy` library in my next post.
+
+#### Key Properties:
+- `position` - 3D position vector [x, y, z] in meters
+- `rotation` - Yaw rotation in degrees (0-360°)
+- `velocity` - 4D vector [left/right, forward/back, up/down, yaw]
+- `is_connected`, `is_flying`, `battery` - Drone state tracking
+- `is_taking_off`, `is_landing` - Transitional states
+
+#### Key Methods:
+- `update(dt)` - Updates position and state based on time delta
+- `takeoff()` - Initiates gradual ascent to target height
+- `land()` - Initiates gradual descent to ground
+- `emergency()` - Immediately stops motors (safety feature)
+- `send_rc_control()` - Accepts control values and updates velocity
+
+The `update()` method handles all physics calculations:
+
+- Different behavior during takeoff/landing phases
+- Velocity-based position updates with proper trigonometry for directional movement
+- Battery drain simulation
+- Prevents clipping through the ground
+
+### FlightController
+
+This class processes raw controller inputs and translates them into drone commands.
+
+#### Key Features:
+- Input smoothing with `filter_strength` (0.8 = heavy smoothing)
+- `deadband` (0.03) to ignore tiny accidental joystick movements
+- Speed control with `speed_multiplier` (adjustable via L1/R1 buttons)
+- Fixed rate command sending (20Hz)
+- Button edge detection (reacts to press, not hold)
+- Mapping follows "European style" (right stick for primary movement)
+
+#### Methods:
+- `process_input()` - Processes controller inputs with filtering
+- `process_buttons()` - Handles button presses with edge detection
+
+The control flow works like this:
+
+1. Read raw joystick values
+2. Apply deadband (zero out very small inputs)
+3. Apply smoothing filter
+4. Convert to integer values (-100 to 100)
+5. Send commands to drone at fixed intervals
+
+### DroneSimulatorApp
+
+The main application class that brings everything together. It is more or less a pygame application that takes care of the control loop and visualization. The details are not too interesting.
+
+## What's next?
+
+In Part 2 of the Tello controller navigation I will replace the simulator with my RoboMaster TT. Read on...
+
+::: {.callout-note appearance="minimal"}
+<div style="text-align: center;">
+<strong>Series: <a href="/series/">Code, Fly & AI</a></strong>
+</div>
+
+<div style="display: flex; justify-content: space-between; margin-top: 0.5em;">
+  <div>[← Previous: GameSir T1d controller & pygame](/posts/gamesir-t1d-controller/)</div>
+</div>
+:::

@@ -10,7 +10,201 @@
 <atom:link href="https://dronelab.dev/index.xml" rel="self" type="application/rss+xml"/>
 <description>DroneLab - Coding Autonomous Drones in Baby Steps.</description>
 <generator>quarto-1.7.27</generator>
-<lastBuildDate>Sat, 03 May 2025 22:00:00 GMT</lastBuildDate>
+<lastBuildDate>Tue, 06 May 2025 22:00:00 GMT</lastBuildDate>
+<item>
+  <title>Tello controller navigation - Part 1</title>
+  <dc:creator>Mark Pors</dc:creator>
+  <link>https://dronelab.dev/posts/tello-controller-navigation-part-1/</link>
+  <description><![CDATA[ 
+
+<header id="title-block-header">
+
+<p class="author">Mark Pors</p>
+
+<p class="date">2025-05-07</p>
+</header>
+
+
+<div class="callout callout-style-default callout-tip callout-titled">
+<div class="callout-header d-flex align-content-center" data-bs-toggle="collapse" data-bs-target=".callout-1-contents" aria-controls="callout-1" aria-expanded="false" aria-label="Toggle callout">
+<div class="callout-icon-container">
+<i class="callout-icon"></i>
+</div>
+<div class="callout-title-container flex-fill">
+TL;DR
+</div>
+<div class="callout-btn-toggle d-inline-block border-0 py-1 ps-1 pe-0 float-end"><i class="callout-toggle"></i></div>
+</div>
+<div id="callout-1" class="callout-1-contents callout-collapse collapse">
+<div class="callout-body-container callout-body">
+<ul>
+<li>Learn how to simulate a Tello drone using Python and pygame—no real drone required</li>
+<li>See how to connect and control the simulator with a GameSir T1d controller</li>
+<li>Discover practical code architecture for drone control, easily swappable with a real Tello/TT</li>
+<li>Get insights into input smoothing, command mapping, and realistic flight physics</li>
+<li>Find out how simulation helps debug controller issues and speeds up development</li>
+<li>Includes code walkthroughs and a live demo video for hands-on understanding</li>
+</ul>
+<div style="text-align: center;">
+<p><strong>Series: <a href="../../series/">Code, Fly &amp; AI</a></strong></p>
+</div>
+<div style="display: flex; justify-content: space-between; margin-top: 0.5em;">
+<div>
+<a href="../../posts/gamesir-t1d-controller/">← Previous: GameSir T1d controller &amp; pygame</a>
+</div>
+</div>
+</div>
+</div>
+</div>
+<section id="what-happened-with-the-tello" class="level2">
+<h2 class="anchored" data-anchor-id="what-happened-with-the-tello">What happened with the Tello?</h2>
+<p>The whole point was to hook up the controller with the Tello/TT, but it was <a href="../../posts/gamesir-t1d-controller/">not as simple</a> as I thought. Now that is behind us we can again focus on our original goal: control the RoboMaster TT with the GameSir T1d through a Python script running on a computer.</p>
+<div style="text-align: center;">
+<p><img src="https://dronelab.dev/posts/tello-controller-navigation-part-1/tello-gamesir-t1d.png" class="img-fluid"></p>
+</div>
+</section>
+<section id="simulation-first" class="level2">
+<h2 class="anchored" data-anchor-id="simulation-first">Simulation first</h2>
+<p>I am traveling right now, and didn’t bring my drone, but I did bring the controller so I could at least get some work done. What can we do without the Tello drone? We ask Claude.ai to whip up a simple simulator!</p>
+<p>I am interested in the using simulators anyway. The software/model development cycle with an actual drone in the loop is a bit of a hassle. Especially later on with a larger drone. So, in the style of this blog, we start very simple with the most basic of simulators.</p>
+</section>
+<section id="the-end-result" class="level2">
+<h2 class="anchored" data-anchor-id="the-end-result">The end result</h2>
+<p>Before we dive into some of the code, let’s see how it looks like:</p>
+<div class="quarto-figure quarto-figure-center">
+<figure class="figure">
+<p><img src="https://dronelab.dev/posts/tello-controller-navigation-part-1/tello-simulation.png" class="img-fluid figure-img"></p>
+<figcaption>Tello simulation</figcaption>
+</figure>
+</div>
+<p>And you can see it in action here: <a href="https://www.youtube.com/watch?v=w1m1eZZjHrk">Gamesir T1d controller with Tello drone simulation demo</a></p>
+<p>It all looks a bit lame, but it has already been very useful!</p>
+<p>First of all there was a nasty bug in the controller package that periodically told the drone to land (it pressed the A key out of nowhere every now and then).</p>
+<p>Secondly, I needed to think about the architecture of the code, which doesn’t really change when we connect the actual drone.</p>
+<p>The code is here: <a href="https://github.com/pors/tello-play/blob/main/tello_controller_sim.py">tello_controller_sim.py</a>.</p>
+</section>
+<section id="how-does-it-work" class="level2">
+<h2 class="anchored" data-anchor-id="how-does-it-work">How does it work?</h2>
+<p>The application simulates a Tello drone’s physics and behavior, providing a visual interface that shows:</p>
+<ul>
+<li>Top-down and side views of the drone</li>
+<li>Telemetry data (position, rotation, battery)</li>
+<li>Controller state visualization</li>
+<li>Flight path trail</li>
+</ul>
+<p>The simulation includes realistic features like:</p>
+<ul>
+<li>Gradual takeoff and landing sequences</li>
+<li>Battery consumption</li>
+<li>Physical constraints (can’t go below ground)</li>
+<li>Input filtering for smoother control</li>
+</ul>
+<p>The code consists of three classes:</p>
+<ol type="1">
+<li>TelloSimulator - Simulates the physics and state of a virtual drone</li>
+<li>FlightController - Handles controller input and sends commands to the drone</li>
+<li>DroneSimulatorApp - Main app that integrates everything with visualization</li>
+</ol>
+<p>Let’s have a look at each class in detail:</p>
+<section id="tellosimulator" class="level3">
+<h3 class="anchored" data-anchor-id="tellosimulator">TelloSimulator</h3>
+<p>This class creates a virtual model of a Tello drone with (more or less) realistic physics. This will be swapped out with the actual drone through the <code>djitellopy</code> library in my next post.</p>
+<section id="key-properties" class="level4">
+<h4 class="anchored" data-anchor-id="key-properties">Key Properties:</h4>
+<ul>
+<li><code>position</code> - 3D position vector [x, y, z] in meters</li>
+<li><code>rotation</code> - Yaw rotation in degrees (0-360°)</li>
+<li><code>velocity</code> - 4D vector [left/right, forward/back, up/down, yaw]</li>
+<li><code>is_connected</code>, <code>is_flying</code>, <code>battery</code> - Drone state tracking</li>
+<li><code>is_taking_off</code>, <code>is_landing</code> - Transitional states</li>
+</ul>
+</section>
+<section id="key-methods" class="level4">
+<h4 class="anchored" data-anchor-id="key-methods">Key Methods:</h4>
+<ul>
+<li><code>update(dt)</code> - Updates position and state based on time delta</li>
+<li><code>takeoff()</code> - Initiates gradual ascent to target height</li>
+<li><code>land()</code> - Initiates gradual descent to ground</li>
+<li><code>emergency()</code> - Immediately stops motors (safety feature)</li>
+<li><code>send_rc_control()</code> - Accepts control values and updates velocity</li>
+</ul>
+<p>The <code>update()</code> method handles all physics calculations:</p>
+<ul>
+<li>Different behavior during takeoff/landing phases</li>
+<li>Velocity-based position updates with proper trigonometry for directional movement</li>
+<li>Battery drain simulation</li>
+<li>Prevents clipping through the ground</li>
+</ul>
+</section>
+</section>
+<section id="flightcontroller" class="level3">
+<h3 class="anchored" data-anchor-id="flightcontroller">FlightController</h3>
+<p>This class processes raw controller inputs and translates them into drone commands.</p>
+<section id="key-features" class="level4">
+<h4 class="anchored" data-anchor-id="key-features">Key Features:</h4>
+<ul>
+<li>Input smoothing with <code>filter_strength</code> (0.8 = heavy smoothing)</li>
+<li><code>deadband</code> (0.03) to ignore tiny accidental joystick movements</li>
+<li>Speed control with <code>speed_multiplier</code> (adjustable via L1/R1 buttons)</li>
+<li>Fixed rate command sending (20Hz)</li>
+<li>Button edge detection (reacts to press, not hold)</li>
+<li>Mapping follows “European style” (right stick for primary movement)</li>
+</ul>
+</section>
+<section id="methods" class="level4">
+<h4 class="anchored" data-anchor-id="methods">Methods:</h4>
+<ul>
+<li><code>process_input()</code> - Processes controller inputs with filtering</li>
+<li><code>process_buttons()</code> - Handles button presses with edge detection</li>
+</ul>
+<p>The control flow works like this:</p>
+<ol type="1">
+<li>Read raw joystick values</li>
+<li>Apply deadband (zero out very small inputs)</li>
+<li>Apply smoothing filter</li>
+<li>Convert to integer values (-100 to 100)</li>
+<li>Send commands to drone at fixed intervals</li>
+</ol>
+</section>
+</section>
+<section id="dronesimulatorapp" class="level3">
+<h3 class="anchored" data-anchor-id="dronesimulatorapp">DroneSimulatorApp</h3>
+<p>The main application class that brings everything together. It is more or less a pygame application that takes care of the control loop and visualization. The details are not too interesting.</p>
+</section>
+</section>
+<section id="whats-next" class="level2">
+<h2 class="anchored" data-anchor-id="whats-next">What’s next?</h2>
+<p>In Part 2 of the Tello controller navigation I will replace the simulator with my RoboMaster TT. Read on…</p>
+<div class="callout callout-style-simple callout-note no-icon">
+<div class="callout-body d-flex">
+<div class="callout-icon-container">
+<i class="callout-icon no-icon"></i>
+</div>
+<div class="callout-body-container">
+<div style="text-align: center;">
+<p><strong>Series: <a href="../../series/">Code, Fly &amp; AI</a></strong></p>
+</div>
+<div style="display: flex; justify-content: space-between; margin-top: 0.5em;">
+<div>
+<a href="../../posts/gamesir-t1d-controller/">← Previous: GameSir T1d controller &amp; pygame</a>
+</div>
+</div>
+</div>
+</div>
+</div>
+
+
+</section>
+
+ ]]></description>
+  <category>drone</category>
+  <category>code</category>
+  <category>pygame</category>
+  <category>simulator</category>
+  <guid>https://dronelab.dev/posts/tello-controller-navigation-part-1/</guid>
+  <pubDate>Tue, 06 May 2025 22:00:00 GMT</pubDate>
+  <media:content url="https://dronelab.dev/posts/tello-controller-navigation-part-1/tello-gamesir-t1d.png" medium="image" type="image/png" height="96" width="144"/>
+</item>
 <item>
   <title>Interlude: GameSir T1d Python package</title>
   <dc:creator>Mark Pors</dc:creator>
@@ -590,6 +784,9 @@ TL;DR
 <div style="display: flex; justify-content: space-between; margin-top: 0.5em;">
 <div>
 <a href="../../posts/key-navigation-video-snapshots/">← Previous: Key navigation &amp; video snapshots</a>
+</div>
+<div>
+<a href="../../posts/tello-controller-navigation-part-1/">Next: Tello controller navigation - Part 1 →</a>
 </div>
 </div>
 </div>
@@ -2700,6 +2897,9 @@ font-style: inherit;"># replace with the name of your T1d</span></span></code></
 <div style="display: flex; justify-content: space-between; margin-top: 0.5em;">
 <div>
 <a href="../../posts/key-navigation-video-snapshots/">← Previous: Key navigation &amp; video snapshots</a>
+</div>
+<div>
+<a href="../../posts/tello-controller-navigation-part-1/">Next: Tello controller navigation - Part 1 →</a>
 </div>
 </div>
 </div>

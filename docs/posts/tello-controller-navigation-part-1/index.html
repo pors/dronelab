@@ -6,8 +6,12 @@
 
 <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=yes">
 
+<meta name="author" content="Mark Pors">
+<meta name="dcterms.date" content="2025-05-07">
+<meta name="keywords" content="Tello drone, Python, pygame, drone simulator, GameSir T1d, drone control, input smoothing, code architecture, robotics, simulation, RoboMaster TT">
+<meta name="description" content="Simulate and control a Tello drone using Python, pygame, and a GameSir T1d controller—learn practical code architecture, input smoothing, and debugging techniques for drone development.">
 
-<title>DroneLab - Coding Autonomous Drones in Baby Steps – dronelab.dev</title>
+<title>Tello controller navigation - Part 1 – dronelab.dev</title>
 <style>
 code{white-space: pre-wrap;}
 span.smallcaps{font-variant: small-caps;}
@@ -23,25 +27,23 @@ ul.task-list li input[type="checkbox"] {
 </style>
 
 
-<script src="site_libs/quarto-nav/quarto-nav.js"></script>
-<script src="site_libs/quarto-nav/headroom.min.js"></script>
-<script src="site_libs/clipboard/clipboard.min.js"></script>
-<script src="site_libs/quarto-search/autocomplete.umd.js"></script>
-<script src="site_libs/quarto-search/fuse.min.js"></script>
-<script src="site_libs/quarto-search/quarto-search.js"></script>
-<meta name="quarto:offset" content="./">
-<script src="site_libs/quarto-listing/list.min.js"></script>
-<script src="site_libs/quarto-listing/quarto-listing.js"></script>
-<script src="site_libs/quarto-html/quarto.js" type="module"></script>
-<script src="site_libs/quarto-html/tabsets/tabsets.js" type="module"></script>
-<script src="site_libs/quarto-html/popper.min.js"></script>
-<script src="site_libs/quarto-html/tippy.umd.min.js"></script>
-<script src="site_libs/quarto-html/anchor.min.js"></script>
-<link href="site_libs/quarto-html/tippy.css" rel="stylesheet">
-<link href="site_libs/quarto-html/quarto-syntax-highlighting-985aa47af68dae11cd4d235c71fb941e.css" rel="stylesheet" id="quarto-text-highlighting-styles">
-<script src="site_libs/bootstrap/bootstrap.min.js"></script>
-<link href="site_libs/bootstrap/bootstrap-icons.css" rel="stylesheet">
-<link href="site_libs/bootstrap/bootstrap-6bdd2aebeb936dcddaa5f935a5de481c.min.css" rel="stylesheet" append-hash="true" id="quarto-bootstrap" data-mode="light">
+<script src="../../site_libs/quarto-nav/quarto-nav.js"></script>
+<script src="../../site_libs/quarto-nav/headroom.min.js"></script>
+<script src="../../site_libs/clipboard/clipboard.min.js"></script>
+<script src="../../site_libs/quarto-search/autocomplete.umd.js"></script>
+<script src="../../site_libs/quarto-search/fuse.min.js"></script>
+<script src="../../site_libs/quarto-search/quarto-search.js"></script>
+<meta name="quarto:offset" content="../../">
+<script src="../../site_libs/quarto-html/quarto.js" type="module"></script>
+<script src="../../site_libs/quarto-html/tabsets/tabsets.js" type="module"></script>
+<script src="../../site_libs/quarto-html/popper.min.js"></script>
+<script src="../../site_libs/quarto-html/tippy.umd.min.js"></script>
+<script src="../../site_libs/quarto-html/anchor.min.js"></script>
+<link href="../../site_libs/quarto-html/tippy.css" rel="stylesheet">
+<link href="../../site_libs/quarto-html/quarto-syntax-highlighting-985aa47af68dae11cd4d235c71fb941e.css" rel="stylesheet" id="quarto-text-highlighting-styles">
+<script src="../../site_libs/bootstrap/bootstrap.min.js"></script>
+<link href="../../site_libs/bootstrap/bootstrap-icons.css" rel="stylesheet">
+<link href="../../site_libs/bootstrap/bootstrap-a368816def9a8950b8d88926fee9d1b8.min.css" rel="stylesheet" append-hash="true" id="quarto-bootstrap" data-mode="light">
 <script id="quarto-search-options" type="application/json">{
   "location": "navbar",
   "copy-button": false,
@@ -69,35 +71,6 @@ ul.task-list li input[type="checkbox"] {
     "search-label": "Search"
   }
 }</script>
-<script>
-
-  window.document.addEventListener("DOMContentLoaded", function (_event) {
-    const listingTargetEl = window.document.querySelector('#listing-listing .list');
-    if (!listingTargetEl) {
-      // No listing discovered, do not attach.
-      return; 
-    }
-
-    const options = {
-      valueNames: ['listing-date','listing-title','listing-author','listing-image','listing-description','listing-categories',{ data: ['index'] },{ data: ['categories'] },{ data: ['listing-date-sort'] },{ data: ['listing-file-modified-sort'] }],
-      
-      searchColumns: ["listing-date","listing-title","listing-author","listing-image","listing-description","listing-categories"],
-    };
-
-    window['quarto-listings'] = window['quarto-listings'] || {};
-    window['quarto-listings']['listing-listing'] = new List('listing-listing', options);
-
-    if (window['quarto-listing-loaded']) {
-      window['quarto-listing-loaded']();
-    }
-  });
-
-  window.addEventListener('hashchange',() => {
-    if (window['quarto-listing-loaded']) {
-      window['quarto-listing-loaded']();
-    }
-  })
-  </script>
 <script async="" src="https://www.googletagmanager.com/gtag/js?id=G-J790G06FED"></script>
 
 <script type="text/javascript">
@@ -108,53 +81,27 @@ gtag('js', new Date());
 gtag('config', 'G-J790G06FED', { 'anonymize_ip': true});
 </script>
 
-  <script src="https://cdnjs.cloudflare.com/polyfill/v3/polyfill.min.js?features=es6"></script>
-  <script src="https://cdn.jsdelivr.net/npm/mathjax@3/es5/tex-chtml-full.js" type="text/javascript"></script>
 
-<script type="text/javascript">
-const typesetMath = (el) => {
-  if (window.MathJax) {
-    // MathJax Typeset
-    window.MathJax.typeset([el]);
-  } else if (window.katex) {
-    // KaTeX Render
-    var mathElements = el.getElementsByClassName("math");
-    var macros = [];
-    for (var i = 0; i < mathElements.length; i++) {
-      var texText = mathElements[i].firstChild;
-      if (mathElements[i].tagName == "SPAN") {
-        window.katex.render(texText.data, mathElements[i], {
-          displayMode: mathElements[i].classList.contains('display'),
-          throwOnError: false,
-          macros: macros,
-          fleqn: false
-        });
-      }
-    }
-  }
-}
-window.Quarto = {
-  typesetMath
-};
-</script>
-
-<link rel="stylesheet" href="styles.css">
-<link rel="alternate" type="application/rss+xml" title="dronelab.dev" href="index.xml" data-external="1"><meta property="og:title" content="DroneLab - Coding Autonomous Drones in Baby Steps – dronelab.dev">
-<meta property="og:image" content="https://dronelab.dev/enter-the-tello/tt.jpg">
+<link rel="stylesheet" href="../../styles.css">
+<meta property="og:title" content="Tello controller navigation - Part 1 – dronelab.dev">
+<meta property="og:description" content="Simulate and control a Tello drone using Python, pygame, and a GameSir T1d controller—learn practical code architecture, input smoothing, and debugging techniques for drone development.">
+<meta property="og:image" content="https://dronelab.dev/posts/tello-controller-navigation-part-1/tello-gamesir-t1d.png">
 <meta property="og:site_name" content="dronelab.dev">
+<meta property="og:image:height" content="400">
+<meta property="og:image:width" content="600">
 </head>
 
-<body class="nav-fixed quarto-light">
+<body class="nav-fixed fullcontent quarto-light">
 
 <div id="quarto-search-results"></div>
-  <header id="quarto-header" class="headroom fixed-top quarto-banner">
+  <header id="quarto-header" class="headroom fixed-top">
     <nav class="navbar navbar-expand-lg " data-bs-theme="dark">
       <div class="navbar-container container-fluid">
       <div class="navbar-brand-container mx-auto">
-    <a href="./index.html" class="navbar-brand navbar-brand-logo">
-    <img src="./logo.png" alt="" class="navbar-logo">
+    <a href="../../index.html" class="navbar-brand navbar-brand-logo">
+    <img src="../../logo.png" alt="" class="navbar-logo">
     </a>
-    <a class="navbar-brand" href="./index.html">
+    <a class="navbar-brand" href="../../index.html">
     <span class="navbar-title">dronelab.dev</span>
     </a>
   </div>
@@ -165,7 +112,7 @@ window.Quarto = {
           <div class="collapse navbar-collapse" id="navbarCollapse">
             <ul class="navbar-nav navbar-nav-scroll ms-auto">
   <li class="nav-item">
-    <a class="nav-link" href="./about.html"> 
+    <a class="nav-link" href="../../about.html"> 
 <span class="menu-text">About</span></a>
   </li>  
   <li class="nav-item compact">
@@ -179,7 +126,7 @@ window.Quarto = {
 <span class="menu-text"></span></a>
   </li>  
   <li class="nav-item compact">
-    <a class="nav-link" href="./index.xml"> <i class="bi bi-rss" role="img">
+    <a class="nav-link" href="../../index.xml"> <i class="bi bi-rss" role="img">
 </i> 
 <span class="menu-text"></span></a>
   </li>  
@@ -191,274 +138,193 @@ window.Quarto = {
     </nav>
 </header>
 <!-- content -->
-<header id="title-block-header" class="quarto-title-block default page-columns page-full">
-  <div class="quarto-title-banner page-columns page-full">
-    <div class="quarto-title column-page-left">
-      <h1 class="title">DroneLab - Coding Autonomous Drones in Baby Steps</h1>
-                      </div>
-  </div>
-    
-  
-  <div class="quarto-title-meta column-page-left">
-
-      
-    
-      
-    </div>
-    
-  
-  </header><div id="quarto-content" class="quarto-container page-columns page-rows-contents page-layout-full page-navbar">
+<div id="quarto-content" class="quarto-container page-columns page-rows-contents page-layout-article page-navbar">
 <!-- sidebar -->
 <!-- margin-sidebar -->
-    <div id="quarto-margin-sidebar" class="sidebar margin-sidebar">
-        
-    <h5 class="quarto-listing-category-title">Categories</h5><div class="quarto-listing-category category-default"><div class="category" data-category="">All <span class="quarto-category-count">(7)</span></div><div class="category" data-category="Y29kZQ==">code <span class="quarto-category-count">(5)</span></div><div class="category" data-category="ZHJvbmU=">drone <span class="quarto-category-count">(6)</span></div><div class="category" data-category="b3Blbi1zb3VyY2U=">open-source <span class="quarto-category-count">(2)</span></div><div class="category" data-category="cHlnYW1l">pygame <span class="quarto-category-count">(3)</span></div><div class="category" data-category="c2ltdWxhdG9y">simulator <span class="quarto-category-count">(1)</span></div></div></div>
+    
 <!-- main -->
-<main class="content quarto-banner-title-block column-page-left" id="quarto-document-content">
+<main class="content" id="quarto-document-content"><header id="title-block-header" class="quarto-title-block"><h1 class="title display-7">Tello controller navigation - Part 1</h1></header>
+
+<header id="title-block-header">
+
+<p class="author">Mark Pors</p>
+
+<p class="date">2025-05-07</p>
+</header>
 
 
-
-
-
-
-
-
-
-<div class="quarto-listing quarto-listing-container-default" id="listing-listing">
-<div class="list quarto-listing-default">
-<div class="quarto-post image-right" data-index="0" data-categories="ZHJvbmUlMkNjb2RlJTJDcHlnYW1lJTJDc2ltdWxhdG9y" data-listing-date-sort="1746568800000" data-listing-file-modified-sort="1746637308512" data-listing-date-modified-sort="NaN" data-listing-reading-time-sort="4" data-listing-word-count-sort="772">
-<div class="thumbnail"><a href="./posts/tello-controller-navigation-part-1/index.html" class="no-external">
-
-<img loading="lazy" src="./posts/tello-controller-navigation-part-1/tello-gamesir-t1d.png" class="thumbnail-image">
-
-</a></div>
-<div class="body">
-<h3 class="no-anchor listing-title">
-<a href="./posts/tello-controller-navigation-part-1/index.html" class="no-external">Tello controller navigation - Part 1</a>
-</h3>
-<div class="listing-categories">
-
-<div class="listing-category" onclick="window.quartoListingCategory('ZHJvbmU='); return false;">drone</div>
-
-<div class="listing-category" onclick="window.quartoListingCategory('Y29kZQ=='); return false;">code</div>
-
-<div class="listing-category" onclick="window.quartoListingCategory('cHlnYW1l'); return false;">pygame</div>
-
-<div class="listing-category" onclick="window.quartoListingCategory('c2ltdWxhdG9y'); return false;">simulator</div>
-
+<div class="callout callout-style-default callout-tip callout-titled">
+<div class="callout-header d-flex align-content-center" data-bs-toggle="collapse" data-bs-target=".callout-1-contents" aria-controls="callout-1" aria-expanded="false" aria-label="Toggle callout">
+<div class="callout-icon-container">
+<i class="callout-icon"></i>
 </div>
-<div class="delink listing-description"><a href="./posts/tello-controller-navigation-part-1/index.html" class="no-external">
-<p>Simulate and control a Tello drone using Python, pygame, and a GameSir T1d controller—learn practical code architecture, input smoothing, and debugging techniques for drone development.</p>
-</a></div>
+<div class="callout-title-container flex-fill">
+TL;DR
 </div>
-<div class="metadata">
-<a href="./posts/tello-controller-navigation-part-1/index.html" class="no-external">
-<div class="listing-date">
-May 7, 2025
+<div class="callout-btn-toggle d-inline-block border-0 py-1 ps-1 pe-0 float-end"><i class="callout-toggle"></i></div>
 </div>
-<div class="listing-author">
-Mark Pors
+<div id="callout-1" class="callout-1-contents callout-collapse collapse">
+<div class="callout-body-container callout-body">
+<ul>
+<li>Learn how to simulate a Tello drone using Python and pygame—no real drone required</li>
+<li>See how to connect and control the simulator with a GameSir T1d controller</li>
+<li>Discover practical code architecture for drone control, easily swappable with a real Tello/TT</li>
+<li>Get insights into input smoothing, command mapping, and realistic flight physics</li>
+<li>Find out how simulation helps debug controller issues and speeds up development</li>
+<li>Includes code walkthroughs and a live demo video for hands-on understanding</li>
+</ul>
+<div style="text-align: center;">
+<p><strong>Series: <a href="../../series/">Code, Fly &amp; AI</a></strong></p>
 </div>
-</a>
-</div>
-</div>
-<div class="quarto-post image-right" data-index="1" data-categories="cHlnYW1lJTJDY29kZSUyQ29wZW4tc291cmNl" data-listing-date-sort="1746309600000" data-listing-file-modified-sort="1746382237749" data-listing-date-modified-sort="NaN" data-listing-reading-time-sort="5" data-listing-word-count-sort="998">
-<div class="thumbnail"><a href="./posts/gamesir-t1d-package/index.html" class="no-external">
-
-<img loading="lazy" src="./posts/gamesir-t1d-package/gamesir-t1d-pypy.png" class="thumbnail-image">
-
-</a></div>
-<div class="body">
-<h3 class="no-anchor listing-title">
-<a href="./posts/gamesir-t1d-package/index.html" class="no-external">Interlude: GameSir T1d Python package</a>
-</h3>
-<div class="listing-categories">
-
-<div class="listing-category" onclick="window.quartoListingCategory('cHlnYW1l'); return false;">pygame</div>
-
-<div class="listing-category" onclick="window.quartoListingCategory('Y29kZQ=='); return false;">code</div>
-
-<div class="listing-category" onclick="window.quartoListingCategory('b3Blbi1zb3VyY2U='); return false;">open-source</div>
-
-</div>
-<div class="delink listing-description"><a href="./posts/gamesir-t1d-package/index.html" class="no-external">
-<p>Step-by-step guide to packaging, publishing, and using a Python library for the GameSir T1d Bluetooth controller with pygame, using the modern uv toolchain.</p>
-</a></div>
-</div>
-<div class="metadata">
-<a href="./posts/gamesir-t1d-package/index.html" class="no-external">
-<div class="listing-date">
-May 4, 2025
-</div>
-<div class="listing-author">
-Mark Pors
-</div>
-</a>
-</div>
-</div>
-<div class="quarto-post image-right" data-index="2" data-categories="ZHJvbmUlMkNjb2RlJTJDcHlnYW1l" data-listing-date-sort="1746136800000" data-listing-file-modified-sort="1746637141921" data-listing-date-modified-sort="NaN" data-listing-reading-time-sort="20" data-listing-word-count-sort="3843">
-<div class="thumbnail"><a href="./posts/gamesir-t1d-controller/index.html" class="no-external">
-
-<img loading="lazy" src="./posts/gamesir-t1d-controller/GameSir-T1d.png" class="thumbnail-image">
-
-</a></div>
-<div class="body">
-<h3 class="no-anchor listing-title">
-<a href="./posts/gamesir-t1d-controller/index.html" class="no-external">GameSir T1d controller &amp; pygame</a>
-</h3>
-<div class="listing-categories">
-
-<div class="listing-category" onclick="window.quartoListingCategory('ZHJvbmU='); return false;">drone</div>
-
-<div class="listing-category" onclick="window.quartoListingCategory('Y29kZQ=='); return false;">code</div>
-
-<div class="listing-category" onclick="window.quartoListingCategory('cHlnYW1l'); return false;">pygame</div>
-
-</div>
-<div class="delink listing-description"><a href="./posts/gamesir-t1d-controller/index.html" class="no-external">
-<p>Learn how to connect and use the GameSir T1d controller with your computer for Tello drone control using Python, BLE hacking, and a pygame-compatible wrapper. Step-by-step guide with working code.</p>
-</a></div>
-</div>
-<div class="metadata">
-<a href="./posts/gamesir-t1d-controller/index.html" class="no-external">
-<div class="listing-date">
-May 2, 2025
-</div>
-<div class="listing-author">
-Mark Pors
-</div>
-</a>
-</div>
-</div>
-<div class="quarto-post image-right" data-index="3" data-categories="ZHJvbmUlMkNjb2Rl" data-listing-date-sort="1745704800000" data-listing-file-modified-sort="1746209045792" data-listing-date-modified-sort="NaN" data-listing-reading-time-sort="9" data-listing-word-count-sort="1621">
-<div class="thumbnail"><a href="./posts/key-navigation-video-snapshots/index.html" class="no-external">
-
-<img loading="lazy" src="./posts/key-navigation-video-snapshots/snapshots.png" class="thumbnail-image">
-
-</a></div>
-<div class="body">
-<h3 class="no-anchor listing-title">
-<a href="./posts/key-navigation-video-snapshots/index.html" class="no-external">Key navigation &amp; Video snapshots</a>
-</h3>
-<div class="listing-categories">
-
-<div class="listing-category" onclick="window.quartoListingCategory('ZHJvbmU='); return false;">drone</div>
-
-<div class="listing-category" onclick="window.quartoListingCategory('Y29kZQ=='); return false;">code</div>
-
-</div>
-<div class="delink listing-description"><a href="./posts/key-navigation-video-snapshots/index.html" class="no-external">
-<p>Hands-on guide to controlling a Tello drone with Python and pygame: learn responsive keyboard navigation, smooth velocity-based movement, live video streaming, and how to capture snapshots from the drone feed.</p>
-</a></div>
-</div>
-<div class="metadata">
-<a href="./posts/key-navigation-video-snapshots/index.html" class="no-external">
-<div class="listing-date">
-Apr 27, 2025
-</div>
-<div class="listing-author">
-Mark Pors
-</div>
-</a>
-</div>
-</div>
-<div class="quarto-post image-right" data-index="4" data-categories="ZHJvbmUlMkNvcGVuLXNvdXJjZQ==" data-listing-date-sort="1745532000000" data-listing-file-modified-sort="1746121322482" data-listing-date-modified-sort="NaN" data-listing-reading-time-sort="2" data-listing-word-count-sort="211">
-<div class="thumbnail"><a href="./posts/i-am-a-pilot/index.html" class="no-external">
-
-<img loading="lazy" src="./posts/i-am-a-pilot/pilot.png" class="thumbnail-image">
-
-</a></div>
-<div class="body">
-<h3 class="no-anchor listing-title">
-<a href="./posts/i-am-a-pilot/index.html" class="no-external">Interlude: I’m a Pilot!</a>
-</h3>
-<div class="listing-categories">
-
-<div class="listing-category" onclick="window.quartoListingCategory('ZHJvbmU='); return false;">drone</div>
-
-<div class="listing-category" onclick="window.quartoListingCategory('b3Blbi1zb3VyY2U='); return false;">open-source</div>
-
-</div>
-<div class="delink listing-description"><a href="./posts/i-am-a-pilot/index.html" class="no-external">
-<p>Passed the EASA A1/A3 drone pilot exam and built a free web-based practice app. Learn how to prepare for the EASA UAV certification and access open-source study tools.</p>
-</a></div>
-</div>
-<div class="metadata">
-<a href="./posts/i-am-a-pilot/index.html" class="no-external">
-<div class="listing-date">
-Apr 25, 2025
-</div>
-<div class="listing-author">
-Mark Pors
-</div>
-</a>
-</div>
-</div>
-<div class="quarto-post image-right" data-index="5" data-categories="ZHJvbmUlMkNjb2Rl" data-listing-date-sort="1745445600000" data-listing-file-modified-sort="1745778978876" data-listing-date-modified-sort="NaN" data-listing-reading-time-sort="8" data-listing-word-count-sort="1582">
-<div class="thumbnail"><a href="./posts/crash-the-tello/index.html" class="no-external">
-
-<img loading="lazy" src="./posts/crash-the-tello/crashed-TT2.png" class="thumbnail-image">
-
-</a></div>
-<div class="body">
-<h3 class="no-anchor listing-title">
-<a href="./posts/crash-the-tello/index.html" class="no-external">Crash the Tello (with and without code)</a>
-</h3>
-<div class="listing-categories">
-
-<div class="listing-category" onclick="window.quartoListingCategory('ZHJvbmU='); return false;">drone</div>
-
-<div class="listing-category" onclick="window.quartoListingCategory('Y29kZQ=='); return false;">code</div>
-
-</div>
-<div class="delink listing-description"><a href="./posts/crash-the-tello/index.html" class="no-external">
-<p>Learn how to fly and program the DJI Tello (RoboMaster TT) drone, avoid common beginner crashes, and get started with Python coding using the Tello SDK.</p>
-</a></div>
-</div>
-<div class="metadata">
-<a href="./posts/crash-the-tello/index.html" class="no-external">
-<div class="listing-date">
-Apr 24, 2025
-</div>
-<div class="listing-author">
-Mark Pors
-</div>
-</a>
-</div>
-</div>
-<div class="quarto-post image-right" data-index="6" data-categories="ZHJvbmU=" data-listing-date-sort="1745100000000" data-listing-file-modified-sort="1745779255020" data-listing-date-modified-sort="NaN" data-listing-reading-time-sort="3" data-listing-word-count-sort="491">
-<div class="thumbnail"><a href="./posts/enter-the-tello/index.html" class="no-external">
-
-<img loading="lazy" src="./posts/enter-the-tello/tt.jpg" class="thumbnail-image">
-
-</a></div>
-<div class="body">
-<h3 class="no-anchor listing-title">
-<a href="./posts/enter-the-tello/index.html" class="no-external">Enter the Tello</a>
-</h3>
-<div class="listing-categories">
-
-<div class="listing-category" onclick="window.quartoListingCategory('ZHJvbmU='); return false;">drone</div>
-
-</div>
-<div class="delink listing-description"><a href="./posts/enter-the-tello/index.html" class="no-external">
-<p>Discover how to start building an autonomous scouting drone for hiking using the DJI RoboMaster TT (Tello Talent). Follow a beginner’s journey into drones, coding, and computer vision.</p>
-</a></div>
-</div>
-<div class="metadata">
-<a href="./posts/enter-the-tello/index.html" class="no-external">
-<div class="listing-date">
-Apr 20, 2025
-</div>
-<div class="listing-author">
-Mark Pors
-</div>
-</a>
+<div style="display: flex; justify-content: space-between; margin-top: 0.5em;">
+<div>
+<a href="../../posts/gamesir-t1d-controller/">← Previous: GameSir T1d controller &amp; pygame</a>
 </div>
 </div>
 </div>
-<div class="listing-no-matching d-none">No matching items</div>
-</div></main> <!-- /main -->
+</div>
+</div>
+<section id="what-happened-with-the-tello" class="level2">
+<h2 class="anchored" data-anchor-id="what-happened-with-the-tello">What happened with the Tello?</h2>
+<p>The whole point was to hook up the controller with the Tello/TT, but it was <a href="../../posts/gamesir-t1d-controller/">not as simple</a> as I thought. Now that is behind us we can again focus on our original goal: control the RoboMaster TT with the GameSir T1d through a Python script running on a computer.</p>
+<div style="text-align: center;">
+<p><img src="tello-gamesir-t1d.png" class="img-fluid"></p>
+</div>
+</section>
+<section id="simulation-first" class="level2">
+<h2 class="anchored" data-anchor-id="simulation-first">Simulation first</h2>
+<p>I am traveling right now, and didn’t bring my drone, but I did bring the controller so I could at least get some work done. What can we do without the Tello drone? We ask Claude.ai to whip up a simple simulator!</p>
+<p>I am interested in the using simulators anyway. The software/model development cycle with an actual drone in the loop is a bit of a hassle. Especially later on with a larger drone. So, in the style of this blog, we start very simple with the most basic of simulators.</p>
+</section>
+<section id="the-end-result" class="level2">
+<h2 class="anchored" data-anchor-id="the-end-result">The end result</h2>
+<p>Before we dive into some of the code, let’s see how it looks like:</p>
+<div class="quarto-figure quarto-figure-center">
+<figure class="figure">
+<p><img src="tello-simulation.png" class="img-fluid figure-img"></p>
+<figcaption>Tello simulation</figcaption>
+</figure>
+</div>
+<p>And you can see it in action here: <a href="https://www.youtube.com/watch?v=w1m1eZZjHrk">Gamesir T1d controller with Tello drone simulation demo</a></p>
+<p>It all looks a bit lame, but it has already been very useful!</p>
+<p>First of all there was a nasty bug in the controller package that periodically told the drone to land (it pressed the A key out of nowhere every now and then).</p>
+<p>Secondly, I needed to think about the architecture of the code, which doesn’t really change when we connect the actual drone.</p>
+<p>The code is here: <a href="https://github.com/pors/tello-play/blob/main/tello_controller_sim.py">tello_controller_sim.py</a>.</p>
+</section>
+<section id="how-does-it-work" class="level2">
+<h2 class="anchored" data-anchor-id="how-does-it-work">How does it work?</h2>
+<p>The application simulates a Tello drone’s physics and behavior, providing a visual interface that shows:</p>
+<ul>
+<li>Top-down and side views of the drone</li>
+<li>Telemetry data (position, rotation, battery)</li>
+<li>Controller state visualization</li>
+<li>Flight path trail</li>
+</ul>
+<p>The simulation includes realistic features like:</p>
+<ul>
+<li>Gradual takeoff and landing sequences</li>
+<li>Battery consumption</li>
+<li>Physical constraints (can’t go below ground)</li>
+<li>Input filtering for smoother control</li>
+</ul>
+<p>The code consists of three classes:</p>
+<ol type="1">
+<li>TelloSimulator - Simulates the physics and state of a virtual drone</li>
+<li>FlightController - Handles controller input and sends commands to the drone</li>
+<li>DroneSimulatorApp - Main app that integrates everything with visualization</li>
+</ol>
+<p>Let’s have a look at each class in detail:</p>
+<section id="tellosimulator" class="level3">
+<h3 class="anchored" data-anchor-id="tellosimulator">TelloSimulator</h3>
+<p>This class creates a virtual model of a Tello drone with (more or less) realistic physics. This will be swapped out with the actual drone through the <code>djitellopy</code> library in my next post.</p>
+<section id="key-properties" class="level4">
+<h4 class="anchored" data-anchor-id="key-properties">Key Properties:</h4>
+<ul>
+<li><code>position</code> - 3D position vector [x, y, z] in meters</li>
+<li><code>rotation</code> - Yaw rotation in degrees (0-360°)</li>
+<li><code>velocity</code> - 4D vector [left/right, forward/back, up/down, yaw]</li>
+<li><code>is_connected</code>, <code>is_flying</code>, <code>battery</code> - Drone state tracking</li>
+<li><code>is_taking_off</code>, <code>is_landing</code> - Transitional states</li>
+</ul>
+</section>
+<section id="key-methods" class="level4">
+<h4 class="anchored" data-anchor-id="key-methods">Key Methods:</h4>
+<ul>
+<li><code>update(dt)</code> - Updates position and state based on time delta</li>
+<li><code>takeoff()</code> - Initiates gradual ascent to target height</li>
+<li><code>land()</code> - Initiates gradual descent to ground</li>
+<li><code>emergency()</code> - Immediately stops motors (safety feature)</li>
+<li><code>send_rc_control()</code> - Accepts control values and updates velocity</li>
+</ul>
+<p>The <code>update()</code> method handles all physics calculations:</p>
+<ul>
+<li>Different behavior during takeoff/landing phases</li>
+<li>Velocity-based position updates with proper trigonometry for directional movement</li>
+<li>Battery drain simulation</li>
+<li>Prevents clipping through the ground</li>
+</ul>
+</section>
+</section>
+<section id="flightcontroller" class="level3">
+<h3 class="anchored" data-anchor-id="flightcontroller">FlightController</h3>
+<p>This class processes raw controller inputs and translates them into drone commands.</p>
+<section id="key-features" class="level4">
+<h4 class="anchored" data-anchor-id="key-features">Key Features:</h4>
+<ul>
+<li>Input smoothing with <code>filter_strength</code> (0.8 = heavy smoothing)</li>
+<li><code>deadband</code> (0.03) to ignore tiny accidental joystick movements</li>
+<li>Speed control with <code>speed_multiplier</code> (adjustable via L1/R1 buttons)</li>
+<li>Fixed rate command sending (20Hz)</li>
+<li>Button edge detection (reacts to press, not hold)</li>
+<li>Mapping follows “European style” (right stick for primary movement)</li>
+</ul>
+</section>
+<section id="methods" class="level4">
+<h4 class="anchored" data-anchor-id="methods">Methods:</h4>
+<ul>
+<li><code>process_input()</code> - Processes controller inputs with filtering</li>
+<li><code>process_buttons()</code> - Handles button presses with edge detection</li>
+</ul>
+<p>The control flow works like this:</p>
+<ol type="1">
+<li>Read raw joystick values</li>
+<li>Apply deadband (zero out very small inputs)</li>
+<li>Apply smoothing filter</li>
+<li>Convert to integer values (-100 to 100)</li>
+<li>Send commands to drone at fixed intervals</li>
+</ol>
+</section>
+</section>
+<section id="dronesimulatorapp" class="level3">
+<h3 class="anchored" data-anchor-id="dronesimulatorapp">DroneSimulatorApp</h3>
+<p>The main application class that brings everything together. It is more or less a pygame application that takes care of the control loop and visualization. The details are not too interesting.</p>
+</section>
+</section>
+<section id="whats-next" class="level2">
+<h2 class="anchored" data-anchor-id="whats-next">What’s next?</h2>
+<p>In Part 2 of the Tello controller navigation I will replace the simulator with my RoboMaster TT. Read on…</p>
+<div class="callout callout-style-simple callout-note no-icon">
+<div class="callout-body d-flex">
+<div class="callout-icon-container">
+<i class="callout-icon no-icon"></i>
+</div>
+<div class="callout-body-container">
+<div style="text-align: center;">
+<p><strong>Series: <a href="../../series/">Code, Fly &amp; AI</a></strong></p>
+</div>
+<div style="display: flex; justify-content: space-between; margin-top: 0.5em;">
+<div>
+<a href="../../posts/gamesir-t1d-controller/">← Previous: GameSir T1d controller &amp; pygame</a>
+</div>
+</div>
+</div>
+</div>
+</div>
+
+
+</section>
+
+</main> <!-- /main -->
 <script id="quarto-html-after-body" type="application/javascript">
   window.document.addEventListener("DOMContentLoaded", function (event) {
     const icon = "";
