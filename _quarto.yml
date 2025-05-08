@@ -11,6 +11,7 @@ website:
     image: enter-the-tello/tt.jpg
   google-analytics: "G-J790G06FED"
   site-url: https://dronelab.dev
+  favicon: favicon.ico
   description: "DroneLab - Coding Autonomous Drones in Baby Steps."
   navbar:
     logo: logo.png
