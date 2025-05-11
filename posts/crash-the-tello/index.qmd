@@ -2,7 +2,7 @@
 title: "Crash the Tello (with and without code)"
 author: "Mark Pors"
 date: "2025-04-24"
-categories: [drone, code]
+categories: [drone, code, tello]
 image: "crashed-TT2.png"
 description: "Learn how to fly and program the DJI Tello (RoboMaster TT) drone, avoid common beginner crashes, and get started with Python coding using the Tello SDK."
 description-meta: "Step-by-step guide to flying and coding the DJI Tello (RoboMaster TT) drone. Covers manual flight tips, common pitfalls, and Python SDK programming for beginners."

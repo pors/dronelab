@@ -4,6 +4,10 @@ project:
   resources:
     - easa-exam/**
     - CNAME
+  preview:
+    port: 4200
+    browser: false
+    navigate: true
 
 website:
   title: "dronelab.dev"

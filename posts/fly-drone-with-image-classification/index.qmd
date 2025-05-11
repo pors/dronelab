@@ -1,0 +1,57 @@
+---
+title: "Fly a drone with: Image classification"
+author: "Mark Pors"
+date: "2025-05-15"
+categories: [drone, code, tello, machine learning, image classification, fast.ai]
+image: tello-gamesir-t1d-photo.png
+series: "Code, Fly & AI"
+order: 7
+draft: true
+---
+
+@@@ Remove draft: true and Write the header contents for SEO:
+description
+meta-description
+keywords
+
+::: {.callout-tip collapse="true"}
+## TL;DR
+@@@ Write a tight, high-signal TL;DR summarizing the key takeaways from this post. Focus on what the reader learns or does, not just what happens. Use bullet points, be clear, concise, and engaging. Reader might use this to decide to continue reading.
+
+<div style="text-align: center;">
+<strong>Series: <a href="/series/">Code, Fly & AI</a></strong>
+</div>
+
+<div style="display: flex; justify-content: space-between; margin-top: 0.5em;">
+  <div>[← Previous: Tello controller navigation - Part 2](/posts/tello-controller-navigation-part-2/)</div>
+</div>
+
+:::
+
+## The path to autonomous flying
+
+Now that we have the Tello / RoboMaster TT under control with a mobile app, a keyboard, and a game controller we can make the first steps to remove control all together.
+
+I'm sure there have been written many books about this subject and there is loads of scientific research:
+
+![Google scholar search for "autonomous drones"](papers-autonomous-drones.png)
+
+Over 17k results since 2024; OMG! Good thing that LLM's have read all that :)
+
+I'm not going to do anything with it for now, let's just try out a couple of naive ideas and see were we end up.
+
+## Naive approach #1: Image classification
+
+
+
+
+
+::: {.callout-note appearance="minimal"}
+<div style="text-align: center;">
+<strong>Series: <a href="/series/">Code, Fly & AI</a></strong>
+</div>
+
+<div style="display: flex; justify-content: space-between; margin-top: 0.5em;">
+  <div>[← Previous: Tello controller navigation - Part 2](/posts/tello-controller-navigation-part-2/)</div>
+</div>
+:::

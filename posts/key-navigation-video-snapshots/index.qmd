@@ -2,7 +2,7 @@
 title: "Key navigation & Video snapshots"
 author: "Mark Pors"
 date: "2025-04-27"
-categories: [drone, code]
+categories: [drone, code, pygame, tello]
 image: snapshots.png
 description: "Hands-on guide to controlling a Tello drone with Python and pygame: learn responsive keyboard navigation, smooth velocity-based movement, live video streaming, and how to capture snapshots from the drone feed."
 description-meta: "Master Tello drone control using Python and pygame. This post covers event-based keyboard navigation, smooth velocity commands, live video streaming, overlaying status info, and saving video snapshots."

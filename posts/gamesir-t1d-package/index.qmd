@@ -2,7 +2,7 @@
 title: "Interlude: GameSir T1d Python package"
 author: "Mark Pors"
 date: "2025-05-04"
-categories: [pygame, code, open-source]
+categories: [pygame, code, open-source, tello]
 image: gamesir-t1d-pypy.png
 description: "Step-by-step guide to packaging, publishing, and using a Python library for the GameSir T1d Bluetooth controller with pygame, using the modern uv toolchain."
 meta-description: "Learn how to create, publish, and test a Python package for the GameSir T1d controller. Includes uv toolchain usage, BLE scanning, pygame integration, and practical example scripts."

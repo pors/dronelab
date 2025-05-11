@@ -2,7 +2,7 @@
 title: "Tello controller navigation - Part 1"
 author: "Mark Pors"
 date: "2025-05-07"
-categories: [drone, code, pygame, simulator]
+categories: [drone, code, pygame, simulator, tello]
 image: tello-gamesir-t1d.png
 series: "Code, Fly & AI"
 order: 5
@@ -26,6 +26,7 @@ keywords: [Tello drone, Python, pygame, drone simulator, GameSir T1d, drone cont
 
 <div style="display: flex; justify-content: space-between; margin-top: 0.5em;">
   <div>[← Previous: GameSir T1d controller & pygame](/posts/gamesir-t1d-controller/)</div>
+  <div>[Next: Tello controller navigation - Part 2 →](/posts/tello-controller-navigation-part-2/)</div>
 </div>
 
 :::
@@ -35,7 +36,7 @@ keywords: [Tello drone, Python, pygame, drone simulator, GameSir T1d, drone cont
 The whole point was to hook up the controller with the Tello/TT, but it was [not as simple](/posts/gamesir-t1d-controller/) as I thought. Now that is behind us we can again focus on our original goal: control the RoboMaster TT with the GameSir T1d through a Python script running on a computer.
 
 <div style="text-align: center;">
-![](tello-gamesir-t1d.png)
+![GameSir T1d controlling the Tello (simulation)](tello-gamesir-t1d.png)
 </div>
 
 ## Simulation first
@@ -149,5 +150,6 @@ In Part 2 of the Tello controller navigation I will replace the simulator with m
 
 <div style="display: flex; justify-content: space-between; margin-top: 0.5em;">
   <div>[← Previous: GameSir T1d controller & pygame](/posts/gamesir-t1d-controller/)</div>
+  <div>[Next: Tello controller navigation - Part 2 →](/posts/tello-controller-navigation-part-2/)</div>
 </div>
 :::

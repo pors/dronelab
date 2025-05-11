@@ -7,11 +7,11 @@
 <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=yes">
 
 <meta name="author" content="Mark Pors">
-<meta name="dcterms.date" content="2025-05-07">
-<meta name="keywords" content="Tello drone, Python, pygame, drone simulator, GameSir T1d, drone control, input smoothing, code architecture, robotics, simulation, RoboMaster TT">
-<meta name="description" content="Simulate and control a Tello drone using Python, pygame, and a GameSir T1d controller—learn practical code architecture, input smoothing, and debugging techniques for drone development.">
+<meta name="dcterms.date" content="2025-05-11">
+<meta name="keywords" content="DJI Tello, GameSir T1d, Python, djitellopy, Pygame, drone control, video streaming, drone programming, robotics, machine learning, autonomous drones, RoboMaster TT">
+<meta name="description" content="Learn how to connect a GameSir T1d controller to a real Tello drone using Python, integrate live video streaming with Pygame, and set up a foundation for future autonomous drone experiments.">
 
-<title>Tello controller navigation - Part 1 – dronelab.dev</title>
+<title>Tello controller navigation - Part 2 – dronelab.dev</title>
 <style>
 code{white-space: pre-wrap;}
 span.smallcaps{font-variant: small-caps;}
@@ -23,6 +23,41 @@ ul.task-list li input[type="checkbox"] {
   width: 0.8em;
   margin: 0 0.8em 0.2em -1em; /* quarto-specific, see https://github.com/quarto-dev/quarto-cli/issues/4556 */ 
   vertical-align: middle;
+}
+/* CSS for syntax highlighting */
+html { -webkit-text-size-adjust: 100%; }
+pre > code.sourceCode { white-space: pre; position: relative; }
+pre > code.sourceCode > span { display: inline-block; line-height: 1.25; }
+pre > code.sourceCode > span:empty { height: 1.2em; }
+.sourceCode { overflow: visible; }
+code.sourceCode > span { color: inherit; text-decoration: inherit; }
+div.sourceCode { margin: 1em 0; }
+pre.sourceCode { margin: 0; }
+@media screen {
+div.sourceCode { overflow: auto; }
+}
+@media print {
+pre > code.sourceCode { white-space: pre-wrap; }
+pre > code.sourceCode > span { text-indent: -5em; padding-left: 5em; }
+}
+pre.numberSource code
+  { counter-reset: source-line 0; }
+pre.numberSource code > span
+  { position: relative; left: -4em; counter-increment: source-line; }
+pre.numberSource code > span > a:first-child::before
+  { content: counter(source-line);
+    position: relative; left: -1em; text-align: right; vertical-align: baseline;
+    border: none; display: inline-block;
+    -webkit-touch-callout: none; -webkit-user-select: none;
+    -khtml-user-select: none; -moz-user-select: none;
+    -ms-user-select: none; user-select: none;
+    padding: 0 4px; width: 4em;
+  }
+pre.numberSource { margin-left: 3em;  padding-left: 4px; }
+div.sourceCode
+  {   }
+@media screen {
+pre > code.sourceCode > span > a:first-child::before { text-decoration: underline; }
 }
 </style>
 
@@ -84,9 +119,9 @@ gtag('config', 'G-J790G06FED', { 'anonymize_ip': true});
 
 
 <link rel="stylesheet" href="../../styles.css">
-<meta property="og:title" content="Tello controller navigation - Part 1 – dronelab.dev">
-<meta property="og:description" content="Simulate and control a Tello drone using Python, pygame, and a GameSir T1d controller—learn practical code architecture, input smoothing, and debugging techniques for drone development.">
-<meta property="og:image" content="https://dronelab.dev/posts/tello-controller-navigation-part-1/tello-gamesir-t1d.png">
+<meta property="og:title" content="Tello controller navigation - Part 2 – dronelab.dev">
+<meta property="og:description" content="Learn how to connect a GameSir T1d controller to a real Tello drone using Python, integrate live video streaming with Pygame, and set up a foundation for future autonomous drone experiments.">
+<meta property="og:image" content="https://dronelab.dev/posts/tello-controller-navigation-part-2/tello-gamesir-t1d-photo.png">
 <meta property="og:site_name" content="dronelab.dev">
 <meta property="og:image:height" content="400">
 <meta property="og:image:width" content="600">
@@ -144,13 +179,13 @@ gtag('config', 'G-J790G06FED', { 'anonymize_ip': true});
 <!-- margin-sidebar -->
     
 <!-- main -->
-<main class="content" id="quarto-document-content"><header id="title-block-header" class="quarto-title-block"><h1 class="title display-7">Tello controller navigation - Part 1</h1></header>
+<main class="content" id="quarto-document-content"><header id="title-block-header" class="quarto-title-block"><h1 class="title display-7">Tello controller navigation - Part 2</h1></header>
 
 <header id="title-block-header">
 
 <p class="author">Mark Pors</p>
 
-<p class="date">2025-05-07</p>
+<p class="date">2025-05-11</p>
 </header>
 
 
@@ -167,151 +202,139 @@ TL;DR
 <div id="callout-1" class="callout-1-contents callout-collapse collapse">
 <div class="callout-body-container callout-body">
 <ul>
-<li>Learn how to simulate a Tello drone using Python and pygame—no real drone required</li>
-<li>See how to connect and control the simulator with a GameSir T1d controller</li>
-<li>Discover practical code architecture for drone control, easily swappable with a real Tello/TT</li>
-<li>Get insights into input smoothing, command mapping, and realistic flight physics</li>
-<li>Find out how simulation helps debug controller issues and speeds up development</li>
-<li>Includes code walkthroughs and a live demo video for hands-on understanding</li>
+<li>Learn how to connect a physical GameSir T1d controller to a real Tello drone using Python and djitellopy, moving beyond simulation.</li>
+<li>See how to integrate live video streaming from the Tello into your Pygame app, including handling frames and displaying them in real time.</li>
+<li>Get practical code examples for replacing the simulator with a real drone interface, managing video streams, and troubleshooting common issues.</li>
+<li>Understand the structure needed to glue together controller input, drone commands, and video feedback for a seamless flying experience.</li>
+<li>Prepare for the next step: using this setup as a foundation for future machine learning and autonomous drone experiments.</li>
 </ul>
 <div style="text-align: center;">
 <p><strong>Series: <a href="../../series/">Code, Fly &amp; AI</a></strong></p>
 </div>
 <div style="display: flex; justify-content: space-between; margin-top: 0.5em;">
 <div>
-<a href="../../posts/gamesir-t1d-controller/">← Previous: GameSir T1d controller &amp; pygame</a>
-</div>
-<div>
-<a href="../../posts/tello-controller-navigation-part-2/">Next: Tello controller navigation - Part 2 →</a>
+<a href="../../posts/tello-controller-navigation-part-1/">← Previous: Tello controller navigation - Part 1</a>
 </div>
 </div>
 </div>
 </div>
 </div>
-<section id="what-happened-with-the-tello" class="level2">
-<h2 class="anchored" data-anchor-id="what-happened-with-the-tello">What happened with the Tello?</h2>
-<p>The whole point was to hook up the controller with the Tello/TT, but it was <a href="../../posts/gamesir-t1d-controller/">not as simple</a> as I thought. Now that is behind us we can again focus on our original goal: control the RoboMaster TT with the GameSir T1d through a Python script running on a computer.</p>
+<section id="time-to-fly" class="level2">
+<h2 class="anchored" data-anchor-id="time-to-fly">Time to fly</h2>
+<p>This blog is supposed to show my progress with machine learning, but we haven’t touched that yet at all! That will still be the case in this post, but we are close to wrapping up the drone control.</p>
+<p>It is time to combine our previous efforts and connect the drone interface (djitellopy) with the controller interface (gamesir-t1d).</p>
 <div style="text-align: center;">
 <div class="quarto-figure quarto-figure-center">
 <figure class="figure">
-<p><img src="tello-gamesir-t1d.png" class="img-fluid figure-img"></p>
-<figcaption>GameSir T1d controlling the Tello (simulation)</figcaption>
+<p><img src="tello-gamesir-t1d-photo.png" class="img-fluid figure-img"></p>
+<figcaption>GameSir T1d controlling the Tello / RoboMaster TT</figcaption>
 </figure>
 </div>
 </div>
 </section>
-<section id="simulation-first" class="level2">
-<h2 class="anchored" data-anchor-id="simulation-first">Simulation first</h2>
-<p>I am traveling right now, and didn’t bring my drone, but I did bring the controller so I could at least get some work done. What can we do without the Tello drone? We ask Claude.ai to whip up a simple simulator!</p>
-<p>I am interested in the using simulators anyway. The software/model development cycle with an actual drone in the loop is a bit of a hassle. Especially later on with a larger drone. So, in the style of this blog, we start very simple with the most basic of simulators.</p>
+<section id="from-simulator-to-tello" class="level2">
+<h2 class="anchored" data-anchor-id="from-simulator-to-tello">From simulator to Tello</h2>
+<p>Let’s start with the most bare approach and replace the <code>TelloSimulator</code> with a new class <code>TelloDrone</code>, with a similar interface, but driving the Tello via <code>djitellopy</code>.</p>
+<p>The <code>FlightController</code> stays as it was, so we have all the deadbanding and smoothing goodies there.</p>
+<p>Finally, we need to glue these classes together in a similar way we did with the simulator, but without the “fancy” visualization.</p>
+<p>The code looks like this at this stage: <a href="https://github.com/pors/tello-play/tree/245ad32d260e0f178c7deb4f6fe4bec322780508/tt-fly">tt-fly WIP</a>.</p>
+<p>And yes, it flies!</p>
+<div class="quarto-video ratio ratio-16x9"><iframe data-external="1" src="https://www.youtube.com/embed/ITfSsa7b3aQ" title="" frameborder="0" allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture" allowfullscreen=""></iframe></div>
 </section>
-<section id="the-end-result" class="level2">
-<h2 class="anchored" data-anchor-id="the-end-result">The end result</h2>
-<p>Before we dive into some of the code, let’s see how it looks like:</p>
-<div class="quarto-figure quarto-figure-center">
-<figure class="figure">
-<p><img src="tello-simulation.png" class="img-fluid figure-img"></p>
-<figcaption>Tello simulation</figcaption>
-</figure>
-</div>
-<p>And you can see it in action here: <a href="https://www.youtube.com/watch?v=w1m1eZZjHrk">Gamesir T1d controller with Tello drone simulation demo</a></p>
-<p>It all looks a bit lame, but it has already been very useful!</p>
-<p>First of all there was a nasty bug in the controller package that periodically told the drone to land (it pressed the A key out of nowhere every now and then).</p>
-<p>Secondly, I needed to think about the architecture of the code, which doesn’t really change when we connect the actual drone.</p>
-<p>The code is here: <a href="https://github.com/pors/tello-play/blob/main/tello_controller_sim.py">tello_controller_sim.py</a>.</p>
+<section id="add-video-streaming" class="level2">
+<h2 class="anchored" data-anchor-id="add-video-streaming">Add video streaming</h2>
+<p>We accomplished what we were set out to do! At least, I was :) Now that we have some momentum, let’s add the video stream.</p>
+<p>The <code>djitellopy</code> library makes it straightforward. In the <code>TelloDrone</code> class we initialize video streaming:</p>
+<div class="sourceCode" id="cb1"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb1-1"><a href="#cb1-1" aria-hidden="true" tabindex="-1"></a><span class="co"># Make sure stream is off before turning it on</span></span>
+<span id="cb1-2"><a href="#cb1-2" aria-hidden="true" tabindex="-1"></a><span class="cf">try</span>:</span>
+<span id="cb1-3"><a href="#cb1-3" aria-hidden="true" tabindex="-1"></a>    <span class="va">self</span>.tello.streamoff()</span>
+<span id="cb1-4"><a href="#cb1-4" aria-hidden="true" tabindex="-1"></a>    <span class="bu">print</span>(<span class="st">"Stopped any existing video stream"</span>)</span>
+<span id="cb1-5"><a href="#cb1-5" aria-hidden="true" tabindex="-1"></a><span class="cf">except</span> <span class="pp">Exception</span> <span class="im">as</span> e:</span>
+<span id="cb1-6"><a href="#cb1-6" aria-hidden="true" tabindex="-1"></a>    <span class="bu">print</span>(<span class="ss">f"Note: </span><span class="sc">{</span>e<span class="sc">}</span><span class="ss">"</span>)</span>
+<span id="cb1-7"><a href="#cb1-7" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb1-8"><a href="#cb1-8" aria-hidden="true" tabindex="-1"></a><span class="co"># Initialize frame reading with low quality settings</span></span>
+<span id="cb1-9"><a href="#cb1-9" aria-hidden="true" tabindex="-1"></a><span class="va">self</span>.tello.set_video_resolution(<span class="va">self</span>.tello.RESOLUTION_480P)</span>
+<span id="cb1-10"><a href="#cb1-10" aria-hidden="true" tabindex="-1"></a><span class="va">self</span>.tello.set_video_fps(<span class="va">self</span>.tello.FPS_30)</span>
+<span id="cb1-11"><a href="#cb1-11" aria-hidden="true" tabindex="-1"></a><span class="va">self</span>.tello.set_video_bitrate(<span class="va">self</span>.tello.BITRATE_4MBPS)</span>
+<span id="cb1-12"><a href="#cb1-12" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb1-13"><a href="#cb1-13" aria-hidden="true" tabindex="-1"></a><span class="co"># Now turn on the stream</span></span>
+<span id="cb1-14"><a href="#cb1-14" aria-hidden="true" tabindex="-1"></a><span class="va">self</span>.tello.streamon()</span>
+<span id="cb1-15"><a href="#cb1-15" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb1-16"><a href="#cb1-16" aria-hidden="true" tabindex="-1"></a><span class="co"># Get the frame reader</span></span>
+<span id="cb1-17"><a href="#cb1-17" aria-hidden="true" tabindex="-1"></a><span class="va">self</span>.frame_read <span class="op">=</span> <span class="va">self</span>.tello.get_frame_read()</span>
+<span id="cb1-18"><a href="#cb1-18" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb1-19"><a href="#cb1-19" aria-hidden="true" tabindex="-1"></a><span class="bu">print</span>(<span class="st">"Video stream initialized successfully"</span>)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<p>Also, we add a method to expose the frame reader to the main app:</p>
+<div class="sourceCode" id="cb2"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb2-1"><a href="#cb2-1" aria-hidden="true" tabindex="-1"></a><span class="kw">def</span> get_video_frame(<span class="va">self</span>):</span>
+<span id="cb2-2"><a href="#cb2-2" aria-hidden="true" tabindex="-1"></a>    <span class="co">"""Get the current video frame from the drone."""</span></span>
+<span id="cb2-3"><a href="#cb2-3" aria-hidden="true" tabindex="-1"></a>    <span class="cf">if</span> <span class="va">self</span>.frame_read <span class="kw">is</span> <span class="va">None</span>:</span>
+<span id="cb2-4"><a href="#cb2-4" aria-hidden="true" tabindex="-1"></a>        <span class="cf">return</span> <span class="va">None</span></span>
+<span id="cb2-5"><a href="#cb2-5" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb2-6"><a href="#cb2-6" aria-hidden="true" tabindex="-1"></a>    <span class="cf">try</span>:</span>
+<span id="cb2-7"><a href="#cb2-7" aria-hidden="true" tabindex="-1"></a>        frame <span class="op">=</span> <span class="va">self</span>.frame_read.frame</span>
+<span id="cb2-8"><a href="#cb2-8" aria-hidden="true" tabindex="-1"></a>        <span class="cf">if</span> frame <span class="kw">is</span> <span class="va">None</span> <span class="kw">or</span> frame.size <span class="op">==</span> <span class="dv">0</span>:</span>
+<span id="cb2-9"><a href="#cb2-9" aria-hidden="true" tabindex="-1"></a>            <span class="bu">print</span>(<span class="st">"Warning: Received empty frame"</span>)</span>
+<span id="cb2-10"><a href="#cb2-10" aria-hidden="true" tabindex="-1"></a>            <span class="cf">return</span> <span class="va">None</span></span>
+<span id="cb2-11"><a href="#cb2-11" aria-hidden="true" tabindex="-1"></a>        <span class="cf">return</span> frame</span>
+<span id="cb2-12"><a href="#cb2-12" aria-hidden="true" tabindex="-1"></a>    <span class="cf">except</span> <span class="pp">Exception</span> <span class="im">as</span> e:</span>
+<span id="cb2-13"><a href="#cb2-13" aria-hidden="true" tabindex="-1"></a>        <span class="bu">print</span>(<span class="ss">f"Error getting video frame: </span><span class="sc">{</span>e<span class="sc">}</span><span class="ss">"</span>)</span>
+<span id="cb2-14"><a href="#cb2-14" aria-hidden="true" tabindex="-1"></a>        <span class="cf">return</span> <span class="va">None</span></span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<p>Finally, we read frames from the main app and display it in the pygame window:</p>
+<div class="sourceCode" id="cb3"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb3-1"><a href="#cb3-1" aria-hidden="true" tabindex="-1"></a><span class="co"># Display video frame if available</span></span>
+<span id="cb3-2"><a href="#cb3-2" aria-hidden="true" tabindex="-1"></a>frame <span class="op">=</span> <span class="va">self</span>.drone.get_video_frame()</span>
+<span id="cb3-3"><a href="#cb3-3" aria-hidden="true" tabindex="-1"></a><span class="cf">if</span> frame <span class="kw">is</span> <span class="kw">not</span> <span class="va">None</span>:</span>
+<span id="cb3-4"><a href="#cb3-4" aria-hidden="true" tabindex="-1"></a>    <span class="co"># Track FPS</span></span>
+<span id="cb3-5"><a href="#cb3-5" aria-hidden="true" tabindex="-1"></a>    <span class="va">self</span>.frame_count <span class="op">+=</span> <span class="dv">1</span></span>
+<span id="cb3-6"><a href="#cb3-6" aria-hidden="true" tabindex="-1"></a>    now <span class="op">=</span> time.time()</span>
+<span id="cb3-7"><a href="#cb3-7" aria-hidden="true" tabindex="-1"></a>    <span class="cf">if</span> now <span class="op">-</span> <span class="va">self</span>.last_frame_time <span class="op">&gt;=</span> <span class="fl">1.0</span>:  <span class="co"># Calculate FPS every second</span></span>
+<span id="cb3-8"><a href="#cb3-8" aria-hidden="true" tabindex="-1"></a>        fps <span class="op">=</span> <span class="va">self</span>.frame_count <span class="op">/</span> (now <span class="op">-</span> <span class="va">self</span>.last_frame_time)</span>
+<span id="cb3-9"><a href="#cb3-9" aria-hidden="true" tabindex="-1"></a>        <span class="va">self</span>.fps_stats.append(fps)</span>
+<span id="cb3-10"><a href="#cb3-10" aria-hidden="true" tabindex="-1"></a>        <span class="cf">if</span> <span class="bu">len</span>(<span class="va">self</span>.fps_stats) <span class="op">&gt;</span> <span class="dv">10</span>:</span>
+<span id="cb3-11"><a href="#cb3-11" aria-hidden="true" tabindex="-1"></a>            <span class="va">self</span>.fps_stats.pop(<span class="dv">0</span>)</span>
+<span id="cb3-12"><a href="#cb3-12" aria-hidden="true" tabindex="-1"></a>        <span class="va">self</span>.frame_count <span class="op">=</span> <span class="dv">0</span></span>
+<span id="cb3-13"><a href="#cb3-13" aria-hidden="true" tabindex="-1"></a>        <span class="va">self</span>.last_frame_time <span class="op">=</span> now</span>
+<span id="cb3-14"><a href="#cb3-14" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb3-15"><a href="#cb3-15" aria-hidden="true" tabindex="-1"></a>    <span class="co"># Convert numpy array to pygame surface</span></span>
+<span id="cb3-16"><a href="#cb3-16" aria-hidden="true" tabindex="-1"></a>    <span class="cf">try</span>:</span>
+<span id="cb3-17"><a href="#cb3-17" aria-hidden="true" tabindex="-1"></a>        <span class="co"># Ensure frame has the right format for pygame</span></span>
+<span id="cb3-18"><a href="#cb3-18" aria-hidden="true" tabindex="-1"></a>        frame <span class="op">=</span> cv2.cvtColor(frame, cv2.COLOR_BGR2RGB)</span>
+<span id="cb3-19"><a href="#cb3-19" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb3-20"><a href="#cb3-20" aria-hidden="true" tabindex="-1"></a>        <span class="co"># Create a PyGame surface</span></span>
+<span id="cb3-21"><a href="#cb3-21" aria-hidden="true" tabindex="-1"></a>        h, w <span class="op">=</span> frame.shape[:<span class="dv">2</span>]</span>
+<span id="cb3-22"><a href="#cb3-22" aria-hidden="true" tabindex="-1"></a>        pygame_frame <span class="op">=</span> pygame.Surface((w, h))</span>
+<span id="cb3-23"><a href="#cb3-23" aria-hidden="true" tabindex="-1"></a>        pygame.surfarray.blit_array(pygame_frame, np.swapaxes(frame, <span class="dv">0</span>, <span class="dv">1</span>))</span>
+<span id="cb3-24"><a href="#cb3-24" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb3-25"><a href="#cb3-25" aria-hidden="true" tabindex="-1"></a>        <span class="co"># Scale if needed</span></span>
+<span id="cb3-26"><a href="#cb3-26" aria-hidden="true" tabindex="-1"></a>        <span class="cf">if</span> pygame_frame.get_size() <span class="op">!=</span> (</span>
+<span id="cb3-27"><a href="#cb3-27" aria-hidden="true" tabindex="-1"></a>            <span class="va">self</span>.video_rect.width,</span>
+<span id="cb3-28"><a href="#cb3-28" aria-hidden="true" tabindex="-1"></a>            <span class="va">self</span>.video_rect.height,</span>
+<span id="cb3-29"><a href="#cb3-29" aria-hidden="true" tabindex="-1"></a>        ):</span>
+<span id="cb3-30"><a href="#cb3-30" aria-hidden="true" tabindex="-1"></a>            pygame_frame <span class="op">=</span> pygame.transform.scale(</span>
+<span id="cb3-31"><a href="#cb3-31" aria-hidden="true" tabindex="-1"></a>                pygame_frame, (<span class="va">self</span>.video_rect.width, <span class="va">self</span>.video_rect.height)</span>
+<span id="cb3-32"><a href="#cb3-32" aria-hidden="true" tabindex="-1"></a>            )</span>
+<span id="cb3-33"><a href="#cb3-33" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb3-34"><a href="#cb3-34" aria-hidden="true" tabindex="-1"></a>        <span class="va">self</span>.screen.blit(pygame_frame, <span class="va">self</span>.video_rect)</span>
+<span id="cb3-35"><a href="#cb3-35" aria-hidden="true" tabindex="-1"></a>    <span class="cf">except</span> <span class="pp">Exception</span> <span class="im">as</span> e:</span>
+<span id="cb3-36"><a href="#cb3-36" aria-hidden="true" tabindex="-1"></a>        <span class="bu">print</span>(<span class="ss">f"Error displaying frame: </span><span class="sc">{</span>e<span class="sc">}</span><span class="ss">"</span>)</span>
+<span id="cb3-37"><a href="#cb3-37" aria-hidden="true" tabindex="-1"></a>        <span class="co"># Draw a red border to indicate error</span></span>
+<span id="cb3-38"><a href="#cb3-38" aria-hidden="true" tabindex="-1"></a>        pygame.draw.rect(<span class="va">self</span>.screen, (<span class="dv">255</span>, <span class="dv">0</span>, <span class="dv">0</span>), <span class="va">self</span>.video_rect, <span class="dv">2</span>)</span>
+<span id="cb3-39"><a href="#cb3-39" aria-hidden="true" tabindex="-1"></a><span class="cf">else</span>:</span>
+<span id="cb3-40"><a href="#cb3-40" aria-hidden="true" tabindex="-1"></a>    <span class="co"># Draw a placeholder for video</span></span>
+<span id="cb3-41"><a href="#cb3-41" aria-hidden="true" tabindex="-1"></a>    pygame.draw.rect(<span class="va">self</span>.screen, (<span class="dv">40</span>, <span class="dv">40</span>, <span class="dv">60</span>), <span class="va">self</span>.video_rect)</span>
+<span id="cb3-42"><a href="#cb3-42" aria-hidden="true" tabindex="-1"></a>    no_video <span class="op">=</span> <span class="va">self</span>.font.render(<span class="st">"No Video Feed"</span>, <span class="va">True</span>, (<span class="dv">150</span>, <span class="dv">150</span>, <span class="dv">150</span>))</span>
+<span id="cb3-43"><a href="#cb3-43" aria-hidden="true" tabindex="-1"></a>    text_rect <span class="op">=</span> no_video.get_rect(center<span class="op">=</span><span class="va">self</span>.video_rect.center)</span>
+<span id="cb3-44"><a href="#cb3-44" aria-hidden="true" tabindex="-1"></a>    <span class="va">self</span>.screen.blit(no_video, text_rect)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<p>Source for the complete code base: <a href="https://github.com/pors/tello-play/tree/main/tt-fly">tt-fly</a></p>
 </section>
-<section id="how-does-it-work" class="level2">
-<h2 class="anchored" data-anchor-id="how-does-it-work">How does it work?</h2>
-<p>The application simulates a Tello drone’s physics and behavior, providing a visual interface that shows:</p>
-<ul>
-<li>Top-down and side views of the drone</li>
-<li>Telemetry data (position, rotation, battery)</li>
-<li>Controller state visualization</li>
-<li>Flight path trail</li>
-</ul>
-<p>The simulation includes realistic features like:</p>
-<ul>
-<li>Gradual takeoff and landing sequences</li>
-<li>Battery consumption</li>
-<li>Physical constraints (can’t go below ground)</li>
-<li>Input filtering for smoother control</li>
-</ul>
-<p>The code consists of three classes:</p>
-<ol type="1">
-<li>TelloSimulator - Simulates the physics and state of a virtual drone</li>
-<li>FlightController - Handles controller input and sends commands to the drone</li>
-<li>DroneSimulatorApp - Main app that integrates everything with visualization</li>
-</ol>
-<p>Let’s have a look at each class in detail:</p>
-<section id="tellosimulator" class="level3">
-<h3 class="anchored" data-anchor-id="tellosimulator">TelloSimulator</h3>
-<p>This class creates a virtual model of a Tello drone with (more or less) realistic physics. This will be swapped out with the actual drone through the <code>djitellopy</code> library in my next post.</p>
-<section id="key-properties" class="level4">
-<h4 class="anchored" data-anchor-id="key-properties">Key Properties:</h4>
-<ul>
-<li><code>position</code> - 3D position vector [x, y, z] in meters</li>
-<li><code>rotation</code> - Yaw rotation in degrees (0-360°)</li>
-<li><code>velocity</code> - 4D vector [left/right, forward/back, up/down, yaw]</li>
-<li><code>is_connected</code>, <code>is_flying</code>, <code>battery</code> - Drone state tracking</li>
-<li><code>is_taking_off</code>, <code>is_landing</code> - Transitional states</li>
-</ul>
-</section>
-<section id="key-methods" class="level4">
-<h4 class="anchored" data-anchor-id="key-methods">Key Methods:</h4>
-<ul>
-<li><code>update(dt)</code> - Updates position and state based on time delta</li>
-<li><code>takeoff()</code> - Initiates gradual ascent to target height</li>
-<li><code>land()</code> - Initiates gradual descent to ground</li>
-<li><code>emergency()</code> - Immediately stops motors (safety feature)</li>
-<li><code>send_rc_control()</code> - Accepts control values and updates velocity</li>
-</ul>
-<p>The <code>update()</code> method handles all physics calculations:</p>
-<ul>
-<li>Different behavior during takeoff/landing phases</li>
-<li>Velocity-based position updates with proper trigonometry for directional movement</li>
-<li>Battery drain simulation</li>
-<li>Prevents clipping through the ground</li>
-</ul>
-</section>
-</section>
-<section id="flightcontroller" class="level3">
-<h3 class="anchored" data-anchor-id="flightcontroller">FlightController</h3>
-<p>This class processes raw controller inputs and translates them into drone commands.</p>
-<section id="key-features" class="level4">
-<h4 class="anchored" data-anchor-id="key-features">Key Features:</h4>
-<ul>
-<li>Input smoothing with <code>filter_strength</code> (0.8 = heavy smoothing)</li>
-<li><code>deadband</code> (0.03) to ignore tiny accidental joystick movements</li>
-<li>Speed control with <code>speed_multiplier</code> (adjustable via L1/R1 buttons)</li>
-<li>Fixed rate command sending (20Hz)</li>
-<li>Button edge detection (reacts to press, not hold)</li>
-<li>Mapping follows “European style” (right stick for primary movement)</li>
-</ul>
-</section>
-<section id="methods" class="level4">
-<h4 class="anchored" data-anchor-id="methods">Methods:</h4>
-<ul>
-<li><code>process_input()</code> - Processes controller inputs with filtering</li>
-<li><code>process_buttons()</code> - Handles button presses with edge detection</li>
-</ul>
-<p>The control flow works like this:</p>
-<ol type="1">
-<li>Read raw joystick values</li>
-<li>Apply deadband (zero out very small inputs)</li>
-<li>Apply smoothing filter</li>
-<li>Convert to integer values (-100 to 100)</li>
-<li>Send commands to drone at fixed intervals</li>
-</ol>
-</section>
-</section>
-<section id="dronesimulatorapp" class="level3">
-<h3 class="anchored" data-anchor-id="dronesimulatorapp">DroneSimulatorApp</h3>
-<p>The main application class that brings everything together. It is more or less a pygame application that takes care of the control loop and visualization. The details are not too interesting.</p>
-</section>
+<section id="test-flight" class="level2">
+<h2 class="anchored" data-anchor-id="test-flight">Test flight!</h2>
+<p>Time to try it out with an audience:</p>
+<div class="quarto-video ratio ratio-16x9"><iframe data-external="1" src="https://www.youtube.com/embed/DKT5b044EuY" title="" frameborder="0" allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture" allowfullscreen=""></iframe></div>
+<p>I think I worked on this more than enough, and I have a plenty of experience with remote controlling a drone now. Time to move on…</p>
 </section>
 <section id="whats-next" class="level2">
 <h2 class="anchored" data-anchor-id="whats-next">What’s next?</h2>
-<p>In Part 2 of the Tello controller navigation I will replace the simulator with my RoboMaster TT. Read on…</p>
+<p>It is about time to introduce some machine learning. If the goal is to work towards an autonomous drone, at some point I have to get my feet wet. I have plenty of ideas on what to experiment with. Read on for the first one…</p>
 <div class="callout callout-style-simple callout-note no-icon">
 <div class="callout-body d-flex">
 <div class="callout-icon-container">
@@ -323,10 +346,7 @@ TL;DR
 </div>
 <div style="display: flex; justify-content: space-between; margin-top: 0.5em;">
 <div>
-<a href="../../posts/gamesir-t1d-controller/">← Previous: GameSir T1d controller &amp; pygame</a>
-</div>
-<div>
-<a href="../../posts/tello-controller-navigation-part-2/">Next: Tello controller navigation - Part 2 →</a>
+<a href="../../posts/tello-controller-navigation-part-1/">← Previous: Tello controller navigation - Part 1</a>
 </div>
 </div>
 </div>
