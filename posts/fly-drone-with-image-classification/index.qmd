@@ -6,7 +6,6 @@ categories: [drone, code, tello, machine learning, image classification, fast.ai
 image: tello-gamesir-t1d-photo.png
 series: "Code, Fly & AI"
 order: 7
-draft: true
 ---
 
 @@@ Remove draft: true and Write the header contents for SEO:
@@ -42,9 +41,149 @@ I'm not going to do anything with it for now, let's just try out a couple of nai
 
 ## Naive approach #1: Image classification
 
+No, of course image classification is not the solution to autonomous flying, but probably it is in there somewhere, and I am following the [Fast.ai course](https://course.fast.ai/) which starts off with image classification.
+
+Jeremy Howard is the man behind both the [Fast.ai library](https://github.com/fastai/fastai) and the course, and his approach is to create a simple baseline model first:
+
+> Baseline: A simple model which you are confident should perform reasonably well. It should be very simple to implement, and very easy to test, so that you can then test each of your improved ideas, and make sure they are always better than your baseline. Without starting with a sensible baseline, it is very difficult to know whether your super-fancy models are actually any good.
+
+So, that's what I am going to do: fine-tune an image classifier with a limited amount of data and with a simple base model.
+
+The testing ground for my drone has a couple of very obvious obstacles: lamps handing from the ceiling. So this is going to be a lamp or no-lamp in the image classifier.
+
+## Lamp or no-lamp image classifier 😞 → 😐 → 🙂 → 😊 → 😃 → 😁
+
+### First attempt 😞
+
+My first attempt can be seen here: [Baseline model: Is there a lamp?](https://colab.research.google.com/drive/1QaIn0EaqsohlFDD6tXMaGLoD9nCyskHC?usp=sharing). 
+
+Not a great result (understatement), it over-fits from the start, and the reason is obvious: label noise (jargon for have data labelled wrong). 
+
+Here are some wonderful samples from the training set:
+
+![label noise](label-noise.png)
+
+It is a bit hard to Google/DDG for interior *without* hanging lamps, so let's try training the model another time after manual cleanup.
+
+### Cleanup of the image labels
+
+I said *manual* cleanup, but I'm going to cheat and use some advanced AI model (CLIP) to be able to train a very simple model. 
+
+Code is written by chatgpt: [Lamp Dataset Cleaner (CLIP-based)](https://colab.research.google.com/drive/1HoUSkMwQqKWJ10-YCpIMq3sVACpVAUwl?usp=sharing).
+
+And the result is.... MEH! Not much better than what I started with.
+
+So, back to manual cleaning. I'll be back soon...
+
+One hour later: DONE!
+
+The result is a huge amount of images with a lamp, and very few without it. Reason being: if you use `ceiling` in a search term, lamps will show up very often. The query `home interior wall  -lamp` was quite a bit better, not as many lamps! :)
+
+More manual cleaning to do...
+
+Another hour later: DONE!
+
+### Second attempt 😐
+
+With the cleaned up data I did another run, see: [Baseline model: Is there a lamp? Second attempt](https://colab.research.google.com/drive/10pxEfb82zvp99F98Bjg0gCND8v_eC-AT?usp=sharing).
+
+The result I quite a bit better with a ~10% error rate, but there still is over-fitting starting at epoch 2. The 16 top losses look like this:
+
+![Top losses: Prediction/Actual/Loss/Probability](top-losses.png)
+
+To be fair, some of these images are pretty tough to classify IMO. Anyway, let's see if we can do better.
+
+### Third attempt 😐: Better resizing and Augmentation
+
+There's a couple of things we can try, here is what I did try:
+
+Resizing with different methods:
+
+```md
+* item_tfms=[Resize(400, ResizeMethod.Pad, pad_mode='zeros')]
+* item_tfms=[Resize(400, ResizeMethod.Squish)]
+* item_tfms=[Resize(400)]
+* item_tfms=[RandomResizedCrop(400, min_scale=0.6)]
+* item_tfms=[RandomResizedCrop(400, min_scale=0.3)]
+* item_tfms=[RandomResizedCrop(400, min_scale=0.8)]
+```
+
+Augmentation:
+
+```md
+* item_tfms=[Resize(400, ResizeMethod.Pad, pad_mode='zeros')],
+* batch_tfms=aug_transforms()
+```
+
+The runs can be seen here: [Baseline model: Is there a lamp? Third attempt](https://colab.research.google.com/drive/1PqKdYnMIHn4KQLDXepr71AH3YdlbuYsf?usp=sharing).
+
+Something very annoying is that subsequent runs - without changing anything - have different results, which makes doing experiments impossible. I asked Gemini about it and it said:
+
+> You've done a good job providing a seed for reproducibility with seed_everything(42). However, even with careful seeding, variations in results can sometimes occur in deep learning training for a few reasons, especially within an environment like Colab:
+>
+> - GPU Non-Determinism: While you've set torch.backends.cudnn.deterministic = True, not all operations on the GPU are guaranteed to be completely deterministic across different runs or hardware configurations. Some highly optimized kernels might involve non-deterministic algorithms for performance reasons.
+>
+> - Background Processes in Colab: Colab is a shared environment. While unlikely to cause significant variations, very minor background processes or resource allocation differences could theoretically have a minuscule impact on timing and execution flow, though this is generally not the primary cause of noticeable differences.
+
+Hmm, not great. What *is* great, is that Gemini can see the notebook you are working with, so it can be very helpful when needed. Not this time though :)
+
+Conclusion: nothing really helps. The error rate stays around 10%.
+
+Probably we got everything out of the data we have? Let's try a couple more things.
 
 
+### Fourth attempt 🙂: smaller batch size
 
+So far we had a mini-batch size of 32. Let's have look what happens when we decrease that:
+
+- No more over-fitting with 3 epochs.
+- Error-rate goes down to 6-8%!
+
+Maybe I am over-fitting with my hyper-parameters? It feels a bit like it, but I don't have a test set to confirm that...
+Let's try that later, when we have a bit more data.
+
+Here is the notebook: [Baseline model: Is there a lamp? Fourth attempt](https://colab.research.google.com/drive/1Kj7HL-IXfRC2DOqlaTPbCwafY32X1_kF?usp=sharing).
+
+I think we have a good baseline here. So let's go and throw some more power behind it:
+
+1. Use a better base model
+2. Use more training data
+
+### Fifth attempt 😊: use a better base model
+
+I tried a larger resnet model: `resnet34`, which (with a smaller mini-batch size of 8) resulted in a 5% error rate, without over-fitting!
+
+I also had a look here: [Which image models are best?](https://www.kaggle.com/code/jhoward/which-image-models-are-best/notebook), and picked `convnext_tiny`. This model resulted in a 4.2% error rate, but is significantly slower. Because we want speedy inference later on, we might want to stick with the resnet models.
+
+Notebook for this experiment: [Is there a lamp? Fifth attempt](https://colab.research.google.com/drive/1vHMKQxVliGhaJ90D-JaTx4IrDzdqkYnB?usp=sharing). I removed the phrase `Baseline model`, because we are now starting to ramp up the actual base model. Not sure if this is the way, but so far it seems to work. Still a bit worried about the test set that is coming up though...
+
+
+### Sixth attempt: collect more data
+
+@@@ and create a test set!
+
+@@@ other ideas: split out lamp closeups in its own class, use a better model, more data (see chatgpt suggestions https://chatgpt.com/c/682209c4-8378-8011-be8f-0769e8159e9e and https://chatgpt.com/c/6821fb1d-857c-8011-a3b2-cdd77e285a79 and https://chatgpt.com/c/6821f9f6-da74-8011-8bdd-b9eb2904500f).
+
+@@@ test-set model run (from drone shots).
+
+## Try it out on some drone images
+
+@@@
+
+## What's next?
+
+@@@ next post: deploy on edge & cool demo. See a lamp => do something. Maybe sequences of images where the lamp comes into view and goes out of view by changing height, turning, coming closer, etc.
+
+@@@
+😐 Neutral face
+
+🙂 Slight smile
+
+😊 Warm smile
+
+😃 Big grin
+
+😁 Beaming joy
 
 ::: {.callout-note appearance="minimal"}
 <div style="text-align: center;">
