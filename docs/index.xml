@@ -10,7 +10,260 @@
 <atom:link href="https://dronelab.dev/index.xml" rel="self" type="application/rss+xml"/>
 <description>DroneLab - Coding Autonomous Drones in Baby Steps.</description>
 <generator>quarto-1.7.27</generator>
-<lastBuildDate>Sat, 10 May 2025 21:00:00 GMT</lastBuildDate>
+<lastBuildDate>Wed, 14 May 2025 21:00:00 GMT</lastBuildDate>
+<item>
+  <title>Fly a drone with: Image classification</title>
+  <dc:creator>Mark Pors</dc:creator>
+  <link>https://dronelab.dev/posts/fly-drone-with-image-classification/</link>
+  <description><![CDATA[ 
+
+<header id="title-block-header">
+
+<p class="author">Mark Pors</p>
+
+<p class="date">2025-05-15</p>
+</header>
+
+
+<div class="callout callout-style-default callout-tip callout-titled">
+<div class="callout-header d-flex align-content-center" data-bs-toggle="collapse" data-bs-target=".callout-1-contents" aria-controls="callout-1" aria-expanded="false" aria-label="Toggle callout">
+<div class="callout-icon-container">
+<i class="callout-icon"></i>
+</div>
+<div class="callout-title-container flex-fill">
+TL;DR
+</div>
+<div class="callout-btn-toggle d-inline-block border-0 py-1 ps-1 pe-0 float-end"><i class="callout-toggle"></i></div>
+</div>
+<div id="callout-1" class="callout-1-contents callout-collapse collapse">
+<div class="callout-body-container callout-body">
+<ul>
+<li>Learn how to build a simple image classifier to help a drone detect obstacles (like lamps) using fast.ai.</li>
+<li>See the real-world challenges of collecting and cleaning training data for image classification.</li>
+<li>Discover the impact of label noise, data imbalance, and augmentation on model performance.</li>
+<li>Get practical tips on improving results: manual data cleaning, trying different resizing/augmentation, tuning batch size, and testing better base models.</li>
+<li>Understand the importance of reproducibility and the limits of small datasets.</li>
+<li>Follow a step-by-step, experiment-driven approach—ideal for beginners like myself wanting to apply machine learning to robotics.</li>
+</ul>
+<div style="text-align: center;">
+<p><strong>Series: <a href="../../series/">Code, Fly &amp; AI</a></strong></p>
+</div>
+<div style="display: flex; justify-content: space-between; margin-top: 0.5em;">
+<div>
+<a href="../../posts/tello-controller-navigation-part-2/">← Previous: Tello controller navigation - Part 2</a>
+</div>
+</div>
+</div>
+</div>
+</div>
+<section id="the-path-to-autonomous-flying" class="level2">
+<h2 class="anchored" data-anchor-id="the-path-to-autonomous-flying">The path to autonomous flying</h2>
+<p>Now that we have the Tello / RoboMaster TT under control with a mobile app, a keyboard, and a game controller we can make the first steps to remove control all together.</p>
+<p>I’m sure there have been written many books about this subject and there is loads of scientific research:</p>
+<div class="quarto-figure quarto-figure-center">
+<figure class="figure">
+<p><img src="https://dronelab.dev/posts/fly-drone-with-image-classification/papers-autonomous-drones.png" class="img-fluid figure-img"></p>
+<figcaption>Google scholar search for “autonomous drones”</figcaption>
+</figure>
+</div>
+<p>Over 17k results since 2024; OMG! Good thing that LLM’s have read all that :)</p>
+<p>I’m not going to do anything with it for now, let’s just try out a couple of naive ideas and see were we end up.</p>
+</section>
+<section id="naive-approach-1-image-classification" class="level2">
+<h2 class="anchored" data-anchor-id="naive-approach-1-image-classification">Naive approach #1: Image classification</h2>
+<p>No, of course image classification is not the solution to autonomous flying, but probably it is in there somewhere, and I am following the <a href="https://course.fast.ai/">Fast.ai course</a> which starts off with image classification.</p>
+<p>Jeremy Howard is the man behind both the <a href="https://github.com/fastai/fastai">Fast.ai library</a> and the course, and his approach is to create a simple baseline model first:</p>
+<blockquote class="blockquote">
+<p>Baseline: A simple model which you are confident should perform reasonably well. It should be very simple to implement, and very easy to test, so that you can then test each of your improved ideas, and make sure they are always better than your baseline. Without starting with a sensible baseline, it is very difficult to know whether your super-fancy models are actually any good.</p>
+</blockquote>
+<p>So, that’s what I am going to do: fine-tune an image classifier with a limited amount of data and with a simple base model.</p>
+<p>The testing ground for my drone has a couple of very obvious obstacles: lamps handing from the ceiling. So this is going to be a lamp or no-lamp in the room image classifier.</p>
+</section>
+<section id="lamp-or-no-lamp-image-classifier" class="level2">
+<h2 class="anchored" data-anchor-id="lamp-or-no-lamp-image-classifier">Lamp or no-lamp image classifier 😞 → 😐 → 🙂 → 😊 → 😃 → 😁</h2>
+<section id="first-attempt" class="level3">
+<h3 class="anchored" data-anchor-id="first-attempt">First attempt 😞</h3>
+<p>My first attempt can be seen here: <a href="https://colab.research.google.com/drive/1QaIn0EaqsohlFDD6tXMaGLoD9nCyskHC?usp=sharing">Baseline model: Is there a lamp?</a>.</p>
+<p>Not a great result (understatement), it over-fits from the start, and the reason is obvious: label noise (jargon for have data labelled wrong).</p>
+<p>Here are some wonderful samples from the training set:</p>
+<div class="quarto-figure quarto-figure-center">
+<figure class="figure">
+<p><img src="https://dronelab.dev/posts/fly-drone-with-image-classification/label-noise.png" class="img-fluid figure-img"></p>
+<figcaption>label noise</figcaption>
+</figure>
+</div>
+<p>It is a bit hard to Google/DDG for interior <em>without</em> hanging lamps, so let’s try training the model another time after manual cleanup.</p>
+</section>
+<section id="cleanup-of-the-image-labels" class="level3">
+<h3 class="anchored" data-anchor-id="cleanup-of-the-image-labels">Cleanup of the image labels</h3>
+<p>I said <em>manual</em> cleanup, but I’m going to cheat and use some advanced AI model (CLIP) to be able to train a very simple model.</p>
+<p>Code is written by chatgpt: <a href="https://colab.research.google.com/drive/1HoUSkMwQqKWJ10-YCpIMq3sVACpVAUwl?usp=sharing">Lamp Dataset Cleaner (CLIP-based)</a>.</p>
+<p>And the result is…. MEH! Not much better than what I started with.</p>
+<p>So, back to manual cleaning. I’ll be back soon…</p>
+<p>One hour later: DONE!</p>
+<p>The result is a huge amount of images with a lamp, and very few without it. Reason being: if you use <code>ceiling</code> in a search term, lamps will show up very often. The query <code>home interior wall  -lamp</code> was quite a bit better, not as many lamps! :)</p>
+<p>More manual cleaning to do…</p>
+<p>Another hour later: DONE!</p>
+</section>
+<section id="second-attempt" class="level3">
+<h3 class="anchored" data-anchor-id="second-attempt">Second attempt 😐</h3>
+<p>With the cleaned up data I did another run, see: <a href="https://colab.research.google.com/drive/10pxEfb82zvp99F98Bjg0gCND8v_eC-AT?usp=sharing">Baseline model: Is there a lamp? Second attempt</a>.</p>
+<p>The result I quite a bit better with a ~10% error rate, but there still is over-fitting starting at epoch 2. The 16 top losses look like this:</p>
+<div class="quarto-figure quarto-figure-center">
+<figure class="figure">
+<p><img src="https://dronelab.dev/posts/fly-drone-with-image-classification/top-losses.png" class="img-fluid figure-img"></p>
+<figcaption>Top losses: Prediction/Actual/Loss/Probability</figcaption>
+</figure>
+</div>
+<p>To be fair, some of these images are pretty tough to classify IMO. Anyway, let’s see if we can do better.</p>
+</section>
+<section id="third-attempt-better-resizing-and-augmentation" class="level3">
+<h3 class="anchored" data-anchor-id="third-attempt-better-resizing-and-augmentation">Third attempt 😐: Better resizing and Augmentation</h3>
+<p>There’s a couple of things we can try, here is what I did try:</p>
+<p>Resizing with different methods:</p>
+<div class="sourceCode" id="cb1" style="background: #f1f3f5;"><pre class="sourceCode md code-with-copy"><code class="sourceCode markdown"><span id="cb1-1"><span class="ss" style="color: #20794D;
+background-color: null;
+font-style: inherit;">* </span>item_tfms=<span class="co" style="color: #5E5E5E;
+background-color: null;
+font-style: inherit;">[</span><span class="ot" style="color: #003B4F;
+background-color: null;
+font-style: inherit;">Resize(400, ResizeMethod.Pad, pad_mode='zeros')</span><span class="co" style="color: #5E5E5E;
+background-color: null;
+font-style: inherit;">]</span></span>
+<span id="cb1-2"><span class="ss" style="color: #20794D;
+background-color: null;
+font-style: inherit;">* </span>item_tfms=<span class="co" style="color: #5E5E5E;
+background-color: null;
+font-style: inherit;">[</span><span class="ot" style="color: #003B4F;
+background-color: null;
+font-style: inherit;">Resize(400, ResizeMethod.Squish)</span><span class="co" style="color: #5E5E5E;
+background-color: null;
+font-style: inherit;">]</span></span>
+<span id="cb1-3"><span class="ss" style="color: #20794D;
+background-color: null;
+font-style: inherit;">* </span>item_tfms=<span class="co" style="color: #5E5E5E;
+background-color: null;
+font-style: inherit;">[</span><span class="ot" style="color: #003B4F;
+background-color: null;
+font-style: inherit;">Resize(400)</span><span class="co" style="color: #5E5E5E;
+background-color: null;
+font-style: inherit;">]</span></span>
+<span id="cb1-4"><span class="ss" style="color: #20794D;
+background-color: null;
+font-style: inherit;">* </span>item_tfms=<span class="co" style="color: #5E5E5E;
+background-color: null;
+font-style: inherit;">[</span><span class="ot" style="color: #003B4F;
+background-color: null;
+font-style: inherit;">RandomResizedCrop(400, min_scale=0.6)</span><span class="co" style="color: #5E5E5E;
+background-color: null;
+font-style: inherit;">]</span></span>
+<span id="cb1-5"><span class="ss" style="color: #20794D;
+background-color: null;
+font-style: inherit;">* </span>item_tfms=<span class="co" style="color: #5E5E5E;
+background-color: null;
+font-style: inherit;">[</span><span class="ot" style="color: #003B4F;
+background-color: null;
+font-style: inherit;">RandomResizedCrop(400, min_scale=0.3)</span><span class="co" style="color: #5E5E5E;
+background-color: null;
+font-style: inherit;">]</span></span>
+<span id="cb1-6"><span class="ss" style="color: #20794D;
+background-color: null;
+font-style: inherit;">* </span>item_tfms=<span class="co" style="color: #5E5E5E;
+background-color: null;
+font-style: inherit;">[</span><span class="ot" style="color: #003B4F;
+background-color: null;
+font-style: inherit;">RandomResizedCrop(400, min_scale=0.8)</span><span class="co" style="color: #5E5E5E;
+background-color: null;
+font-style: inherit;">]</span></span></code></pre></div>
+<p>Augmentation:</p>
+<div class="sourceCode" id="cb2" style="background: #f1f3f5;"><pre class="sourceCode md code-with-copy"><code class="sourceCode markdown"><span id="cb2-1"><span class="ss" style="color: #20794D;
+background-color: null;
+font-style: inherit;">* </span>item_tfms=<span class="co" style="color: #5E5E5E;
+background-color: null;
+font-style: inherit;">[</span><span class="ot" style="color: #003B4F;
+background-color: null;
+font-style: inherit;">Resize(400, ResizeMethod.Pad, pad_mode='zeros')</span><span class="co" style="color: #5E5E5E;
+background-color: null;
+font-style: inherit;">]</span>,</span>
+<span id="cb2-2"><span class="ss" style="color: #20794D;
+background-color: null;
+font-style: inherit;">* </span>batch_tfms=aug_transforms()</span></code></pre></div>
+<p>The runs can be seen here: <a href="https://colab.research.google.com/drive/1PqKdYnMIHn4KQLDXepr71AH3YdlbuYsf?usp=sharing">Baseline model: Is there a lamp? Third attempt</a>.</p>
+<p>Something very annoying is that subsequent runs - without changing anything - have different results, which makes doing experiments impossible. I asked Gemini about it and it said:</p>
+<blockquote class="blockquote">
+<p>You’ve done a good job providing a seed for reproducibility with seed_everything(42). However, even with careful seeding, variations in results can sometimes occur in deep learning training for a few reasons, especially within an environment like Colab:</p>
+<ul>
+<li><p>GPU Non-Determinism: While you’ve set torch.backends.cudnn.deterministic = True, not all operations on the GPU are guaranteed to be completely deterministic across different runs or hardware configurations. Some highly optimized kernels might involve non-deterministic algorithms for performance reasons.</p></li>
+<li><p>Background Processes in Colab: Colab is a shared environment. While unlikely to cause significant variations, very minor background processes or resource allocation differences could theoretically have a minuscule impact on timing and execution flow, though this is generally not the primary cause of noticeable differences.</p></li>
+</ul>
+</blockquote>
+<p>Hmm, not great. What <em>is</em> great, is that Gemini can see the notebook you are working with, so it can be very helpful when needed. Not this time though :)</p>
+<p>Conclusion: nothing really helps. The error rate stays around 10%.</p>
+<p>Probably we got everything out of the data we have? Let’s try a couple more things.</p>
+</section>
+<section id="fourth-attempt-smaller-batch-size" class="level3">
+<h3 class="anchored" data-anchor-id="fourth-attempt-smaller-batch-size">Fourth attempt 🙂: smaller batch size</h3>
+<p>So far we had a mini-batch size of 32. Let’s have look what happens when we decrease that:</p>
+<ul>
+<li>No more over-fitting with 3 epochs.</li>
+<li>Error-rate goes down to 6-8%!</li>
+</ul>
+<p>Maybe I am over-fitting with my hyper-parameters? It feels a bit like it, but I don’t have a test set to confirm that… Let’s try that later, when we have a bit more data.</p>
+<p>Here is the notebook: <a href="https://colab.research.google.com/drive/1Kj7HL-IXfRC2DOqlaTPbCwafY32X1_kF?usp=sharing">Baseline model: Is there a lamp? Fourth attempt</a>.</p>
+<p>I think we have a good baseline here. So let’s go and throw some more power behind it:</p>
+<ol type="1">
+<li>Use a better base model</li>
+<li>Use more training data</li>
+</ol>
+</section>
+<section id="fifth-attempt-use-a-better-base-model" class="level3">
+<h3 class="anchored" data-anchor-id="fifth-attempt-use-a-better-base-model">Fifth attempt 😊: use a better base model</h3>
+<p>I tried a larger resnet model: <code>resnet34</code>, which (with a smaller mini-batch size of 8) resulted in a 4% error rate, without over-fitting for the first few epochs.</p>
+<p>I also had a look here: <a href="https://www.kaggle.com/code/jhoward/which-image-models-are-best/notebook">Which image models are best?</a>, and picked <code>convnext_tiny</code>. This model resulted in a 3% error rate, but is significantly slower. Because we want speedy inference later on, we might want to stick with the resnet models.</p>
+<p>Notebook for this experiment: <a href="https://colab.research.google.com/drive/1vHMKQxVliGhaJ90D-JaTx4IrDzdqkYnB?usp=sharing">Is there a lamp? Fifth attempt</a>. I removed the phrase <code>Baseline model</code>, because we are now starting to ramp up the actual base model. Not sure if this is the way, but so far it seems to work. Still a bit worried about the test set that is coming up though…</p>
+</section>
+<section id="sixth-attempt-collect-more-data" class="level3">
+<h3 class="anchored" data-anchor-id="sixth-attempt-collect-more-data">Sixth attempt 🤨: collect more data</h3>
+<p>My plan was to now collect more data and do some of the previous steps again, but I changed my mind. The possibility that I am over-fitting by trying different hyper-parameters and picking the winners is substantial.</p>
+<p>The logical next step would then be to use a test set and see what is going on.</p>
+<p>Also: I don’t need to create the best lamp classifier in the world, we are here to learn!</p>
+</section>
+</section>
+<section id="whats-next" class="level2">
+<h2 class="anchored" data-anchor-id="whats-next">What’s next?</h2>
+<p>As said, in the next post I will create a test set (from drone frames), figure out test-set best practices, and finalize our classifier. Read on…</p>
+<div class="callout callout-style-simple callout-note no-icon">
+<div class="callout-body d-flex">
+<div class="callout-icon-container">
+<i class="callout-icon no-icon"></i>
+</div>
+<div class="callout-body-container">
+<div style="text-align: center;">
+<p><strong>Series: <a href="../../series/">Code, Fly &amp; AI</a></strong></p>
+</div>
+<div style="display: flex; justify-content: space-between; margin-top: 0.5em;">
+<div>
+<a href="../../posts/tello-controller-navigation-part-2/">← Previous: Tello controller navigation - Part 2</a>
+</div>
+</div>
+</div>
+</div>
+</div>
+
+
+</section>
+
+ ]]></description>
+  <category>drone</category>
+  <category>code</category>
+  <category>tello</category>
+  <category>machine learning</category>
+  <category>image classification</category>
+  <category>fast.ai</category>
+  <guid>https://dronelab.dev/posts/fly-drone-with-image-classification/</guid>
+  <pubDate>Wed, 14 May 2025 21:00:00 GMT</pubDate>
+  <media:content url="https://dronelab.dev/posts/fly-drone-with-image-classification/image-classification-lamps.png" medium="image" type="image/png" height="144" width="144"/>
+</item>
 <item>
   <title>Tello controller navigation - Part 2</title>
   <dc:creator>Mark Pors</dc:creator>
@@ -50,6 +303,9 @@ TL;DR
 <div style="display: flex; justify-content: space-between; margin-top: 0.5em;">
 <div>
 <a href="../../posts/tello-controller-navigation-part-1/">← Previous: Tello controller navigation - Part 1</a>
+</div>
+<div>
+<a href="../../posts/fly-drone-with-image-classification/">Next: Fly a drone with: Image classification →</a>
 </div>
 </div>
 </div>
@@ -506,6 +762,9 @@ font-style: inherit;">self</span>.screen.blit(no_video, text_rect)</span></code>
 <div style="display: flex; justify-content: space-between; margin-top: 0.5em;">
 <div>
 <a href="../../posts/tello-controller-navigation-part-1/">← Previous: Tello controller navigation - Part 1</a>
+</div>
+<div>
+<a href="../../posts/fly-drone-with-image-classification/">Next: Fly a drone with: Image classification →</a>
 </div>
 </div>
 </div>

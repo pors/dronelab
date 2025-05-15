@@ -25,6 +25,7 @@ keywords: DJI Tello, GameSir T1d, Python, djitellopy, Pygame, drone control, vid
 
 <div style="display: flex; justify-content: space-between; margin-top: 0.5em;">
   <div>[← Previous: Tello controller navigation - Part 1](/posts/tello-controller-navigation-part-1/)</div>
+  <div>[Next: Fly a drone with: Image classification →](/posts/fly-drone-with-image-classification/)</div>
 </div>
 
 :::
@@ -172,5 +173,6 @@ It is about time to introduce some machine learning. If the goal is to work towa
 
 <div style="display: flex; justify-content: space-between; margin-top: 0.5em;">
   <div>[← Previous: Tello controller navigation - Part 1](/posts/tello-controller-navigation-part-1/)</div>
+  <div>[Next: Fly a drone with: Image classification →](/posts/fly-drone-with-image-classification/)</div>
 </div>
 :::

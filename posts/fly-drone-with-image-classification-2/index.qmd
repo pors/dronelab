@@ -1,24 +1,22 @@
 ---
-title: "Fly a drone with: Image classification"
+title: "Fly a drone with: Image classification, Part 2"
 author: "Mark Pors"
 date: "2025-05-15"
 categories: [drone, code, tello, machine learning, image classification, fast.ai]
-image: image-classification-lamps.png
+image: tello-gamesir-t1d-photo.png
 series: "Code, Fly & AI"
-order: 7
-description: "Learn how to train a drone to detect obstacles using image classification with fast.ai. This post covers practical steps for building, cleaning, and improving an image classifier, including tips on data collection, augmentation, and model selection."
-meta-description: "Step-by-step guide to building an image classifier for drones using fast.ai. Discover practical lessons on data cleaning, augmentation, model tuning, and overcoming real-world challenges in machine learning for robotics."
-keywords: drone, image classification, fast.ai, machine learning, robotics, obstacle detection, data cleaning, augmentation, model selection, reproducibility, deep learning, Tello, Python, computer vision
+order: 8
+draft: true
 ---
+
+@@@ Remove draft: true and Write the header contents for SEO:
+description
+meta-description
+keywords
 
 ::: {.callout-tip collapse="true"}
 ## TL;DR
-* Learn how to build a simple image classifier to help a drone detect obstacles (like lamps) using fast.ai.
-* See the real-world challenges of collecting and cleaning training data for image classification.
-* Discover the impact of label noise, data imbalance, and augmentation on model performance.
-* Get practical tips on improving results: manual data cleaning, trying different resizing/augmentation, tuning batch size, and testing better base models.
-* Understand the importance of reproducibility and the limits of small datasets.
-* Follow a step-by-step, experiment-driven approach—ideal for beginners like myself wanting to apply machine learning to robotics.
+@@@ Write a tight, high-signal TL;DR summarizing the key takeaways from this post. Focus on what the reader learns or does, not just what happens. Use bullet points, be clear, concise, and engaging. Reader might use this to decide to continue reading.
 
 <div style="text-align: center;">
 <strong>Series: <a href="/series/">Code, Fly & AI</a></strong>
@@ -52,7 +50,7 @@ Jeremy Howard is the man behind both the [Fast.ai library](https://github.com/fa
 
 So, that's what I am going to do: fine-tune an image classifier with a limited amount of data and with a simple base model.
 
-The testing ground for my drone has a couple of very obvious obstacles: lamps handing from the ceiling. So this is going to be a lamp or no-lamp in the room image classifier.
+The testing ground for my drone has a couple of very obvious obstacles: lamps handing from the ceiling. So this is going to be a lamp or no-lamp in the image classifier.
 
 ## Lamp or no-lamp image classifier 😞 → 😐 → 🙂 → 😊 → 😃 → 😁
 
@@ -169,9 +167,20 @@ The logical next step would then be to use a test set and see what is going on.
 
 Also: I don't need to create the best lamp classifier in the world, we are here to learn!
 
+@@@ and create a test set!
+
+@@@ other ideas: split out lamp closeups in its own class, use a better model, more data (see chatgpt suggestions https://chatgpt.com/c/682209c4-8378-8011-be8f-0769e8159e9e and https://chatgpt.com/c/6821fb1d-857c-8011-a3b2-cdd77e285a79 and https://chatgpt.com/c/6821f9f6-da74-8011-8bdd-b9eb2904500f).
+
+@@@ test-set model run (from drone shots).
+
+## Try it out on some drone images
+
+@@@
+
 ## What's next?
 
-As said, in the next post I will create a test set (from drone frames), figure out test-set best practices, and finalize our classifier. Read on...
+@@@ next post: deploy on edge & cool demo. See a lamp => do something. Maybe sequences of images where the lamp comes into view and goes out of view by changing height, turning, coming closer, etc.
+
 
 ::: {.callout-note appearance="minimal"}
 <div style="text-align: center;">

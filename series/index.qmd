@@ -6,6 +6,8 @@ listing:
   sort: "order"  # Sort by the custom order field
   include:
     series: "Code, Fly & AI"  # Only include posts with this series tag
+  exclude: 
+    draft: true
   fields: [date, title, image, description]  # Customize displayed fields
 ---
 
