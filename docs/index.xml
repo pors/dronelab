@@ -10,7 +10,125 @@
 <atom:link href="https://dronelab.dev/index.xml" rel="self" type="application/rss+xml"/>
 <description>DroneLab - Coding Autonomous Drones in Baby Steps.</description>
 <generator>quarto-1.7.27</generator>
-<lastBuildDate>Wed, 14 May 2025 21:00:00 GMT</lastBuildDate>
+<lastBuildDate>Sun, 18 May 2025 21:00:00 GMT</lastBuildDate>
+<item>
+  <title>Interlude: Which image models are best? UPDATED</title>
+  <dc:creator>Mark Pors</dc:creator>
+  <link>https://dronelab.dev/posts/which-image-models-are-best-updated/</link>
+  <description><![CDATA[ 
+
+<header id="title-block-header">
+
+<p class="author">Mark Pors</p>
+
+<p class="date">2025-05-19</p>
+</header>
+
+
+<div class="callout callout-style-default callout-tip callout-titled">
+<div class="callout-header d-flex align-content-center" data-bs-toggle="collapse" data-bs-target=".callout-1-contents" aria-controls="callout-1" aria-expanded="false" aria-label="Toggle callout">
+<div class="callout-icon-container">
+<i class="callout-icon"></i>
+</div>
+<div class="callout-title-container flex-fill">
+TL;DR
+</div>
+<div class="callout-btn-toggle d-inline-block border-0 py-1 ps-1 pe-0 float-end"><i class="callout-toggle"></i></div>
+</div>
+<div id="callout-1" class="callout-1-contents callout-collapse collapse">
+<div class="callout-body-container callout-body">
+<ul>
+<li>Learn how to choose the best image classification models using updated data and tools.</li>
+<li>See how the popular “Which image models are best?” notebook was revived with new sources and recent models.</li>
+<li>Get links to interactive notebooks and a Gradio app for hands-on model comparison.</li>
+</ul>
+</div>
+</div>
+</div>
+<p>In <a href="../fly-drone-with-image-classification/">my attempts to create an image classifier</a>, following the Fast.ai method as learned in lesson 2, I wanted to try other base-models. A way to help pick the most suitable model was presented in <a href="https://course.fast.ai/Lessons/lesson3.html" target="_blank">lesson 3</a>.</p>
+<p>Jeremy Howard created this amazing notebook that helps selecting a model for your use case: <a href="https://www.kaggle.com/code/jhoward/which-image-models-are-best/notebook" target="_blank">Which image models are best?</a>. Unfortunately the notebook is two years old and is no longer working.</p>
+<p>The notebook gets its data from the <code>timm</code> computer vision library. It is currently part of Huggingface <a href="https://huggingface.co/docs/timm/index" target="_blank">here</a>.</p>
+<section id="what-is-timm" class="level2">
+<h2 class="anchored" data-anchor-id="what-is-timm">What is timm?</h2>
+<p>As far as I understand it, <code>timm</code> is a collection of PyTorch compatible models focussed on computer vision, so all about images: classification, segmentation and more. Apart from a lot of models (old and new, small and large) it has other helpful stuff (helpful for people who know what this all about, not me…, yet! :)).</p>
+<p>From the Huggingface docs:</p>
+<blockquote class="blockquote">
+<p><code>timm</code> is a library containing SOTA computer vision models, layers, utilities, optimizers, schedulers, data-loaders, augmentations, and training/evaluation scripts.</p>
+<p>It comes packaged with &gt;700 pretrained models, and is designed to be flexible and easy to use.</p>
+</blockquote>
+<p>It started as <a href="https://huggingface.co/rwightman" target="_blank">Ross Wightman</a>’s solo project, but now it’s part of the Hugging Face ecosystem.</p>
+<p>For me <code>timm</code> is relevant, because it allows me to try different models that can improve the <a href="../fly-drone-with-image-classification/">is there a lamp classifier</a>, and in the future, for more advanced stuff we will do.</p>
+</section>
+<section id="great-visualization-outdated" class="level2">
+<h2 class="anchored" data-anchor-id="great-visualization-outdated">Great visualization (outdated)</h2>
+<p>Jeremy Howard used the <code>timm</code> data to make is easier to select models to try out. He created a <a href="https://www.kaggle.com/code/jhoward/which-image-models-are-best/notebook" target="_blank">notebook</a> that includes graphs like this:</p>
+<div class="quarto-figure quarto-figure-center">
+<figure class="figure">
+<p><img src="https://dronelab.dev/posts/which-image-models-are-best-updated/timm2.png" class="img-fluid figure-img"></p>
+<figcaption>Screenshot: Inference top1 accuracy / speed scatter</figcaption>
+</figure>
+</div>
+<p>As said, unfortunately it no longer works if you copy it to your own account (the data sources have moved to Huggingface), and worst: it doesn’t contain information from more recent models.</p>
+<p>The <a href="https://huggingface.co/spaces/timm/leaderboard" target="_blank">timm leaderboard</a> is meant to replace it, but it is not as clear IMO. I want the same happy colorful interactive bubbles!</p>
+<p>Should be easy to fix, so let’s get to it!</p>
+<div class="callout callout-style-default callout-tip callout-titled">
+<div class="callout-header d-flex align-content-center">
+<div class="callout-icon-container">
+<i class="callout-icon"></i>
+</div>
+<div class="callout-title-container flex-fill">
+Why not use an LLM?
+</div>
+</div>
+<div class="callout-body-container callout-body">
+<p>Yeah, great question! We could also dump all data into an LLM and ask it to create some useful visualizations. It has the advantage that you can chat about the data as well to make the right choice.</p>
+<p>Sometimes, however, it feels just easier to play around in a notebook IMO. Also, in this specific case, it is not so easy to get the same results: you are basically describing to the LLM in text what we (Jeremy) did here with code.</p>
+</div>
+</div>
+</section>
+<section id="visualization-repaired" class="level2">
+<h2 class="anchored" data-anchor-id="visualization-repaired">Visualization repaired</h2>
+<p>As said, it was mostly a matter of pointing to the new data sources and to include a couple of newer models that are SOTA (I asked ChatGPT DeepSearch which ones are). I also found the original data sources and recreated the original charts next to the new ones.</p>
+<p>The notebook I used for my experiments, with both the new and the old data sources, is here: <a href="https://colab.research.google.com/drive/1ImwK73r2Pjc2qpDb2Ov5Gn8y-ZEHyQPZ?usp=sharing" target="_blank">Which image models are best? (updated)</a>.</p>
+<p>I also created a copy <a href="https://www.kaggle.com/code/mapors/which-image-models-are-best/" target="_blank">on Kaggle here</a>. Kaggle has some problems rendering the plotly charts (which I fixed in part): they don’t show up unless in edit mode…</p>
+<p>Finally I created a version with less text, and more flexibility:</p>
+<ul>
+<li>you can select the benchmark file</li>
+<li>limit the included model families</li>
+<li>change what charts will display on x- and y-axis</li>
+<li>when new benchmarks are published, they wil be included</li>
+</ul>
+<p>It can be found here: <a href="https://colab.research.google.com/drive/1yhjNeqneaBAb_uyIYNVYI24pSBZQdUt3?usp=sharing" target="_blank">Which image models are best? (improved)</a>.</p>
+</section>
+<section id="deploying-it-on-huggingface-with-gradio" class="level2">
+<h2 class="anchored" data-anchor-id="deploying-it-on-huggingface-with-gradio">Deploying it on Huggingface with Gradio</h2>
+<p>I asked Claude to port the notebook to a Gradio app, and after some tweaks it seems to work just fine:</p>
+<p><a href="https://huggingface.co/spaces/pors/Which-image-models-are-best" target="_blank">Image Model Performance Analysis</a></p>
+<div class="quarto-figure quarto-figure-center">
+<figure class="figure">
+<p><img src="https://dronelab.dev/posts/which-image-models-are-best-updated/gradio-app.png" class="img-fluid figure-img"></p>
+<figcaption>The Gradio app on Huggingface</figcaption>
+</figure>
+</div>
+<p>Pretty cool, no?</p>
+</section>
+<section id="whats-next" class="level2">
+<h2 class="anchored" data-anchor-id="whats-next">What’s next</h2>
+<p>This interlude got a bit out of hand. Time to go back to our <a href="../fly-drone-with-image-classification/">image classifier</a> and pick a better model. Read on…</p>
+
+
+</section>
+
+ ]]></description>
+  <category>machine learning</category>
+  <category>timm</category>
+  <category>computer vision</category>
+  <category>fast.ai</category>
+  <category>open-source</category>
+  <guid>https://dronelab.dev/posts/which-image-models-are-best-updated/</guid>
+  <pubDate>Sun, 18 May 2025 21:00:00 GMT</pubDate>
+  <media:content url="https://dronelab.dev/posts/which-image-models-are-best-updated/timm.png" medium="image" type="image/png" height="144" width="144"/>
+</item>
 <item>
   <title>Fly a drone with: Image classification</title>
   <dc:creator>Mark Pors</dc:creator>

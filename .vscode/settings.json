@@ -5,8 +5,12 @@
         "dronelab",
         "EASA",
         "gamesir",
+        "Kaggle",
+        "plotly",
         "pygame",
         "RMTT",
-        "Robo"
+        "Robo",
+        "SOTA",
+        "timm"
     ]
 }
