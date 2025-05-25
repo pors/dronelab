@@ -12,7 +12,7 @@ keywords: ["pytorch reproducibility", "fastai reproducible training", "dataloade
 twitter-card:
   title: "Getting reproducible training results with Fast.ai + PyTorch"
   description: "Why your Fast.ai or PyTorch experiments keep giving different results even when you think you've seeded everything properly. Spoiler: it's not just about random seeds - DataLoaders have hidden state that screws things up. Here's how to actually fix it."
-  image: reproducible.png
+  image: og-reproducible.png
   image-alt: "Getting reproducible training results with Fast.ai + PyTorch"
   card-style: summary_large_image
 ---
