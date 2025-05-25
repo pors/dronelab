@@ -10,7 +10,618 @@
 <atom:link href="https://dronelab.dev/index.xml" rel="self" type="application/rss+xml"/>
 <description>DroneLab - Coding Autonomous Drones in Baby Steps.</description>
 <generator>quarto-1.7.27</generator>
-<lastBuildDate>Sun, 18 May 2025 21:00:00 GMT</lastBuildDate>
+<lastBuildDate>Sat, 24 May 2025 21:00:00 GMT</lastBuildDate>
+<item>
+  <title>Getting reproducible training results with Fast.ai + PyTorch</title>
+  <dc:creator>Mark Pors</dc:creator>
+  <link>https://dronelab.dev/posts/getting-reproducible-results/</link>
+  <description><![CDATA[ 
+
+<header id="title-block-header">
+
+<p class="author">Mark Pors</p>
+
+<p class="date">2025-05-25</p>
+</header>
+
+
+<div class="callout callout-style-default callout-tip callout-titled">
+<div class="callout-header d-flex align-content-center" data-bs-toggle="collapse" data-bs-target=".callout-1-contents" aria-controls="callout-1" aria-expanded="false" aria-label="Toggle callout">
+<div class="callout-icon-container">
+<i class="callout-icon"></i>
+</div>
+<div class="callout-title-container flex-fill">
+TL;DR
+</div>
+<div class="callout-btn-toggle d-inline-block border-0 py-1 ps-1 pe-0 float-end"><i class="callout-toggle"></i></div>
+</div>
+<div id="callout-1" class="callout-1-contents callout-collapse collapse">
+<div class="callout-body-container callout-body">
+<p>Getting reproducible PyTorch/Fast.ai training results requires more than just seeding random number generators. Reproducibility is affected by three factors:</p>
+<ol type="1">
+<li>seeding RNGs,</li>
+<li>using deterministic algorithms, and</li>
+<li>recreating an identical starting state.</li>
+</ol>
+<p><strong>Key insights</strong>:</p>
+<ul>
+<li>DataLoaders maintain internal state that persists between training runs. You must recreate DataLoaders before each training run, not just reseed.</li>
+<li>DataLoader workers need to be seeded before each run.</li>
+</ul>
+<p><strong>Minimal setup for reproducibility:</strong></p>
+<ul>
+<li>Set <code>torch.backends.cudnn.deterministic = True</code></li>
+<li>Recreate DataLoaders between runs</li>
+<li>Basic RNG seeding <em>and</em> DataLoader worker seeding</li>
+</ul>
+</div>
+</div>
+</div>
+<p>While training an <a href="../fly-drone-with-image-classification/">image classifier</a>, I became a bit annoyed by the fact that subsequent runs have different results, even though I didn’t change anything.</p>
+<p>How can we conduct experiments if we don’t know whether the one parameter I modified caused the change, or if something else was responsible, under the hood?</p>
+<div class="callout callout-style-default callout-note callout-titled">
+<div class="callout-header d-flex align-content-center">
+<div class="callout-icon-container">
+<i class="callout-icon"></i>
+</div>
+<div class="callout-title-container flex-fill">
+Why this matters
+</div>
+</div>
+<div class="callout-body-container callout-body">
+<p>This cost me days of debugging. When you’re tuning hyperparameters or comparing model architectures, you need to know whether that 2% accuracy improvement is real or just random variance. Without reproducibility, you’re flying blind.</p>
+</div>
+</div>
+<p>Jump to Conclusion</p>
+<section id="what-have-i-tried" class="level2">
+<h2 class="anchored" data-anchor-id="what-have-i-tried">What have I tried?</h2>
+<p>When I did my experiments, I used this at the start of my notebooks:</p>
+<div class="sourceCode" id="cb1" style="background: #f1f3f5;"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb1-1"><span class="kw" style="color: #003B4F;
+background-color: null;
+font-weight: bold;
+font-style: inherit;">def</span> seed_everything(seed):</span>
+<span id="cb1-2">    random.seed(seed)</span>
+<span id="cb1-3">    os.environ[<span class="st" style="color: #20794D;
+background-color: null;
+font-style: inherit;">'PYTHONHASHSEED'</span>] <span class="op" style="color: #5E5E5E;
+background-color: null;
+font-style: inherit;">=</span> <span class="bu" style="color: null;
+background-color: null;
+font-style: inherit;">str</span>(seed)</span>
+<span id="cb1-4">    np.random.seed(seed)</span>
+<span id="cb1-5">    torch.manual_seed(seed)</span>
+<span id="cb1-6">    torch.cuda.manual_seed_all(seed)</span>
+<span id="cb1-7">    torch.cuda.manual_seed(seed)</span>
+<span id="cb1-8">    torch.backends.cudnn.deterministic <span class="op" style="color: #5E5E5E;
+background-color: null;
+font-style: inherit;">=</span> <span class="va" style="color: #111111;
+background-color: null;
+font-style: inherit;">True</span></span>
+<span id="cb1-9"></span>
+<span id="cb1-10">seed_everything(<span class="dv" style="color: #AD0000;
+background-color: null;
+font-style: inherit;">42</span>)</span></code></pre></div>
+<p>And in the <code>DataBlock</code>, I provided a seed for the splitter like:</p>
+<div class="sourceCode" id="cb2" style="background: #f1f3f5;"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb2-1">    splitter<span class="op" style="color: #5E5E5E;
+background-color: null;
+font-style: inherit;">=</span>RandomSplitter(valid_pct<span class="op" style="color: #5E5E5E;
+background-color: null;
+font-style: inherit;">=</span><span class="fl" style="color: #AD0000;
+background-color: null;
+font-style: inherit;">0.2</span>, seed<span class="op" style="color: #5E5E5E;
+background-color: null;
+font-style: inherit;">=</span><span class="dv" style="color: #AD0000;
+background-color: null;
+font-style: inherit;">42</span>),</span></code></pre></div>
+<p>I picked up these snippets in the Fast.ai course, but I don’t really know what each of these statements does in detail. I understand the general idea: ensure that when a random number is generated, it starts from the same seed, so that the random number is consistent each time. Like:</p>
+<div class="sourceCode" id="cb3" style="background: #f1f3f5;"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb3-1"><span class="im" style="color: #00769E;
+background-color: null;
+font-style: inherit;">import</span> random</span>
+<span id="cb3-2"></span>
+<span id="cb3-3"><span class="bu" style="color: null;
+background-color: null;
+font-style: inherit;">print</span>(<span class="st" style="color: #20794D;
+background-color: null;
+font-style: inherit;">"Without seed:"</span>, random.randint(<span class="dv" style="color: #AD0000;
+background-color: null;
+font-style: inherit;">1</span>, <span class="dv" style="color: #AD0000;
+background-color: null;
+font-style: inherit;">100</span>), random.randint(<span class="dv" style="color: #AD0000;
+background-color: null;
+font-style: inherit;">1</span>, <span class="dv" style="color: #AD0000;
+background-color: null;
+font-style: inherit;">100</span>), random.randint(<span class="dv" style="color: #AD0000;
+background-color: null;
+font-style: inherit;">1</span>, <span class="dv" style="color: #AD0000;
+background-color: null;
+font-style: inherit;">100</span>))</span>
+<span id="cb3-4">random.seed(<span class="dv" style="color: #AD0000;
+background-color: null;
+font-style: inherit;">42</span>)</span>
+<span id="cb3-5"><span class="bu" style="color: null;
+background-color: null;
+font-style: inherit;">print</span>(<span class="st" style="color: #20794D;
+background-color: null;
+font-style: inherit;">"With seed 42:"</span>, random.randint(<span class="dv" style="color: #AD0000;
+background-color: null;
+font-style: inherit;">1</span>, <span class="dv" style="color: #AD0000;
+background-color: null;
+font-style: inherit;">100</span>), random.randint(<span class="dv" style="color: #AD0000;
+background-color: null;
+font-style: inherit;">1</span>, <span class="dv" style="color: #AD0000;
+background-color: null;
+font-style: inherit;">100</span>), random.randint(<span class="dv" style="color: #AD0000;
+background-color: null;
+font-style: inherit;">1</span>, <span class="dv" style="color: #AD0000;
+background-color: null;
+font-style: inherit;">100</span>))</span>
+<span id="cb3-6">random.seed(<span class="dv" style="color: #AD0000;
+background-color: null;
+font-style: inherit;">42</span>)</span>
+<span id="cb3-7"><span class="bu" style="color: null;
+background-color: null;
+font-style: inherit;">print</span>(<span class="st" style="color: #20794D;
+background-color: null;
+font-style: inherit;">"With seed 42 again:"</span>, random.randint(<span class="dv" style="color: #AD0000;
+background-color: null;
+font-style: inherit;">1</span>, <span class="dv" style="color: #AD0000;
+background-color: null;
+font-style: inherit;">100</span>), random.randint(<span class="dv" style="color: #AD0000;
+background-color: null;
+font-style: inherit;">1</span>, <span class="dv" style="color: #AD0000;
+background-color: null;
+font-style: inherit;">100</span>), random.randint(<span class="dv" style="color: #AD0000;
+background-color: null;
+font-style: inherit;">1</span>, <span class="dv" style="color: #AD0000;
+background-color: null;
+font-style: inherit;">100</span>))</span></code></pre></div>
+<div class="cell-output cell-output-stdout">
+<pre class="text"><code>Without seed: 15 60 38
+With seed 42: 81 14 3
+With seed 42 again: 81 14 3</code></pre>
+</div>
+<p>Unfortunately, it is not that simple, proven by the fact that it didn’t work for me. Here is an experiment that shows that loss numbers are not reproducible despite seeding “everything”: <a href="https://colab.research.google.com/drive/1BDCNvpn7MFiTE0k-q21A-YKoYAiGypug?usp=sharing" target="_blank">Getting reproducible results with Fast.ai / PyTorch - Attempt #1</a>.</p>
+<p>Perhaps a good time to read the documentation.</p>
+</section>
+<section id="rtfm" class="level2">
+<h2 class="anchored" data-anchor-id="rtfm">RTFM</h2>
+<section id="fast.ai-docs" class="level3">
+<h3 class="anchored" data-anchor-id="fast.ai-docs">Fast.ai docs</h3>
+<p>There is currently no section to be found in the Fast.ai docs covering reproducibility, but there was in version one (deprecated): <a href="https://fastai1.fast.ai/dev/test.html#getting-reproducible-results" target="_blank">Getting reproducible results</a>:</p>
+<blockquote class="blockquote">
+<p>In some situations you may want to remove randomness for your tests. To get identical reproducible results set, you’ll need to set num_workers=1 (or 0) in your DataLoader/DataBunch, and depending on whether you are using torch’s random functions, or python’s (numpy) or both:</p>
+</blockquote>
+<div class="sourceCode" id="cb5" style="background: #f1f3f5;"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb5-1">seed <span class="op" style="color: #5E5E5E;
+background-color: null;
+font-style: inherit;">=</span> <span class="dv" style="color: #AD0000;
+background-color: null;
+font-style: inherit;">42</span></span>
+<span id="cb5-2"></span>
+<span id="cb5-3"><span class="co" style="color: #5E5E5E;
+background-color: null;
+font-style: inherit;"># python RNG</span></span>
+<span id="cb5-4"><span class="im" style="color: #00769E;
+background-color: null;
+font-style: inherit;">import</span> random</span>
+<span id="cb5-5">random.seed(seed)</span>
+<span id="cb5-6"></span>
+<span id="cb5-7"><span class="co" style="color: #5E5E5E;
+background-color: null;
+font-style: inherit;"># pytorch RNGs</span></span>
+<span id="cb5-8"><span class="im" style="color: #00769E;
+background-color: null;
+font-style: inherit;">import</span> torch</span>
+<span id="cb5-9">torch.manual_seed(seed)</span>
+<span id="cb5-10">torch.backends.cudnn.deterministic <span class="op" style="color: #5E5E5E;
+background-color: null;
+font-style: inherit;">=</span> <span class="va" style="color: #111111;
+background-color: null;
+font-style: inherit;">True</span></span>
+<span id="cb5-11"><span class="cf" style="color: #003B4F;
+background-color: null;
+font-weight: bold;
+font-style: inherit;">if</span> torch.cuda.is_available(): torch.cuda.manual_seed_all(seed)</span>
+<span id="cb5-12"></span>
+<span id="cb5-13"><span class="co" style="color: #5E5E5E;
+background-color: null;
+font-style: inherit;"># numpy RNG</span></span>
+<span id="cb5-14"><span class="im" style="color: #00769E;
+background-color: null;
+font-style: inherit;">import</span> numpy <span class="im" style="color: #00769E;
+background-color: null;
+font-style: inherit;">as</span> np</span>
+<span id="cb5-15">np.random.seed(seed)</span></code></pre></div>
+<p>The Python and numpy parts speak for themselves. I will dive into the PyTorch statements in a moment.</p>
+<p>If we compare this code with what I did in my first attempt, the only thing that is new is <code>num_workers=1</code> for dataloaders.</p>
+<p>I tried that, and nope: still not reproducible.</p>
+<p>The current docs don’t have a section like the one above, but there is a function <a href="https://docs.fast.ai/torch_core.html#set_seed" target="_blank">set_seed</a> (only available in Fast.ai). Let’s have a look at the <a href="https://github.com/fastai/fastai/blob/main/fastai/torch_core.py#L161" target="_blank">source code</a>:</p>
+<div class="sourceCode" id="cb6" style="background: #f1f3f5;"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb6-1"><span class="kw" style="color: #003B4F;
+background-color: null;
+font-weight: bold;
+font-style: inherit;">def</span> set_seed(s, reproducible<span class="op" style="color: #5E5E5E;
+background-color: null;
+font-style: inherit;">=</span><span class="va" style="color: #111111;
+background-color: null;
+font-style: inherit;">False</span>):</span>
+<span id="cb6-2">    <span class="co" style="color: #5E5E5E;
+background-color: null;
+font-style: inherit;">"Set random seed for `random`, `torch`, and `numpy` (where available)"</span></span>
+<span id="cb6-3">    <span class="cf" style="color: #003B4F;
+background-color: null;
+font-weight: bold;
+font-style: inherit;">try</span>: torch.manual_seed(s)</span>
+<span id="cb6-4">    <span class="cf" style="color: #003B4F;
+background-color: null;
+font-weight: bold;
+font-style: inherit;">except</span> <span class="pp" style="color: #AD0000;
+background-color: null;
+font-style: inherit;">NameError</span>: <span class="cf" style="color: #003B4F;
+background-color: null;
+font-weight: bold;
+font-style: inherit;">pass</span></span>
+<span id="cb6-5">    <span class="cf" style="color: #003B4F;
+background-color: null;
+font-weight: bold;
+font-style: inherit;">try</span>: torch.cuda.manual_seed_all(s)</span>
+<span id="cb6-6">    <span class="cf" style="color: #003B4F;
+background-color: null;
+font-weight: bold;
+font-style: inherit;">except</span> <span class="pp" style="color: #AD0000;
+background-color: null;
+font-style: inherit;">NameError</span>: <span class="cf" style="color: #003B4F;
+background-color: null;
+font-weight: bold;
+font-style: inherit;">pass</span></span>
+<span id="cb6-7">    <span class="cf" style="color: #003B4F;
+background-color: null;
+font-weight: bold;
+font-style: inherit;">try</span>: np.random.seed(s<span class="op" style="color: #5E5E5E;
+background-color: null;
+font-style: inherit;">%</span>(<span class="dv" style="color: #AD0000;
+background-color: null;
+font-style: inherit;">2</span><span class="op" style="color: #5E5E5E;
+background-color: null;
+font-style: inherit;">**</span><span class="dv" style="color: #AD0000;
+background-color: null;
+font-style: inherit;">32</span><span class="op" style="color: #5E5E5E;
+background-color: null;
+font-style: inherit;">-</span><span class="dv" style="color: #AD0000;
+background-color: null;
+font-style: inherit;">1</span>))</span>
+<span id="cb6-8">    <span class="cf" style="color: #003B4F;
+background-color: null;
+font-weight: bold;
+font-style: inherit;">except</span> <span class="pp" style="color: #AD0000;
+background-color: null;
+font-style: inherit;">NameError</span>: <span class="cf" style="color: #003B4F;
+background-color: null;
+font-weight: bold;
+font-style: inherit;">pass</span></span>
+<span id="cb6-9">    random.seed(s)</span>
+<span id="cb6-10">    <span class="cf" style="color: #003B4F;
+background-color: null;
+font-weight: bold;
+font-style: inherit;">if</span> reproducible:</span>
+<span id="cb6-11">        torch.backends.cudnn.deterministic <span class="op" style="color: #5E5E5E;
+background-color: null;
+font-style: inherit;">=</span> <span class="va" style="color: #111111;
+background-color: null;
+font-style: inherit;">True</span></span>
+<span id="cb6-12">        torch.backends.cudnn.benchmark <span class="op" style="color: #5E5E5E;
+background-color: null;
+font-style: inherit;">=</span> <span class="va" style="color: #111111;
+background-color: null;
+font-style: inherit;">False</span></span></code></pre></div>
+<p>So, mostly the same stuff, except: <code>torch.backends.cudnn.benchmark = False</code>. Which leads us to the PyTorch docs…</p>
+</section>
+<section id="pytorch-docs" class="level3">
+<h3 class="anchored" data-anchor-id="pytorch-docs">PyTorch docs</h3>
+<p>Luckily, there is a note about reproducibility in the PyTorch docs: <a href="https://docs.pytorch.org/docs/stable/notes/randomness.html" target="_blank">Reproducibility</a>.</p>
+<p>There is a warning at the top of the document that I will repeat here.</p>
+<div class="callout callout-style-default callout-warning callout-titled">
+<div class="callout-header d-flex align-content-center">
+<div class="callout-icon-container">
+<i class="callout-icon"></i>
+</div>
+<div class="callout-title-container flex-fill">
+Warning
+</div>
+</div>
+<div class="callout-body-container callout-body">
+<p>Deterministic operations are often slower than nondeterministic operations, so single-run performance may decrease for your model. However, determinism may save time in development by facilitating experimentation, debugging, and regression testing.</p>
+</div>
+</div>
+<p>So it might be worth trying to make everything deterministic during our early experiments (with a smaller dataset and smaller base model), and when we are confident we are on the right track, we switch to nondeterministic.</p>
+<p>Sounds great! But first we have to get the deterministic part working in the first place…</p>
+<p>The PyTorch doc consists of three sections. Let’s go through them one by one.</p>
+<section id="controlling-sources-of-randomness" class="level4">
+<h4 class="anchored" data-anchor-id="controlling-sources-of-randomness">1. Controlling sources of randomness</h4>
+<p>Apart from reiterating the assignment of a fixed seed for Python, NumPy, and PyTorch, it also discusses the <code>cudnn.benchmark</code> feature we saw earlier. <code>cudnn</code> is a library built on top of CUDA that accelerates the training of neural networks. Apparently, it starts by trying out a couple of approaches (that’s the benchmarking), and picks the winner for the rest of the training. There is randomness involved in this benchmarking, so setting it to <code>False</code> should make the process deterministic.</p>
+<p>What happened when I tried this?</p>
+<p>-&gt; Still no reproducible results!</p>
+</section>
+<section id="avoiding-nondeterministic-algorithms" class="level4">
+<h4 class="anchored" data-anchor-id="avoiding-nondeterministic-algorithms">2. Avoiding nondeterministic algorithms</h4>
+<p>Now it gets interesting! PyTorch provides a method that might solve our problems: <a href="https://docs.pytorch.org/docs/stable/generated/torch.use_deterministic_algorithms.html#torch.use_deterministic_algorithms" target="_blank">torch.use_deterministic_algorithms(True)</a>.</p>
+<p>This statement instructs all other Torch code to use the deterministic variant of its algorithms, and if this is not possible, to throw an exception.</p>
+<p>And that is exactly what I got, an exception:</p>
+<div class="cell-output cell-output-stdout">
+<pre class="text"><code>RuntimeError                              Traceback (most recent call last)
+&lt;ipython-input-12-25c053374517&gt; in &lt;cell line: 0&gt;()
+      1 learn = vision_learner(dls, resnet18, metrics=error_rate)
+----&gt; 2 learn.fine_tune(3)
+
+21 frames
+/usr/local/lib/python3.11/dist-packages/torch/nn/modules/linear.py in forward(self, input)
+    123 
+    124     def forward(self, input: Tensor) -&gt; Tensor:
+--&gt; 125         return F.linear(input, self.weight, self.bias)
+    126 
+    127     def extra_repr(self) -&gt; str:
+
+RuntimeError: Deterministic behavior was enabled with either `torch.use_deterministic_algorithms(True)` or `at::Context::setDeterministicAlgorithms(true)`, but this operation is not deterministic because it uses CuBLAS and you have CUDA &gt;= 10.2. To enable deterministic behavior in this case, you must set an environment variable before running your PyTorch application: CUBLAS_WORKSPACE_CONFIG=:4096:8 or CUBLAS_WORKSPACE_CONFIG=:16:8. For more information, go to https://docs.nvidia.com/cuda/cublas/index.html#results-reproducibility</code></pre>
+</div>
+<p>It didn’t happen in some exotic part of the library, but at the most elemental level that even I understand: <code>return F.linear(input, self.weight, self.bias)</code>.</p>
+<p>The error message is super specific and helpful:</p>
+<p><code class="wrap">Deterministic behavior was enabled with either `torch.use_deterministic_algorithms(True)` or `at::Context::setDeterministicAlgorithms(true)`, but this operation is not deterministic because it uses CuBLAS and you have CUDA &gt;= 10.2. To enable deterministic behavior in this case, you must set an environment variable before running your PyTorch application: CUBLAS_WORKSPACE_CONFIG=:4096:8 or CUBLAS_WORKSPACE_CONFIG=:16:8. For more information, go to https://docs.nvidia.com/cuda/cublas/index.html#results-reproducibility</code></p>
+<p>Let’s see what version of CUDA we are using on Colab:</p>
+<div class="sourceCode" id="cb8" style="background: #f1f3f5;"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb8-1"><span class="bu" style="color: null;
+background-color: null;
+font-style: inherit;">print</span>(torch.version.cuda)</span></code></pre></div>
+<div class="cell-output cell-output-stdout">
+<pre class="text"><code>12.4</code></pre>
+</div>
+<p>Following the advice and setting this at the top of the notebook</p>
+<div class="sourceCode" id="cb10" style="background: #f1f3f5;"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb10-1">os.environ[<span class="st" style="color: #20794D;
+background-color: null;
+font-style: inherit;">'CUBLAS_WORKSPACE_CONFIG'</span>] <span class="op" style="color: #5E5E5E;
+background-color: null;
+font-style: inherit;">=</span> <span class="st" style="color: #20794D;
+background-color: null;
+font-style: inherit;">':4096:8'</span>   <span class="co" style="color: #5E5E5E;
+background-color: null;
+font-style: inherit;"># or ':16:8'</span></span></code></pre></div>
+<p>got me over this hurdle!</p>
+<div class="callout callout-style-default callout-tip callout-titled">
+<div class="callout-header d-flex align-content-center">
+<div class="callout-icon-container">
+<i class="callout-icon"></i>
+</div>
+<div class="callout-title-container flex-fill">
+Tip
+</div>
+</div>
+<div class="callout-body-container callout-body">
+<p>Just a “Restart session and run all” is not enough after introducing this environment var. You have to actually disconnect from the colab runtime, connect again, and run all.</p>
+</div>
+</div>
+<p>We got a step further, but another error pops up, now in the backward pass:</p>
+<div class="cell-output cell-output-stdout">
+<pre class="text"><code>RuntimeError                              Traceback (most recent call last)
+&lt;ipython-input-11-af2d886d9870&gt; in &lt;cell line: 0&gt;()
+      1 print(os.environ['CUBLAS_WORKSPACE_CONFIG'])
+      2 learn = vision_learner(dls, resnet18, metrics=error_rate)
+----&gt; 3 learn.fine_tune(3)
+
+22 frames
+/usr/local/lib/python3.11/dist-packages/torch/autograd/graph.py in _engine_run_backward(t_outputs, *args, **kwargs)
+    821         unregister_hooks = _register_logging_hooks_on_whole_graph(t_outputs)
+    822     try:
+--&gt; 823         return Variable._execution_engine.run_backward(  # Calls into the C++ engine to run the backward pass
+    824             t_outputs, *args, **kwargs
+    825         )  # Calls into the C++ engine to run the backward pass
+
+RuntimeError: adaptive_max_pool2d_backward_cuda does not have a deterministic implementation, but you set 'torch.use_deterministic_algorithms(True)'. You can turn off determinism just for this operation, or you can use the 'warn_only=True' option, if that's acceptable for your application. You can also file an issue at https://github.com/pytorch/pytorch/issues to help us prioritize adding deterministic support for this operation.</code></pre>
+</div>
+<p>Oh, oh, bad news. We have no other choice now to set the <code>warn_only</code> flag to <code>True</code> on the <code>use_deterministic_algorithms</code> call. This indeed allows the fine-tuning run to finish, but still not reproducible :(</p>
+</section>
+<section id="dataloader" class="level4">
+<h4 class="anchored" data-anchor-id="dataloader">3. DataLoader</h4>
+<p>Finally, the PyTorch doc about reproducibility mentions the possibility of seeding dataloader workers identically. As we previously used only one worker, I assume this won’t have any impact on our case. And guess what: it doesn’t <sup>1</sup>!</p>
+<p>Here is the notebook where I did all the experiments as recommended in the docs: <a href="https://colab.research.google.com/drive/1b2F6J_-FhG37odYyrJPxBdjPtyTzJGkn?usp=sharing" target="_blank">Getting reproducible results with Fast.ai / PyTorch - Attempt #2</a>. BTW the Colab GPU was of type L4.</p>
+<p>Speaking of GPUs: would we get reproducible results if we run it on a CPU? The answer is NO (I tried) <sup>2</sup>.</p>
+</section>
+</section>
+</section>
+<section id="lets-get-some-help-hello-claude" class="level2">
+<h2 class="anchored" data-anchor-id="lets-get-some-help-hello-claude">Let’s get some help (hello Claude)</h2>
+<p>The documentation didn’t really help. All the tricks to keep everything deterministic failed. It could be the backward pass, in which case we don’t have much hope of resolving it. But how do people train their models if you can’t do any experiments where just one meta-parameter changes?</p>
+<p>Anyway, we are not giving up! Let’s ask our friend the LLM.</p>
+<p>Claude speaks:</p>
+<blockquote class="blockquote">
+<p>When you create a DataLoader in PyTorch, it establishes its own internal random state that becomes decoupled from the global random seed. The DataLoader contains several stateful components that persist between training runs:</p>
+<p>The DataLoader’s internal random number generator gets initialized when you first create it, and this generator maintains its own state independently of any subsequent global seed resets. Even though you call seed_everything(42) before each run, the DataLoader’s internal RNG has already advanced its state from the previous run and won’t reset back to its initial position.</p>
+<p>The data shuffling mechanism also maintains state. Even with a fixed seed in your RandomSplitter, the underlying shuffling operations within the DataLoader can accumulate state changes that persist across runs, leading to subtle differences in the exact order that batches are presented to your model.</p>
+</blockquote>
+<p>Ah, of course, state is the key thing here! Random generators can start nicely with the same seed again, but if the state is not the same as it was before, that has no impact!</p>
+<p>So let’s apply that wisdom by setting the seeds <em>and</em> recreate the <code>DataLoader</code> before starting a new training run…</p>
+<p>Victory, we have reproducible results now! Have a look at this winning notebook: <a href="https://colab.research.google.com/drive/1yphkoDvcmb67JGXXCFK_dRN74VEY72lm?usp=sharing" target="_blank">Getting reproducible results with Fast.ai / PyTorch - Attempt #3</a>.</p>
+<div class="callout callout-style-default callout-warning callout-titled">
+<div class="callout-header d-flex align-content-center">
+<div class="callout-icon-container">
+<i class="callout-icon"></i>
+</div>
+<div class="callout-title-container flex-fill">
+Warning
+</div>
+</div>
+<div class="callout-body-container callout-body">
+<p>Even with the most conservative setup, like in this notebook, there can be small differences between runs. I noticed this when changing the GPU model from L4 to A100. This is acknowledged in the PyTorch documentation.</p>
+</div>
+</div>
+<p>There is just one problem with it: it has become really slow.</p>
+</section>
+<section id="hhhhh" class="level2">
+<h2 class="anchored" data-anchor-id="hhhhh">^H^H^H^H^H</h2>
+<p>For you younger kids: ^H is the backspace character in Unix-type terminals. In other words, let’s delete some of the things we have done to increase reproducibility at the cost of performance.</p>
+<section id="observations" class="level3">
+<h3 class="anchored" data-anchor-id="observations">Observations</h3>
+<section id="num_workers" class="level4">
+<h4 class="anchored" data-anchor-id="num_workers">num_workers:</h4>
+<p>Changing from <code>num_workers=0</code> to <code>num_workers=12</code> <sup>3</sup> maintains reproducibility, but only if the workers are seeded as follows (from the PyTorch docs):</p>
+<div class="sourceCode" id="cb12" style="background: #f1f3f5;"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb12-1"><span class="kw" style="color: #003B4F;
+background-color: null;
+font-weight: bold;
+font-style: inherit;">def</span> seed_worker(worker_id):</span>
+<span id="cb12-2">    worker_seed <span class="op" style="color: #5E5E5E;
+background-color: null;
+font-style: inherit;">=</span> torch.initial_seed() <span class="op" style="color: #5E5E5E;
+background-color: null;
+font-style: inherit;">%</span> <span class="dv" style="color: #AD0000;
+background-color: null;
+font-style: inherit;">2</span><span class="op" style="color: #5E5E5E;
+background-color: null;
+font-style: inherit;">**</span><span class="dv" style="color: #AD0000;
+background-color: null;
+font-style: inherit;">32</span></span>
+<span id="cb12-3">    numpy.random.seed(worker_seed)</span>
+<span id="cb12-4">    random.seed(worker_seed)</span>
+<span id="cb12-5"></span>
+<span id="cb12-6">g <span class="op" style="color: #5E5E5E;
+background-color: null;
+font-style: inherit;">=</span> torch.Generator()</span>
+<span id="cb12-7">g.manual_seed(<span class="dv" style="color: #AD0000;
+background-color: null;
+font-style: inherit;">42</span>)</span>
+<span id="cb12-8"></span>
+<span id="cb12-9">DataLoader(</span>
+<span id="cb12-10">    train_dataset,</span>
+<span id="cb12-11">    batch_size<span class="op" style="color: #5E5E5E;
+background-color: null;
+font-style: inherit;">=</span>batch_size,</span>
+<span id="cb12-12">    num_workers<span class="op" style="color: #5E5E5E;
+background-color: null;
+font-style: inherit;">=</span>num_workers,</span>
+<span id="cb12-13">    worker_init_fn<span class="op" style="color: #5E5E5E;
+background-color: null;
+font-style: inherit;">=</span>seed_worker,</span>
+<span id="cb12-14">    generator<span class="op" style="color: #5E5E5E;
+background-color: null;
+font-style: inherit;">=</span>g,</span>
+<span id="cb12-15">)</span></code></pre></div>
+<p>This also maintains reproducibility across sessions.</p>
+<p>I’m very happy this works as it speeds up things significantly!</p>
+</section>
+<section id="use_deterministic_algorithms" class="level4">
+<h4 class="anchored" data-anchor-id="use_deterministic_algorithms">use_deterministic_algorithms:</h4>
+<p>Removing <code>torch.use_deterministic_algorithms(True)</code> also maintains reproducibility, both in the notebook and across sessions <sup>4</sup>.</p>
+</section>
+<section id="set_seed" class="level4">
+<h4 class="anchored" data-anchor-id="set_seed">set_seed:</h4>
+<p>Setting the second parameter of <code>set_seed</code>, <code>reproducible</code> to <code>False</code> (which is the default) basically sets <code>torch.backends.cudnn.benchmark = False</code> in our case. This also maintains reproducibility, both in the notebook and across sessions.</p>
+</section>
+<section id="cudnn.deterministic" class="level4">
+<h4 class="anchored" data-anchor-id="cudnn.deterministic">cudnn.deterministic:</h4>
+<p>Setting <code>torch.backends.cudnn.deterministic = False</code> breaks reproducibility, so it is essential when running meaningful experiments. I hardly saw any performance degradation by setting this to <code>True</code>, but that might be different for other use cases.</p>
+<p><strong>Key findings</strong>: as long as you seed every DataLoader worker and keep <code>torch.backends.cudnn.deterministic = True</code>, you can crank <code>num_workers</code> back up, drop <code>torch.use_deterministic_algorithms(True)</code>, and rely on the default <code>set_seed(..., reproducible=False)</code>: reproducibility still holds across notebook sessions while you recover full training speed.</p>
+<p>The notebook that has applied the above, and is fast and reproducible, is here: <a href="https://colab.research.google.com/drive/1fOHcdEDja9OzmIBLkGqTiRf6gknVJGy-?usp=sharing" target="_blank">Getting reproducible results with Fast.ai / PyTorch - Attempt #4</a></p>
+</section>
+</section>
+</section>
+<section id="conclusion" class="level2">
+<h2 class="anchored" data-anchor-id="conclusion">Conclusion</h2>
+<div class="callout callout-style-default callout-note callout-titled">
+<div class="callout-header d-flex align-content-center">
+<div class="callout-icon-container">
+<i class="callout-icon"></i>
+</div>
+<div class="callout-title-container flex-fill">
+Note
+</div>
+</div>
+<div class="callout-body-container callout-body">
+<p>These conclusions are probably not generic for all training pipelines and base models, but they probably are for convolutional networks like Resnet18. It might be different for transformer-based models, who knows. At least we know what knobs we can turn to get reproducible results.</p>
+</div>
+</div>
+<p>Reproducible training comes down to three levers:</p>
+<ol type="1">
+<li>Seed every RNG – Python random, NumPy, and each DataLoader worker (worker_init_fn + torch.Generator).</li>
+<li>Force deterministic kernels <code>torch.backends.cudnn.deterministic = True</code> (leave benchmarking off while you experiment).</li>
+<li>Start from the same state: rebuild the DataLoader before each fresh run so its internal sampler is reset.</li>
+</ol>
+<p>If you are using Fast.ai, use the <a href="https://colab.research.google.com/drive/1fOHcdEDja9OzmIBLkGqTiRf6gknVJGy-?usp=sharing" target="_blank">Fast.ai notebook</a> as a reference for reproducible training.</p>
+<p>In the end it comes down to:</p>
+<div class="sourceCode" id="cb13" style="background: #f1f3f5;"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb13-1"><span class="co" style="color: #5E5E5E;
+background-color: null;
+font-style: inherit;"># First run</span></span>
+<span id="cb13-2">seed_everything(<span class="dv" style="color: #AD0000;
+background-color: null;
+font-style: inherit;">42</span>)</span>
+<span id="cb13-3">g <span class="op" style="color: #5E5E5E;
+background-color: null;
+font-style: inherit;">=</span> torch.Generator()</span>
+<span id="cb13-4">g.manual_seed(<span class="dv" style="color: #AD0000;
+background-color: null;
+font-style: inherit;">42</span>)</span>
+<span id="cb13-5">torch.backends.cudnn.deterministic <span class="op" style="color: #5E5E5E;
+background-color: null;
+font-style: inherit;">=</span> <span class="va" style="color: #111111;
+background-color: null;
+font-style: inherit;">True</span></span>
+<span id="cb13-6">dls <span class="op" style="color: #5E5E5E;
+background-color: null;
+font-style: inherit;">=</span> create_dataloaders(g)</span>
+<span id="cb13-7">learn <span class="op" style="color: #5E5E5E;
+background-color: null;
+font-style: inherit;">=</span> vision_learner(dls, resnet18, metrics<span class="op" style="color: #5E5E5E;
+background-color: null;
+font-style: inherit;">=</span>error_rate)</span>
+<span id="cb13-8">learn.fine_tune(<span class="dv" style="color: #AD0000;
+background-color: null;
+font-style: inherit;">3</span>)</span>
+<span id="cb13-9"></span>
+<span id="cb13-10"><span class="co" style="color: #5E5E5E;
+background-color: null;
+font-style: inherit;"># Next run(s)</span></span>
+<span id="cb13-11">seed_everything(<span class="dv" style="color: #AD0000;
+background-color: null;
+font-style: inherit;">42</span>)</span>
+<span id="cb13-12">g <span class="op" style="color: #5E5E5E;
+background-color: null;
+font-style: inherit;">=</span> torch.Generator()</span>
+<span id="cb13-13">g.manual_seed(<span class="dv" style="color: #AD0000;
+background-color: null;
+font-style: inherit;">42</span>)</span>
+<span id="cb13-14">dls <span class="op" style="color: #5E5E5E;
+background-color: null;
+font-style: inherit;">=</span> create_dataloaders(g)</span>
+<span id="cb13-15">learn <span class="op" style="color: #5E5E5E;
+background-color: null;
+font-style: inherit;">=</span> vision_learner(dls, resnet18, metrics<span class="op" style="color: #5E5E5E;
+background-color: null;
+font-style: inherit;">=</span>error_rate)</span>
+<span id="cb13-16">learn.fine_tune(<span class="dv" style="color: #AD0000;
+background-color: null;
+font-style: inherit;">3</span>)</span></code></pre></div>
+<p>If you prefer to just use PyTorch, use the <a href="https://colab.research.google.com/drive/1DB--1tnAOGdc5wgHNFc0KE5xhcJFRXgh?usp=sharing" target="_blank">PyTorch notebook</a> (Claude generated this based on the Fast.ai version).</p>
+<p>Once you move from experimentation to full-scale training, you can flip <code>torch.backends.cudnn.deterministic = False</code> to potentially regain speed. Just remember that it will sacrifice strict repeatability.</p>
+</section>
+<section id="whats-next" class="level2">
+<h2 class="anchored" data-anchor-id="whats-next">What’s next</h2>
+<p>Another interlude that got a bit out of hand. Time to go back to our <a href="../fly-drone-with-image-classification/">image classifier</a> and see if we can improve it. Read on…</p>
+
+
+</section>
+
+
+<div id="quarto-appendix" class="default"><section id="footnotes" class="footnotes footnotes-end-of-document"><h2 class="anchored quarto-appendix-heading">Footnotes</h2>
+
+<ol>
+<li id="fn1"><p>As I found out later, it certainly does matter when using more than one worker, which is what you always want in order to have acceptable performance.↩︎</p></li>
+<li id="fn2"><p>With what I know now, this is because I didn’t recreate the dataloaders between runs. If we did that and used a CPU, the results would be reproducible.↩︎</p></li>
+<li id="fn3"><p>This is the default in my case; it is calculated as <code>min(16, os.cpu_count())</code>.↩︎</p></li>
+<li id="fn4"><p>This stays repeatable unless your model calls a layer that can’t guarantee identical results on the GPU; in that case, the numbers may shift a bit between runs, or PyTorch will throw a warning.↩︎</p></li>
+</ol>
+</section></div> ]]></description>
+  <category>machine learning</category>
+  <category>colab</category>
+  <category>computer vision</category>
+  <category>fast.ai</category>
+  <category>pytorch</category>
+  <guid>https://dronelab.dev/posts/getting-reproducible-results/</guid>
+  <pubDate>Sat, 24 May 2025 21:00:00 GMT</pubDate>
+  <media:content url="https://dronelab.dev/posts/getting-reproducible-results/reproducible.png" medium="image" type="image/png" height="144" width="144"/>
+</item>
 <item>
   <title>Interlude: Which image models are best? UPDATED</title>
   <dc:creator>Mark Pors</dc:creator>

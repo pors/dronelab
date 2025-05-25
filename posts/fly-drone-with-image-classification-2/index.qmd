@@ -1,9 +1,9 @@
 ---
 title: "Fly a drone with: Image classification - Part 2"
 author: "Mark Pors"
-date: "2025-05-18"
+date: "2025-05-22"
 categories: [drone, code, tello, machine learning, image classification, fast.ai]
-image: tello-gamesir-t1d-photo.png
+image: image-classification-lamps2.png
 series: "Code, Fly & AI"
 order: 8
 draft: true
@@ -28,7 +28,34 @@ keywords
 
 :::
 
-## The path to autonomous flying
+## How we can improve the classifier
+
+We left off with a ["lamp or no-lamp" image classifier](../fly-drone-with-image-classification/) that was pretty good with a less than 5% error rate. However, I had some doubts about over-fitting due to playing with the meta parameters (like the mini-batch size).
+
+So the first thing to figure out is: are we over-fitting?
+
+When I'm confident we are good, we can try:
+
+* apply tricks from [chapter five](https://github.com/fastai/fastbook/blob/master/05_pet_breeds.ipynb){target="_blank"} in the fast.ai book
+* collect more images to train on
+* larger models
+
+I think this is the right order to do things. We still keep the idea of a baseline model intact (before we move on to more data and larger models), secondly, lager models don't do well with a small dataset. Lots of model parameters allow memorization if the dataset is small.
+
+## Are we over-fitting?
+
+
+
+
+
+
+
+
+## Introducing a test dataset
+
+A test dataset that the model has never seen before is a great way to determine if I played with the meta-parameters in my favour. 
+
+But is this actually true? As soon as I use the test set to make decisions, I again play with a meta-parameter. There is even jargon for it: *Test set leakage*.
 
 @@@ and create a test set!
 
