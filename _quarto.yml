@@ -27,6 +27,12 @@ website:
         href: https://twitter.com/pors
       - icon: rss
         href: index.xml
+  twitter-card:
+    site: "@pors"
+    creator: "@pors"
+    card-style: summary_large_image
+    image: enter-the-tello/tt.jpg
+    image-alt: "DroneLab - Coding Autonomous Drones in Baby Steps."
 format:
   html:
     theme:
