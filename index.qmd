@@ -12,10 +12,10 @@ page-layout: full
 title-block-banner: true
 title-block-style: default
 twitter-card:
-  title: "Getting reproducible training results with Fast.ai + PyTorch"
-  description: "Why your Fast.ai or PyTorch experiments keep giving different results even when you think you've seeded everything properly. Spoiler: it's not just about random seeds - DataLoaders have hidden state that screws things up. Here's how to actually fix it."
-  image: og-reproducible.png
-  image-alt: "Getting reproducible training results with Fast.ai + PyTorch"
+  title: "DroneLab - Coding Autonomous Drones in Baby Steps."
+  description: "On this blog, dronelab.dev, I'm exploring machine learning by teaching a drone how to fly itself. I break things down into small steps and share what I discover along the way. "
+  image: holybro-x500.png
+  image-alt: "DroneLab - Coding Autonomous Drones in Baby Steps."
   card-style: summary_large_image
 ---
 
