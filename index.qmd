@@ -1,5 +1,6 @@
 ---
 title: "DroneLab - Coding Autonomous Drones in Baby Steps"
+description: "On this blog, dronelab.dev, I'm exploring machine learning by teaching a drone how to fly itself. I break things down into small steps and share what I discover along the way."
 listing:
   contents: posts
   sort: "date desc"
@@ -13,7 +14,7 @@ title-block-banner: true
 title-block-style: default
 twitter-card:
   title: "DroneLab - Coding Autonomous Drones in Baby Steps."
-  description: "On this blog, dronelab.dev, I'm exploring machine learning by teaching a drone how to fly itself. I break things down into small steps and share what I discover along the way. "
+  description: "On this blog, dronelab.dev, I'm exploring machine learning by teaching a drone how to fly itself. I break things down into small steps and share what I discover along the way."
   image: holybro-x500.png
   image-alt: "DroneLab - Coding Autonomous Drones in Baby Steps."
   card-style: summary_large_image
