@@ -1,5 +1,6 @@
 ---
 title: "About"
+description: "On this blog, dronelab.dev, I explore machine learning by teaching a drone to fly autonomously. I break things down into small steps and share my discoveries along the way."
 image: logo_about.png
 about:
   template: jolla
@@ -16,7 +17,7 @@ about:
 
 ---
 
-Hey, I'm Mark. On this blog, I'm exploring machine learning by teaching a drone how to fly itself. I break things down into small steps and share what I discover along the way. 
+Hey, I'm Mark. On this blog, dronelab.dev, I'm exploring machine learning by teaching a drone how to fly itself. I break things down into small steps and share what I discover along the way. 
 
 Hope you find it interesting! Drop me a line if you do: mark [at] pors [dot] net.
 

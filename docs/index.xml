@@ -8,7 +8,7 @@
 <title>dronelab.dev</title>
 <link>https://dronelab.dev/</link>
 <atom:link href="https://dronelab.dev/index.xml" rel="self" type="application/rss+xml"/>
-<description>On this blog, dronelab.dev, I&#39;m exploring machine learning by teaching a drone how to fly itself. I break things down into small steps and share what I discover along the way.</description>
+<description>On this blog, dronelab.dev, I explore machine learning by teaching a drone to fly autonomously. I break things down into small steps and share my discoveries along the way.</description>
 <generator>quarto-1.7.27</generator>
 <lastBuildDate>Sat, 24 May 2025 21:00:00 GMT</lastBuildDate>
 <item>

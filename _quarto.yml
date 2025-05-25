@@ -14,7 +14,7 @@ website:
   open-graph:
     image: holybro-x500.png
     title: "DroneLab - Coding Autonomous Drones in Baby Steps."
-    description: "On this blog, dronelab.dev, I'm exploring machine learning by teaching a drone how to fly itself. I break things down into small steps and share what I discover along the way."
+    description: "On this blog, dronelab.dev, I explore machine learning by teaching a drone to fly autonomously. I break things down into small steps and share my discoveries along the way."
     site-name: dronelab.dev
     image-alt: "DroneLab - Coding Autonomous Drones in Baby Steps."
     image-width: 1280
