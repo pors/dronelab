@@ -527,7 +527,7 @@ Note
 <span id="cb13-14"><a href="#cb13-14" aria-hidden="true" tabindex="-1"></a>dls <span class="op">=</span> create_dataloaders(g)</span>
 <span id="cb13-15"><a href="#cb13-15" aria-hidden="true" tabindex="-1"></a>learn <span class="op">=</span> vision_learner(dls, resnet18, metrics<span class="op">=</span>error_rate)</span>
 <span id="cb13-16"><a href="#cb13-16" aria-hidden="true" tabindex="-1"></a>learn.fine_tune(<span class="dv">3</span>)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
-<p>If you prefer to just use PyTorch, use the <a href="https://colab.research.google.com/drive/1DB--1tnAOGdc5wgHNFc0KE5xhcJFRXgh?usp=sharing" target="_blank">PyTorch notebook</a> (Claude generated this based on the Fast.ai version).</p>
+<p>If you prefer to just use PyTorch, use the <a href="https://colab.research.google.com/drive/1DB--1tnAOGdc5wgHNFc0KE5xhcJFRXgh?usp=sharing" target="_blank">PyTorch notebook</a> (Claude generated this based on the Fast.ai version) <a href="#fn5" class="footnote-ref" id="fnref5" role="doc-noteref"><sup>5</sup></a>.</p>
 <p>Once you move from experimentation to full-scale training, you can flip <code>torch.backends.cudnn.deterministic = False</code> to potentially regain speed. Just remember that it will sacrifice strict repeatability.</p>
 </section>
 <section id="whats-next" class="level2">
@@ -545,6 +545,7 @@ Note
 <li id="fn2"><p>With what I know now, this is because I didn’t recreate the dataloaders between runs. If we did that and used a CPU, the results would be reproducible.<a href="#fnref2" class="footnote-back" role="doc-backlink">↩︎</a></p></li>
 <li id="fn3"><p>This is the default in my case; it is calculated as <code>min(16, os.cpu_count())</code>.<a href="#fnref3" class="footnote-back" role="doc-backlink">↩︎</a></p></li>
 <li id="fn4"><p>This stays repeatable unless your model calls a layer that can’t guarantee identical results on the GPU; in that case, the numbers may shift a bit between runs, or PyTorch will throw a warning.<a href="#fnref4" class="footnote-back" role="doc-backlink">↩︎</a></p></li>
+<li id="fn5"><p>I found a few excellent blog posts mainly focused on reproducibility with PyTorch: <a href="https://darinabal.medium.com/deep-learning-reproducible-results-using-pytorch-42034da5ad7">Reproducible Deep Learning Using PyTorch</a>, and <a href="https://medium.com/@heyamit10/pytorch-reproducibility-a-practical-guide-d6f573cba679">PyTorch Reproducibility: A Practical Guide</a>.<a href="#fnref5" class="footnote-back" role="doc-backlink">↩︎</a></p></li>
 </ol>
 </section></div></main> <!-- /main -->
 <script id="quarto-html-after-body" type="application/javascript">

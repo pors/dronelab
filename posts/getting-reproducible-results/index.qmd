@@ -374,7 +374,7 @@ learn = vision_learner(dls, resnet18, metrics=error_rate)
 learn.fine_tune(3)
 ```
 
-If you prefer to just use PyTorch, use the [PyTorch notebook](https://colab.research.google.com/drive/1DB--1tnAOGdc5wgHNFc0KE5xhcJFRXgh?usp=sharing){target="_blank"} (Claude generated this based on the Fast.ai version).
+If you prefer to just use PyTorch, use the [PyTorch notebook](https://colab.research.google.com/drive/1DB--1tnAOGdc5wgHNFc0KE5xhcJFRXgh?usp=sharing){target="_blank"} (Claude generated this based on the Fast.ai version) [^5].
 
 Once you move from experimentation to full-scale training, you can flip `torch.backends.cudnn.deterministic = False` to potentially regain speed. Just remember that it will sacrifice strict repeatability.
 
@@ -389,3 +389,5 @@ Another interlude that got a bit out of hand. Time to go back to our [image clas
 [^3]: This is the default in my case; it is calculated as `min(16, os.cpu_count())`.
 
 [^4]: This stays repeatable unless your model calls a layer that can’t guarantee identical results on the GPU; in that case, the numbers may shift a bit between runs, or PyTorch will throw a warning.
+
+[^5]: I found a few excellent blog posts mainly focused on reproducibility with PyTorch: [Reproducible Deep Learning Using PyTorch](https://darinabal.medium.com/deep-learning-reproducible-results-using-pytorch-42034da5ad7), and [PyTorch Reproducibility: A Practical Guide](https://medium.com/@heyamit10/pytorch-reproducibility-a-practical-guide-d6f573cba679).
