@@ -1,0 +1,14 @@
+---
+title: "How does a Neural Net really work?"
+author: "Mark Pors"
+date: "2025-06-07"
+categories: [machine learning, fast.ai]
+
+---
+
+## Fitting a function with gradient descent
+
+## Automating gradient descent
+
+
+## What's next
