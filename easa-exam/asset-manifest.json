@@ -1,15 +1,15 @@
 {
   "files": {
-    "main.css": "/easa-exam/static/css/main.f8235131.css",
-    "main.js": "/easa-exam/static/js/main.ee5e84a3.js",
+    "main.css": "/easa-exam/static/css/main.eeb0fdee.css",
+    "main.js": "/easa-exam/static/js/main.6ce3206e.js",
     "static/js/453.c5200c48.chunk.js": "/easa-exam/static/js/453.c5200c48.chunk.js",
     "index.html": "/easa-exam/index.html",
-    "main.f8235131.css.map": "/easa-exam/static/css/main.f8235131.css.map",
-    "main.ee5e84a3.js.map": "/easa-exam/static/js/main.ee5e84a3.js.map",
+    "main.eeb0fdee.css.map": "/easa-exam/static/css/main.eeb0fdee.css.map",
+    "main.6ce3206e.js.map": "/easa-exam/static/js/main.6ce3206e.js.map",
     "453.c5200c48.chunk.js.map": "/easa-exam/static/js/453.c5200c48.chunk.js.map"
   },
   "entrypoints": [
-    "static/css/main.f8235131.css",
-    "static/js/main.ee5e84a3.js"
+    "static/css/main.eeb0fdee.css",
+    "static/js/main.6ce3206e.js"
   ]
 }
