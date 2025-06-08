@@ -11,7 +11,7 @@
 <meta name="keywords" content="pytorch reproducibility, fastai reproducible training, dataloader seeding, torch deterministic, machine learning experiments, pytorch random seed, cudnn deterministic, reproducible deep learning">
 <meta name="description" content="Why your Fast.ai or PyTorch experiments keep giving different results even when you think you’ve seeded everything properly. Spoiler: it’s not just about random seeds - DataLoaders have hidden state that screws things up. Here’s how to actually fix it.">
 
-<title>Getting reproducible training results with Fast.ai + PyTorch – dronelab.dev</title>
+<title>Interlude: Getting reproducible training results with Fast.ai + PyTorch – dronelab.dev</title>
 <style>
 code{white-space: pre-wrap;}
 span.smallcaps{font-variant: small-caps;}
@@ -116,6 +116,7 @@ function gtag(){dataLayer.push(arguments);}
 gtag('js', new Date());
 gtag('config', 'G-J790G06FED', { 'anonymize_ip': true});
 </script>
+<style>html{ scroll-behavior: smooth; }</style>
 
 
 <link rel="stylesheet" href="../../styles.css">
@@ -137,7 +138,7 @@ gtag('config', 'G-J790G06FED', { 'anonymize_ip': true});
 <meta name="twitter:image-width" content="1280">
 </head>
 
-<body class="nav-fixed fullcontent quarto-light">
+<body class="nav-fixed quarto-light">
 
 <div id="quarto-search-results"></div>
   <header id="quarto-header" class="headroom fixed-top">
@@ -187,9 +188,40 @@ gtag('config', 'G-J790G06FED', { 'anonymize_ip': true});
 <div id="quarto-content" class="quarto-container page-columns page-rows-contents page-layout-article page-navbar">
 <!-- sidebar -->
 <!-- margin-sidebar -->
-    
+    <div id="quarto-margin-sidebar" class="sidebar margin-sidebar">
+        <nav id="TOC" role="doc-toc" class="toc-active" data-toc-expanded="3">
+    <h2 id="toc-title">Contents</h2>
+   
+  <ul>
+  <li><a href="#what-have-i-tried" id="toc-what-have-i-tried" class="nav-link active" data-scroll-target="#what-have-i-tried">What have I tried?</a></li>
+  <li><a href="#rtfm" id="toc-rtfm" class="nav-link" data-scroll-target="#rtfm">RTFM</a>
+  <ul>
+  <li><a href="#fast.ai-docs" id="toc-fast.ai-docs" class="nav-link" data-scroll-target="#fast.ai-docs">Fast.ai docs</a></li>
+  <li><a href="#pytorch-docs" id="toc-pytorch-docs" class="nav-link" data-scroll-target="#pytorch-docs">PyTorch docs</a>
+  <ul class="collapse">
+  <li><a href="#controlling-sources-of-randomness" id="toc-controlling-sources-of-randomness" class="nav-link" data-scroll-target="#controlling-sources-of-randomness">1. Controlling sources of randomness</a></li>
+  <li><a href="#avoiding-nondeterministic-algorithms" id="toc-avoiding-nondeterministic-algorithms" class="nav-link" data-scroll-target="#avoiding-nondeterministic-algorithms">2. Avoiding nondeterministic algorithms</a></li>
+  <li><a href="#dataloader" id="toc-dataloader" class="nav-link" data-scroll-target="#dataloader">3. DataLoader</a></li>
+  </ul></li>
+  </ul></li>
+  <li><a href="#lets-get-some-help-hello-claude" id="toc-lets-get-some-help-hello-claude" class="nav-link" data-scroll-target="#lets-get-some-help-hello-claude">Let’s get some help (hello Claude)</a></li>
+  <li><a href="#hhhhh" id="toc-hhhhh" class="nav-link" data-scroll-target="#hhhhh">^H^H^H^H^H</a>
+  <ul>
+  <li><a href="#observations" id="toc-observations" class="nav-link" data-scroll-target="#observations">Observations</a>
+  <ul class="collapse">
+  <li><a href="#num_workers" id="toc-num_workers" class="nav-link" data-scroll-target="#num_workers">num_workers:</a></li>
+  <li><a href="#use_deterministic_algorithms" id="toc-use_deterministic_algorithms" class="nav-link" data-scroll-target="#use_deterministic_algorithms">use_deterministic_algorithms:</a></li>
+  <li><a href="#set_seed" id="toc-set_seed" class="nav-link" data-scroll-target="#set_seed">set_seed:</a></li>
+  <li><a href="#cudnn.deterministic" id="toc-cudnn.deterministic" class="nav-link" data-scroll-target="#cudnn.deterministic">cudnn.deterministic:</a></li>
+  </ul></li>
+  </ul></li>
+  <li><a href="#conclusion" id="toc-conclusion" class="nav-link" data-scroll-target="#conclusion">Conclusion</a></li>
+  <li><a href="#whats-next" id="toc-whats-next" class="nav-link" data-scroll-target="#whats-next">What’s next</a></li>
+  </ul>
+</nav>
+    </div>
 <!-- main -->
-<main class="content" id="quarto-document-content"><header id="title-block-header" class="quarto-title-block"><h1 class="title display-7">Getting reproducible training results with Fast.ai + PyTorch</h1></header>
+<main class="content" id="quarto-document-content"><header id="title-block-header" class="quarto-title-block"><h1 class="title display-7">Interlude: Getting reproducible training results with Fast.ai + PyTorch</h1></header>
 
 <header id="title-block-header">
 
@@ -952,4 +984,5 @@ Note
 
 
 
+<script src="../../site_libs/quarto-html/zenscroll-min.js"></script>
 </body></html>

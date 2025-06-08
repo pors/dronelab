@@ -10,9 +10,1089 @@
 <atom:link href="https://dronelab.dev/index.xml" rel="self" type="application/rss+xml"/>
 <description>On this blog, dronelab.dev, I explore machine learning by teaching a drone to fly autonomously. I break things down into small steps and share my discoveries along the way.</description>
 <generator>quarto-1.7.27</generator>
-<lastBuildDate>Sat, 24 May 2025 21:00:00 GMT</lastBuildDate>
+<lastBuildDate>Sat, 07 Jun 2025 21:00:00 GMT</lastBuildDate>
 <item>
-  <title>Getting reproducible training results with Fast.ai + PyTorch</title>
+  <title>How does a neural net really work?</title>
+  <dc:creator>Mark Pors</dc:creator>
+  <link>https://dronelab.dev/posts/how-does-a-neural-net-really-work/</link>
+  <description><![CDATA[ 
+
+<header id="title-block-header">
+
+<p class="author">Mark Pors</p>
+
+<p class="date">2025-06-08</p>
+</header>
+
+
+<p><a href="https://colab.research.google.com/github/pors/dronelab/blob/main/posts/how-does-a-neural-net-really-work/index.ipynb" target="_parent"><img src="https://colab.research.google.com/assets/colab-badge.svg" alt="Open In Colab"></a></p>
+<section id="fitting-a-function-with-gradient-descent" class="level2">
+<h2 class="anchored" data-anchor-id="fitting-a-function-with-gradient-descent">Fitting a function with gradient descent</h2>
+<div class="callout callout-style-default callout-note callout-titled">
+<div class="callout-header d-flex align-content-center">
+<div class="callout-icon-container">
+<i class="callout-icon"></i>
+</div>
+<div class="callout-title-container flex-fill">
+Note
+</div>
+</div>
+<div class="callout-body-container callout-body">
+<p>This notebook is a copy of <a href="https://www.kaggle.com/code/jhoward/how-does-a-neural-net-really-work" target="_blank">How does a neural net really work?</a> by Jeremy Howard as part of the Fast.ai course <a href="https://course.fast.ai/" target="_blank">Practical Deep Learning for Coders</a>.</p>
+<p>I added and removed code and markdown here and there reflecting my own understanding of the topic. Not very interesting (aka boring) for 99+% of you, it is mostly for my own reference. My comments are marked with <mark>&lt;mark&gt;…&lt;/mark&gt;</mark> <sup>1</sup>.</p>
+<p>For drone related stuff, see the <a href="../../series/index.html">Code, Fly &amp; AI Series</a>.</p>
+</div>
+</div>
+<p>A neural network is just a mathematical function. In the most standard kind of neural network, the function:</p>
+<ol type="1">
+<li>Multiplies each input by a number of values. These values are known as <em>parameters</em></li>
+<li>Adds them up for each group of values</li>
+<li>Replaces the negative numbers with zeros</li>
+</ol>
+<p>This represents one “layer”. Then these three steps are repeated, using the outputs of the previous layer as the inputs to the next layer. Initially, the parameters in this function are selected randomly. Therefore a newly created neural network doesn’t do anything useful at all – it’s just random!</p>
+<p><mark>&lt;mark&gt;If you don’t use random parameters, but the same number for each parameter, the function won’t be able to learn anything, because each node in the layer will be the same, and the output will be the same for all inputs.&lt;/mark&gt;</mark></p>
+<p>To get the function to “learn” to do something useful, we have to change the parameters to make them “better” in some way. We do this using <em>gradient descent</em>. Let’s see how this works…</p>
+<div id="cell-4" class="cell" data-execution_count="77">
+<div class="sourceCode cell-code" id="cb1" style="background: #f1f3f5;"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb1-1"><span class="im" style="color: #00769E;
+background-color: null;
+font-style: inherit;">from</span> ipywidgets <span class="im" style="color: #00769E;
+background-color: null;
+font-style: inherit;">import</span> interact</span>
+<span id="cb1-2"><span class="im" style="color: #00769E;
+background-color: null;
+font-style: inherit;">from</span> fastai.basics <span class="im" style="color: #00769E;
+background-color: null;
+font-style: inherit;">import</span> <span class="op" style="color: #5E5E5E;
+background-color: null;
+font-style: inherit;">*</span></span>
+<span id="cb1-3"></span>
+<span id="cb1-4">plt.rc(<span class="st" style="color: #20794D;
+background-color: null;
+font-style: inherit;">'figure'</span>, dpi<span class="op" style="color: #5E5E5E;
+background-color: null;
+font-style: inherit;">=</span><span class="dv" style="color: #AD0000;
+background-color: null;
+font-style: inherit;">90</span>)</span>
+<span id="cb1-5"></span>
+<span id="cb1-6"><span class="kw" style="color: #003B4F;
+background-color: null;
+font-weight: bold;
+font-style: inherit;">def</span> plot_function(f, title<span class="op" style="color: #5E5E5E;
+background-color: null;
+font-style: inherit;">=</span><span class="va" style="color: #111111;
+background-color: null;
+font-style: inherit;">None</span>, <span class="bu" style="color: null;
+background-color: null;
+font-style: inherit;">min</span><span class="op" style="color: #5E5E5E;
+background-color: null;
+font-style: inherit;">=-</span><span class="fl" style="color: #AD0000;
+background-color: null;
+font-style: inherit;">2.1</span>, <span class="bu" style="color: null;
+background-color: null;
+font-style: inherit;">max</span><span class="op" style="color: #5E5E5E;
+background-color: null;
+font-style: inherit;">=</span><span class="fl" style="color: #AD0000;
+background-color: null;
+font-style: inherit;">2.1</span>, color<span class="op" style="color: #5E5E5E;
+background-color: null;
+font-style: inherit;">=</span><span class="st" style="color: #20794D;
+background-color: null;
+font-style: inherit;">'r'</span>, ylim<span class="op" style="color: #5E5E5E;
+background-color: null;
+font-style: inherit;">=</span><span class="va" style="color: #111111;
+background-color: null;
+font-style: inherit;">None</span>):</span>
+<span id="cb1-7">    x <span class="op" style="color: #5E5E5E;
+background-color: null;
+font-style: inherit;">=</span> torch.linspace(<span class="bu" style="color: null;
+background-color: null;
+font-style: inherit;">min</span>,<span class="bu" style="color: null;
+background-color: null;
+font-style: inherit;">max</span>, <span class="dv" style="color: #AD0000;
+background-color: null;
+font-style: inherit;">100</span>)[:,<span class="va" style="color: #111111;
+background-color: null;
+font-style: inherit;">None</span>]</span>
+<span id="cb1-8">    <span class="cf" style="color: #003B4F;
+background-color: null;
+font-weight: bold;
+font-style: inherit;">if</span> ylim: plt.ylim(ylim)</span>
+<span id="cb1-9">    plt.plot(x, f(x), color)</span>
+<span id="cb1-10">    <span class="cf" style="color: #003B4F;
+background-color: null;
+font-weight: bold;
+font-style: inherit;">if</span> title <span class="kw" style="color: #003B4F;
+background-color: null;
+font-weight: bold;
+font-style: inherit;">is</span> <span class="kw" style="color: #003B4F;
+background-color: null;
+font-weight: bold;
+font-style: inherit;">not</span> <span class="va" style="color: #111111;
+background-color: null;
+font-style: inherit;">None</span>: plt.title(title)</span></code></pre></div>
+</div>
+<p>To learn how gradient descent works, we’re going to start by fitting a quadratic, since that’s a function most of us are probably more familiar with than a neural network. Here’s the quadratic we’re going to try to fit:</p>
+<div id="cell-6" class="cell" data-execution_count="78">
+<div class="sourceCode cell-code" id="cb2" style="background: #f1f3f5;"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb2-1"><span class="kw" style="color: #003B4F;
+background-color: null;
+font-weight: bold;
+font-style: inherit;">def</span> f(x): <span class="cf" style="color: #003B4F;
+background-color: null;
+font-weight: bold;
+font-style: inherit;">return</span> <span class="dv" style="color: #AD0000;
+background-color: null;
+font-style: inherit;">3</span><span class="op" style="color: #5E5E5E;
+background-color: null;
+font-style: inherit;">*</span>x<span class="op" style="color: #5E5E5E;
+background-color: null;
+font-style: inherit;">**</span><span class="dv" style="color: #AD0000;
+background-color: null;
+font-style: inherit;">2</span> <span class="op" style="color: #5E5E5E;
+background-color: null;
+font-style: inherit;">+</span> <span class="dv" style="color: #AD0000;
+background-color: null;
+font-style: inherit;">2</span><span class="op" style="color: #5E5E5E;
+background-color: null;
+font-style: inherit;">*</span>x <span class="op" style="color: #5E5E5E;
+background-color: null;
+font-style: inherit;">+</span> <span class="dv" style="color: #AD0000;
+background-color: null;
+font-style: inherit;">1</span></span>
+<span id="cb2-2"></span>
+<span id="cb2-3">plot_function(f, <span class="st" style="color: #20794D;
+background-color: null;
+font-style: inherit;">"$3x^2 + 2x + 1$"</span>)</span></code></pre></div>
+<div class="cell-output cell-output-display">
+<div>
+<figure class="figure">
+<p><img src="https://dronelab.dev/posts/how-does-a-neural-net-really-work/index_files/figure-html/cell-3-output-1.png" class="img-fluid figure-img"></p>
+</figure>
+</div>
+</div>
+</div>
+<p>This quadratic is of the form <img src="https://latex.codecogs.com/png.latex?ax%5E2+bx+c">, with parameters <img src="https://latex.codecogs.com/png.latex?a=3">, <img src="https://latex.codecogs.com/png.latex?b=2">, <img src="https://latex.codecogs.com/png.latex?c=1">. To make it easier to try out different quadratics for fitting a model to the data we’ll create, let’s create a function that calculates the value of a point on any quadratic:</p>
+<div id="cell-8" class="cell" data-execution_count="79">
+<div class="sourceCode cell-code" id="cb3" style="background: #f1f3f5;"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb3-1"><span class="kw" style="color: #003B4F;
+background-color: null;
+font-weight: bold;
+font-style: inherit;">def</span> quad(a, b, c, x): <span class="cf" style="color: #003B4F;
+background-color: null;
+font-weight: bold;
+font-style: inherit;">return</span> a<span class="op" style="color: #5E5E5E;
+background-color: null;
+font-style: inherit;">*</span>x<span class="op" style="color: #5E5E5E;
+background-color: null;
+font-style: inherit;">**</span><span class="dv" style="color: #AD0000;
+background-color: null;
+font-style: inherit;">2</span> <span class="op" style="color: #5E5E5E;
+background-color: null;
+font-style: inherit;">+</span> b<span class="op" style="color: #5E5E5E;
+background-color: null;
+font-style: inherit;">*</span>x <span class="op" style="color: #5E5E5E;
+background-color: null;
+font-style: inherit;">+</span> c</span></code></pre></div>
+</div>
+<p>If we fix some particular values of a, b, and c, then we’ll have made a quadratic. To fix values passed to a function in python, we use the <code>partial</code> function, like so:</p>
+<div id="cell-10" class="cell" data-execution_count="80">
+<div class="sourceCode cell-code" id="cb4" style="background: #f1f3f5;"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb4-1"><span class="kw" style="color: #003B4F;
+background-color: null;
+font-weight: bold;
+font-style: inherit;">def</span> mk_quad(a,b,c): <span class="cf" style="color: #003B4F;
+background-color: null;
+font-weight: bold;
+font-style: inherit;">return</span> partial(quad, a,b,c)</span></code></pre></div>
+</div>
+<p><mark>&lt;mark&gt;So what we did here is freeze the function for a set of fixed parameters. We can now use this function to calculate the value of the quadratic for any x we pass to it. It is like we stored a model to use for inference.&lt;/mark&gt;</mark></p>
+<p>So for instance, we can recreate our previous quadratic:</p>
+<div id="cell-13" class="cell" data-execution_count="81">
+<div class="sourceCode cell-code" id="cb5" style="background: #f1f3f5;"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb5-1">f2 <span class="op" style="color: #5E5E5E;
+background-color: null;
+font-style: inherit;">=</span> mk_quad(<span class="dv" style="color: #AD0000;
+background-color: null;
+font-style: inherit;">3</span>,<span class="dv" style="color: #AD0000;
+background-color: null;
+font-style: inherit;">2</span>,<span class="dv" style="color: #AD0000;
+background-color: null;
+font-style: inherit;">1</span>)</span>
+<span id="cb5-2">plot_function(f2)</span></code></pre></div>
+<div class="cell-output cell-output-display">
+<div>
+<figure class="figure">
+<p><img src="https://dronelab.dev/posts/how-does-a-neural-net-really-work/index_files/figure-html/cell-6-output-1.png" class="img-fluid figure-img"></p>
+</figure>
+</div>
+</div>
+</div>
+<p>Now let’s simulate making some noisy measurements of our quadratic <code>f</code>. We’ll then use gradient descent to see if we can recreate the original function from the data.</p>
+<p>Here’s a couple of functions to add some random noise to data:</p>
+<div id="cell-15" class="cell" data-execution_count="82">
+<div class="sourceCode cell-code" id="cb6" style="background: #f1f3f5;"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb6-1"><span class="kw" style="color: #003B4F;
+background-color: null;
+font-weight: bold;
+font-style: inherit;">def</span> noise(x, scale): <span class="cf" style="color: #003B4F;
+background-color: null;
+font-weight: bold;
+font-style: inherit;">return</span> np.random.normal(scale<span class="op" style="color: #5E5E5E;
+background-color: null;
+font-style: inherit;">=</span>scale, size<span class="op" style="color: #5E5E5E;
+background-color: null;
+font-style: inherit;">=</span>x.shape)</span>
+<span id="cb6-2"><span class="kw" style="color: #003B4F;
+background-color: null;
+font-weight: bold;
+font-style: inherit;">def</span> add_noise(x, mult, add): <span class="cf" style="color: #003B4F;
+background-color: null;
+font-weight: bold;
+font-style: inherit;">return</span> x <span class="op" style="color: #5E5E5E;
+background-color: null;
+font-style: inherit;">*</span> (<span class="dv" style="color: #AD0000;
+background-color: null;
+font-style: inherit;">1</span><span class="op" style="color: #5E5E5E;
+background-color: null;
+font-style: inherit;">+</span>noise(x,mult)) <span class="op" style="color: #5E5E5E;
+background-color: null;
+font-style: inherit;">+</span> noise(x,add)</span></code></pre></div>
+</div>
+<p>Let’s use the now to create our noisy measurements based on the quadratic above:</p>
+<div id="cell-17" class="cell" data-execution_count="83">
+<div class="sourceCode cell-code" id="cb7" style="background: #f1f3f5;"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb7-1">np.random.seed(<span class="dv" style="color: #AD0000;
+background-color: null;
+font-style: inherit;">42</span>)</span>
+<span id="cb7-2"></span>
+<span id="cb7-3">x <span class="op" style="color: #5E5E5E;
+background-color: null;
+font-style: inherit;">=</span> torch.linspace(<span class="op" style="color: #5E5E5E;
+background-color: null;
+font-style: inherit;">-</span><span class="dv" style="color: #AD0000;
+background-color: null;
+font-style: inherit;">2</span>, <span class="dv" style="color: #AD0000;
+background-color: null;
+font-style: inherit;">2</span>, steps<span class="op" style="color: #5E5E5E;
+background-color: null;
+font-style: inherit;">=</span><span class="dv" style="color: #AD0000;
+background-color: null;
+font-style: inherit;">20</span>)[:,<span class="va" style="color: #111111;
+background-color: null;
+font-style: inherit;">None</span>]</span>
+<span id="cb7-4">y <span class="op" style="color: #5E5E5E;
+background-color: null;
+font-style: inherit;">=</span> add_noise(f(x), <span class="fl" style="color: #AD0000;
+background-color: null;
+font-style: inherit;">0.15</span>, <span class="fl" style="color: #AD0000;
+background-color: null;
+font-style: inherit;">1.5</span>)</span></code></pre></div>
+</div>
+<p><mark>&lt;mark&gt;What is that <code>[:,None]</code> doing there? Let’s inspect what is happening…&lt;/mark&gt;</mark></p>
+<div id="cell-19" class="cell" data-execution_count="84">
+<div class="sourceCode cell-code" id="cb8" style="background: #f1f3f5;"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb8-1">a <span class="op" style="color: #5E5E5E;
+background-color: null;
+font-style: inherit;">=</span> torch.linspace(<span class="op" style="color: #5E5E5E;
+background-color: null;
+font-style: inherit;">-</span><span class="dv" style="color: #AD0000;
+background-color: null;
+font-style: inherit;">2</span>, <span class="dv" style="color: #AD0000;
+background-color: null;
+font-style: inherit;">2</span>, steps<span class="op" style="color: #5E5E5E;
+background-color: null;
+font-style: inherit;">=</span><span class="dv" style="color: #AD0000;
+background-color: null;
+font-style: inherit;">4</span>)</span>
+<span id="cb8-2"><span class="bu" style="color: null;
+background-color: null;
+font-style: inherit;">print</span>(<span class="st" style="color: #20794D;
+background-color: null;
+font-style: inherit;">"Original tensor:"</span>, a)</span>
+<span id="cb8-3"><span class="bu" style="color: null;
+background-color: null;
+font-style: inherit;">print</span>(<span class="st" style="color: #20794D;
+background-color: null;
+font-style: inherit;">"Shape:"</span>, a.shape)</span>
+<span id="cb8-4"><span class="bu" style="color: null;
+background-color: null;
+font-style: inherit;">print</span>(<span class="st" style="color: #20794D;
+background-color: null;
+font-style: inherit;">"Number of dimensions:"</span>, a.ndim)</span></code></pre></div>
+<div class="cell-output cell-output-stdout">
+<pre><code>Original tensor: tensor([-2.0000, -0.6667,  0.6667,  2.0000])
+Shape: torch.Size([4])
+Number of dimensions: 1</code></pre>
+</div>
+</div>
+<div id="cell-20" class="cell" data-execution_count="85">
+<div class="sourceCode cell-code" id="cb10" style="background: #f1f3f5;"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb10-1">b <span class="op" style="color: #5E5E5E;
+background-color: null;
+font-style: inherit;">=</span> a[:, <span class="va" style="color: #111111;
+background-color: null;
+font-style: inherit;">None</span>]</span>
+<span id="cb10-2"><span class="bu" style="color: null;
+background-color: null;
+font-style: inherit;">print</span>(<span class="st" style="color: #20794D;
+background-color: null;
+font-style: inherit;">"Shape after [:, None]:"</span>, b.shape)</span>
+<span id="cb10-3"><span class="bu" style="color: null;
+background-color: null;
+font-style: inherit;">print</span>(<span class="st" style="color: #20794D;
+background-color: null;
+font-style: inherit;">"Number of dimensions now:"</span>, b.ndim)</span>
+<span id="cb10-4"><span class="bu" style="color: null;
+background-color: null;
+font-style: inherit;">print</span>(<span class="st" style="color: #20794D;
+background-color: null;
+font-style: inherit;">"The actual tensor looks like:"</span>)</span>
+<span id="cb10-5"><span class="bu" style="color: null;
+background-color: null;
+font-style: inherit;">print</span>(b)</span></code></pre></div>
+<div class="cell-output cell-output-stdout">
+<pre><code>Shape after [:, None]: torch.Size([4, 1])
+Number of dimensions now: 2
+The actual tensor looks like:
+tensor([[-2.0000],
+        [-0.6667],
+        [ 0.6667],
+        [ 2.0000]])</code></pre>
+</div>
+</div>
+<p><mark>&lt;mark&gt;[:] after a list is typically a slice. In PyTorch and Numpy you can actually use commas to address multiple dimensions of the array/tensor. Apparently, if you use <code>[:, None]</code>, it adds a new axis to the array. In this case, it is reshaping the 1D array of four values into a 2D array with one column.&lt;/mark&gt;</mark></p>
+<p><mark>&lt;mark&gt;The reason this is done is that the <code>np.random.normal</code> function expects a 2D array as input, where each row represents a sample and each column represents a feature. By reshaping the array to have one column, we ensure that the input meets this requirement.&lt;/mark&gt;</mark></p>
+<p>Here’s the first few values of each of <code>x</code> and <code>y</code>:</p>
+<div id="cell-23" class="cell" data-execution_count="86">
+<div class="sourceCode cell-code" id="cb12" style="background: #f1f3f5;"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb12-1">x[:<span class="dv" style="color: #AD0000;
+background-color: null;
+font-style: inherit;">5</span>],y[:<span class="dv" style="color: #AD0000;
+background-color: null;
+font-style: inherit;">5</span>]</span></code></pre></div>
+<div class="cell-output cell-output-display" data-execution_count="86">
+<pre><code>(tensor([[-2.0000],
+         [-1.7895],
+         [-1.5789],
+         [-1.3684],
+         [-1.1579]]),
+ tensor([[11.8690],
+         [ 6.5433],
+         [ 5.9396],
+         [ 2.6304],
+         [ 1.7947]], dtype=torch.float64))</code></pre>
+</div>
+</div>
+<p>As you can see, they’re <em>tensors</em>. A tensor is just like an <code>array</code> in numpy. A tensor can be a single number (a <em>scalar</em> or <em>rank-0 tensor</em>), a list of numbers (a <em>vector</em> or <em>rank-1 tensor</em>), a table of numbers (a <em>matrix</em> or <em>rank-0 tensor</em>), a table of tables of numbers (a <em>rank-3 tensor</em>), and so forth.</p>
+<p>We’re not going to learn much about our data by just looking at the raw numbers, so let’s draw a picture:</p>
+<div id="cell-25" class="cell" data-execution_count="87">
+<div class="sourceCode cell-code" id="cb14" style="background: #f1f3f5;"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb14-1">plt.scatter(x,y)<span class="op" style="color: #5E5E5E;
+background-color: null;
+font-style: inherit;">;</span></span></code></pre></div>
+<div class="cell-output cell-output-display">
+<div>
+<figure class="figure">
+<p><img src="https://dronelab.dev/posts/how-does-a-neural-net-really-work/index_files/figure-html/cell-12-output-1.png" class="img-fluid figure-img"></p>
+</figure>
+</div>
+</div>
+</div>
+<p>How do we find values of a, b, and c which fit this data? One approach is to try a few values and see what fits. Here’s a function which overlays a quadratic on top of our data, along with some sliders to change a, b, and c, and see how it looks:</p>
+<div id="cell-27" class="cell" data-execution_count="88">
+<div class="sourceCode cell-code" id="cb15" style="background: #f1f3f5;"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb15-1"><span class="at" style="color: #657422;
+background-color: null;
+font-style: inherit;">@interact</span>(a<span class="op" style="color: #5E5E5E;
+background-color: null;
+font-style: inherit;">=</span><span class="fl" style="color: #AD0000;
+background-color: null;
+font-style: inherit;">1.1</span>, b<span class="op" style="color: #5E5E5E;
+background-color: null;
+font-style: inherit;">=</span><span class="fl" style="color: #AD0000;
+background-color: null;
+font-style: inherit;">1.1</span>, c<span class="op" style="color: #5E5E5E;
+background-color: null;
+font-style: inherit;">=</span><span class="fl" style="color: #AD0000;
+background-color: null;
+font-style: inherit;">1.1</span>)</span>
+<span id="cb15-2"><span class="kw" style="color: #003B4F;
+background-color: null;
+font-weight: bold;
+font-style: inherit;">def</span> plot_quad(a, b, c):</span>
+<span id="cb15-3">    plt.scatter(x,y)</span>
+<span id="cb15-4">    plot_function(mk_quad(a,b,c), ylim<span class="op" style="color: #5E5E5E;
+background-color: null;
+font-style: inherit;">=</span>(<span class="op" style="color: #5E5E5E;
+background-color: null;
+font-style: inherit;">-</span><span class="dv" style="color: #AD0000;
+background-color: null;
+font-style: inherit;">3</span>,<span class="dv" style="color: #AD0000;
+background-color: null;
+font-style: inherit;">13</span>))</span></code></pre></div>
+<div class="cell-output cell-output-display">
+<script type="application/vnd.jupyter.widget-view+json">
+{"model_id":"2337997712e048de82cc224dae5d59f3","version_major":2,"version_minor":0,"quarto_mimetype":"application/vnd.jupyter.widget-view+json"}
+</script>
+</div>
+</div>
+<p><mark>&lt;mark&gt;The widget with sliders doesn’t work here in the blog, but it does in the notebook. You can try it out in the notebook on Colab.&lt;/mark&gt;</mark></p>
+<p>Try moving slider <code>a</code> a bit to the left. Does that look better or worse? How about if you move it a bit to the right? Find out which direction seems to improve the fit of the quadratic to the data, and move the slider a bit in that direction. Next, do the same for slider <code>b</code>: first figure out which direction improves the fit, then move it a bit in that direction. Then do the same for <code>c</code>.</p>
+<p>OK, now go back to slider <code>a</code> and repeat the process. Do it again for <code>b</code> and <code>c</code> as well.</p>
+<p>Did you notice that by going back and doing the sliders a second time that you were able to improve things a bit further? That’s an important insight – it’s only after changing <code>b</code> and <code>c</code>, for instance, that you realise that <code>a</code> actually needs some adjustment based on those new values.</p>
+<p>One thing that’s making this tricky is that we don’t really have a great sense of whether our fit is really better or worse. It would be easier if we had a numeric measure of that. On easy metric we could use is <em>mean absolute error</em> – which is the distance from each data point to the curve:</p>
+<div id="cell-30" class="cell" data-execution_count="89">
+<div class="sourceCode cell-code" id="cb16" style="background: #f1f3f5;"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb16-1"><span class="kw" style="color: #003B4F;
+background-color: null;
+font-weight: bold;
+font-style: inherit;">def</span> mae(preds, acts): <span class="cf" style="color: #003B4F;
+background-color: null;
+font-weight: bold;
+font-style: inherit;">return</span> (torch.<span class="bu" style="color: null;
+background-color: null;
+font-style: inherit;">abs</span>(preds<span class="op" style="color: #5E5E5E;
+background-color: null;
+font-style: inherit;">-</span>acts)).mean()</span></code></pre></div>
+</div>
+<p><mark>&lt;mark&gt;Let’s see how this works. We use the <code>torch.abs</code> function to calculate the absolute value of each element in a tensor, and then we can use the <code>mean</code> tensor method to calculate the mean of those absolute values. The error is reduced to a single number as this is an easy way to see how the model is doing so far.&lt;/mark&gt;</mark></p>
+<div id="cell-32" class="cell" data-execution_count="90">
+<div class="sourceCode cell-code" id="cb17" style="background: #f1f3f5;"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb17-1">a<span class="op" style="color: #5E5E5E;
+background-color: null;
+font-style: inherit;">=</span><span class="fl" style="color: #AD0000;
+background-color: null;
+font-style: inherit;">1.1</span></span>
+<span id="cb17-2">b<span class="op" style="color: #5E5E5E;
+background-color: null;
+font-style: inherit;">=</span><span class="fl" style="color: #AD0000;
+background-color: null;
+font-style: inherit;">1.1</span></span>
+<span id="cb17-3">c<span class="op" style="color: #5E5E5E;
+background-color: null;
+font-style: inherit;">=</span><span class="fl" style="color: #AD0000;
+background-color: null;
+font-style: inherit;">1.1</span></span>
+<span id="cb17-4">f <span class="op" style="color: #5E5E5E;
+background-color: null;
+font-style: inherit;">=</span> mk_quad(a,b,c)</span>
+<span id="cb17-5"><span class="bu" style="color: null;
+background-color: null;
+font-style: inherit;">print</span>(<span class="st" style="color: #20794D;
+background-color: null;
+font-style: inherit;">"Function parameters:"</span>, a, b, c)</span>
+<span id="cb17-6"><span class="bu" style="color: null;
+background-color: null;
+font-style: inherit;">print</span>(<span class="st" style="color: #20794D;
+background-color: null;
+font-style: inherit;">"Function output for x[:5]:"</span>, f(x[:<span class="dv" style="color: #AD0000;
+background-color: null;
+font-style: inherit;">5</span>]))</span>
+<span id="cb17-7"><span class="bu" style="color: null;
+background-color: null;
+font-style: inherit;">print</span>(<span class="st" style="color: #20794D;
+background-color: null;
+font-style: inherit;">"Actual values for y[:5]:"</span>, y[:<span class="dv" style="color: #AD0000;
+background-color: null;
+font-style: inherit;">5</span>])</span>
+<span id="cb17-8"><span class="bu" style="color: null;
+background-color: null;
+font-style: inherit;">print</span>(<span class="bu" style="color: null;
+background-color: null;
+font-style: inherit;">abs</span>(f(x[:<span class="dv" style="color: #AD0000;
+background-color: null;
+font-style: inherit;">5</span>]) <span class="op" style="color: #5E5E5E;
+background-color: null;
+font-style: inherit;">-</span> y[:<span class="dv" style="color: #AD0000;
+background-color: null;
+font-style: inherit;">5</span>]))</span>
+<span id="cb17-9"><span class="bu" style="color: null;
+background-color: null;
+font-style: inherit;">print</span>(<span class="st" style="color: #20794D;
+background-color: null;
+font-style: inherit;">"Mean Absolute Error:"</span>, mae(f(x), y))</span></code></pre></div>
+<div class="cell-output cell-output-stdout">
+<pre><code>Function parameters: 1.1 1.1 1.1
+Function output for x[:5]: tensor([[3.3000],
+        [2.6540],
+        [2.1055],
+        [1.6546],
+        [1.3011]])
+Actual values for y[:5]: tensor([[11.8690],
+        [ 6.5433],
+        [ 5.9396],
+        [ 2.6304],
+        [ 1.7947]], dtype=torch.float64)
+tensor([[8.5690],
+        [3.8893],
+        [3.8341],
+        [0.9758],
+        [0.4936]], dtype=torch.float64)
+Mean Absolute Error: tensor(2.4219, dtype=torch.float64)</code></pre>
+</div>
+</div>
+<p>We’ll update our interactive function to print this at the top for us.</p>
+<p>Use this to repeat the approach we took before to try to find the best fit, but this time just use the value of the metric to decide which direction to move each slider, and how far to move it.</p>
+<p>This time around, try doing it in the opposite order: <code>c</code>, then <code>b</code>, then <code>a</code>.</p>
+<p>You’ll probably find that you have to go through the set of sliders a couple of times to get the best fit.</p>
+<div id="cell-34" class="cell" data-execution_count="91">
+<div class="sourceCode cell-code" id="cb19" style="background: #f1f3f5;"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb19-1"><span class="at" style="color: #657422;
+background-color: null;
+font-style: inherit;">@interact</span>(a<span class="op" style="color: #5E5E5E;
+background-color: null;
+font-style: inherit;">=</span><span class="fl" style="color: #AD0000;
+background-color: null;
+font-style: inherit;">1.1</span>, b<span class="op" style="color: #5E5E5E;
+background-color: null;
+font-style: inherit;">=</span><span class="fl" style="color: #AD0000;
+background-color: null;
+font-style: inherit;">1.1</span>, c<span class="op" style="color: #5E5E5E;
+background-color: null;
+font-style: inherit;">=</span><span class="fl" style="color: #AD0000;
+background-color: null;
+font-style: inherit;">1.1</span>)</span>
+<span id="cb19-2"><span class="kw" style="color: #003B4F;
+background-color: null;
+font-weight: bold;
+font-style: inherit;">def</span> plot_quad(a, b, c):</span>
+<span id="cb19-3">    f <span class="op" style="color: #5E5E5E;
+background-color: null;
+font-style: inherit;">=</span> mk_quad(a,b,c)</span>
+<span id="cb19-4">    plt.scatter(x,y)</span>
+<span id="cb19-5">    loss <span class="op" style="color: #5E5E5E;
+background-color: null;
+font-style: inherit;">=</span> mae(f(x), y)</span>
+<span id="cb19-6">    plot_function(f, ylim<span class="op" style="color: #5E5E5E;
+background-color: null;
+font-style: inherit;">=</span>(<span class="op" style="color: #5E5E5E;
+background-color: null;
+font-style: inherit;">-</span><span class="dv" style="color: #AD0000;
+background-color: null;
+font-style: inherit;">3</span>,<span class="dv" style="color: #AD0000;
+background-color: null;
+font-style: inherit;">12</span>), title<span class="op" style="color: #5E5E5E;
+background-color: null;
+font-style: inherit;">=</span><span class="ss" style="color: #20794D;
+background-color: null;
+font-style: inherit;">f"MAE: </span><span class="sc" style="color: #5E5E5E;
+background-color: null;
+font-style: inherit;">{</span>loss<span class="sc" style="color: #5E5E5E;
+background-color: null;
+font-style: inherit;">:.2f}</span><span class="ss" style="color: #20794D;
+background-color: null;
+font-style: inherit;">"</span>)</span></code></pre></div>
+<div class="cell-output cell-output-display">
+<script type="application/vnd.jupyter.widget-view+json">
+{"model_id":"4228530deebc4ff3a7ff729f1761d561","version_major":2,"version_minor":0,"quarto_mimetype":"application/vnd.jupyter.widget-view+json"}
+</script>
+</div>
+</div>
+<p>In a modern neural network we’ll often have tens of millions of parameters to fit, or more, and thousands or millions of data points to fit them to. We’re not going to be able to do that by moving sliders around! We’ll need to automate this process.</p>
+<p>Thankfully, that turns out to be pretty straightforward. We can use calculus to figure out, for each parameter, whether we should increase or decrease it.</p>
+</section>
+<section id="automating-gradient-descent" class="level2">
+<h2 class="anchored" data-anchor-id="automating-gradient-descent">Automating gradient descent</h2>
+<p>The basic idea is this: if we know the <em>gradient</em> of our <code>mae()</code> function <em>with respect to</em> our parameters, <code>a</code>, <code>b</code>, and <code>c</code>, then that means we know how adjusting (for instance) <code>a</code> will change the value of <code>mae()</code>. If, say, <code>a</code> has a <em>negative</em> gradient, then we know that increasing <code>a</code> will decrease <code>mae()</code>. Then we know that’s what we need to do, since we trying to make <code>mae()</code> as low as possible.</p>
+<p>So, we find the gradient of <code>mae()</code> for each of our parameters, and then adjust our parameters a bit in the <em>opposite</em> direction to the sign of the gradient.</p>
+<p>To do this, first we need a function that takes all the parameters <code>a</code>, <code>b</code>, and <code>c</code> as a single vector input, and returns the value <code>mae()</code> based on those parameters:</p>
+<div id="cell-38" class="cell" data-execution_count="92">
+<div class="sourceCode cell-code" id="cb20" style="background: #f1f3f5;"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb20-1"><span class="kw" style="color: #003B4F;
+background-color: null;
+font-weight: bold;
+font-style: inherit;">def</span> quad_mae(params):</span>
+<span id="cb20-2">    f <span class="op" style="color: #5E5E5E;
+background-color: null;
+font-style: inherit;">=</span> mk_quad(<span class="op" style="color: #5E5E5E;
+background-color: null;
+font-style: inherit;">*</span>params)</span>
+<span id="cb20-3">    <span class="cf" style="color: #003B4F;
+background-color: null;
+font-weight: bold;
+font-style: inherit;">return</span> mae(f(x), y)</span></code></pre></div>
+</div>
+<p>Let’s try it:</p>
+<div id="cell-40" class="cell" data-execution_count="93">
+<div class="sourceCode cell-code" id="cb21" style="background: #f1f3f5;"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb21-1">quad_mae([<span class="fl" style="color: #AD0000;
+background-color: null;
+font-style: inherit;">1.1</span>, <span class="fl" style="color: #AD0000;
+background-color: null;
+font-style: inherit;">1.1</span>, <span class="fl" style="color: #AD0000;
+background-color: null;
+font-style: inherit;">1.1</span>])</span></code></pre></div>
+<div class="cell-output cell-output-display" data-execution_count="93">
+<pre><code>tensor(2.4219, dtype=torch.float64)</code></pre>
+</div>
+</div>
+<p>Yup, that’s the same as the starting <code>mae()</code> we had in our plot before.</p>
+<p>We’re first going to do exactly the same thing as we did manually – pick some arbritrary starting point for our parameters. We’ll put them all into a single tensor:</p>
+<div id="cell-42" class="cell" data-execution_count="94">
+<div class="sourceCode cell-code" id="cb23" style="background: #f1f3f5;"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb23-1">abc <span class="op" style="color: #5E5E5E;
+background-color: null;
+font-style: inherit;">=</span> torch.tensor([<span class="fl" style="color: #AD0000;
+background-color: null;
+font-style: inherit;">1.1</span>,<span class="fl" style="color: #AD0000;
+background-color: null;
+font-style: inherit;">1.1</span>,<span class="fl" style="color: #AD0000;
+background-color: null;
+font-style: inherit;">1.1</span>])</span></code></pre></div>
+</div>
+<p>To tell PyTorch that we want it to calculate gradients for these parameters, we need to call <code>requires_grad_()</code>:</p>
+<div id="cell-44" class="cell" data-execution_count="95">
+<div class="sourceCode cell-code" id="cb24" style="background: #f1f3f5;"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb24-1">abc.requires_grad_()</span></code></pre></div>
+<div class="cell-output cell-output-display" data-execution_count="95">
+<pre><code>tensor([1.1000, 1.1000, 1.1000], requires_grad=True)</code></pre>
+</div>
+</div>
+<p>We can now calculate <code>mae()</code>. Generally, when doing gradient descent, the thing we’re trying to minimise is called the <em>loss</em>:</p>
+<div id="cell-46" class="cell" data-execution_count="96">
+<div class="sourceCode cell-code" id="cb26" style="background: #f1f3f5;"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb26-1">loss <span class="op" style="color: #5E5E5E;
+background-color: null;
+font-style: inherit;">=</span> quad_mae(abc)</span>
+<span id="cb26-2">loss</span></code></pre></div>
+<div class="cell-output cell-output-display" data-execution_count="96">
+<pre><code>tensor(2.4219, dtype=torch.float64, grad_fn=&lt;MeanBackward0&gt;)</code></pre>
+</div>
+</div>
+<p>To get PyTorch to now calculate the gradients, we need to call <code>backward()</code></p>
+<div id="cell-48" class="cell" data-execution_count="97">
+<div class="sourceCode cell-code" id="cb28" style="background: #f1f3f5;"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb28-1">loss.backward()</span></code></pre></div>
+</div>
+<p>The gradients will be stored for us in an attribute called <code>grad</code>:</p>
+<div id="cell-50" class="cell" data-execution_count="98">
+<div class="sourceCode cell-code" id="cb29" style="background: #f1f3f5;"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb29-1">abc.grad</span></code></pre></div>
+<div class="cell-output cell-output-display" data-execution_count="98">
+<pre><code>tensor([-1.3529, -0.0316, -0.5000])</code></pre>
+</div>
+</div>
+<p><mark>&lt;mark&gt;The <code>backward()</code> function calculates the gradient of the loss with respect to the parameters. The gradients are stored in the <code>grad</code> attribute of each parameter tensor. But what do these actual values represent? Jeremy answered this question in the <a href="https://youtu.be/hBBOjCiFcuo?si=NVXP2q4xaDbz-FxP&amp;t=3296" target="_blank">video lesson</a>: the numbers represent the change of the loss when the parameters increase by a value of one (if the slope stayed constant, which is not the case obviously).&lt;/mark&gt;</mark></p>
+<p>According to these gradients, all our parameters are a little low. So let’s increase them a bit. If we subtract the gradient, multiplied by a small number, that should improve them a bit:</p>
+<div id="cell-53" class="cell" data-execution_count="99">
+<div class="sourceCode cell-code" id="cb31" style="background: #f1f3f5;"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb31-1"><span class="cf" style="color: #003B4F;
+background-color: null;
+font-weight: bold;
+font-style: inherit;">with</span> torch.no_grad():</span>
+<span id="cb31-2">    abc <span class="op" style="color: #5E5E5E;
+background-color: null;
+font-style: inherit;">-=</span> abc.grad<span class="op" style="color: #5E5E5E;
+background-color: null;
+font-style: inherit;">*</span><span class="fl" style="color: #AD0000;
+background-color: null;
+font-style: inherit;">0.01</span></span>
+<span id="cb31-3">    loss <span class="op" style="color: #5E5E5E;
+background-color: null;
+font-style: inherit;">=</span> quad_mae(abc)</span>
+<span id="cb31-4"></span>
+<span id="cb31-5"><span class="bu" style="color: null;
+background-color: null;
+font-style: inherit;">print</span>(<span class="ss" style="color: #20794D;
+background-color: null;
+font-style: inherit;">f'loss=</span><span class="sc" style="color: #5E5E5E;
+background-color: null;
+font-style: inherit;">{</span>loss<span class="sc" style="color: #5E5E5E;
+background-color: null;
+font-style: inherit;">:.2f}</span><span class="ss" style="color: #20794D;
+background-color: null;
+font-style: inherit;">'</span>)</span></code></pre></div>
+<div class="cell-output cell-output-stdout">
+<pre><code>loss=2.40</code></pre>
+</div>
+</div>
+<p>Yes, our loss has gone down!</p>
+<p>The “small number” we multiply is called the <em>learning rate</em>, and is the most important <em>hyper-parameter</em> to set when training a neural network.</p>
+<p>BTW, you’ll see we had to wrap our calculation of the new parameters in <code>with torch.no_grad()</code>. That disables the calculation of gradients for any operations inside that context manager. We have to do that, because <code>abc -= abc.grad*0.01</code> isn’t actually part of our quadratic model, so we don’t want derivatives to include that calculation.</p>
+<p><mark>&lt;mark&gt;To understand this, I had to go back to the part where the loss was calculated the first time, which resulted in <code>tensor(2.4219, dtype=torch.float64, grad_fn=&lt;MeanBackward0&gt;)</code>. This <code>grad_fn</code> is a graph of mathematical functions that have been applied to our tensor <code>abc</code>. When <code>loss.backward()</code> is called, this graph of functions is the basis for the calculation of the derivative of it. The resulting values are assigned to <code>abc.grad</code>.</mark></p>
+<p><mark>&lt;mark&gt;So PyTorch keeps track of all operations that are applied to this tensor, but we don’t want to apply it to the step function (<code>abc -= abc.grad*0.01</code>), because that is not part of the loss function, but rather a step in the optimization process. So we use <code>with torch.no_grad()</code> to tell PyTorch not to track this operation. &lt;/mark&gt;</mark></p>
+<p><mark>&lt;mark&gt;The fact that <code>loss = quad_mae(abc)</code> is also under the <code>no_grad()</code> context is because the loss was already calculated in a previous cell. Yeah, that makes it a bit confusing. Normally we would’t do that, as can be seen below in the loop.&lt;/mark&gt;</mark></p>
+<p>We can use a loop to do a few more iterations of this:</p>
+<div id="cell-56" class="cell" data-execution_count="100">
+<div class="sourceCode cell-code" id="cb33" style="background: #f1f3f5;"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb33-1"><span class="cf" style="color: #003B4F;
+background-color: null;
+font-weight: bold;
+font-style: inherit;">for</span> i <span class="kw" style="color: #003B4F;
+background-color: null;
+font-weight: bold;
+font-style: inherit;">in</span> <span class="bu" style="color: null;
+background-color: null;
+font-style: inherit;">range</span>(<span class="dv" style="color: #AD0000;
+background-color: null;
+font-style: inherit;">10</span>):</span>
+<span id="cb33-2">    loss <span class="op" style="color: #5E5E5E;
+background-color: null;
+font-style: inherit;">=</span> quad_mae(abc)</span>
+<span id="cb33-3">    loss.backward()</span>
+<span id="cb33-4">    <span class="cf" style="color: #003B4F;
+background-color: null;
+font-weight: bold;
+font-style: inherit;">with</span> torch.no_grad(): abc <span class="op" style="color: #5E5E5E;
+background-color: null;
+font-style: inherit;">-=</span> abc.grad<span class="op" style="color: #5E5E5E;
+background-color: null;
+font-style: inherit;">*</span><span class="fl" style="color: #AD0000;
+background-color: null;
+font-style: inherit;">0.01</span></span>
+<span id="cb33-5">    <span class="bu" style="color: null;
+background-color: null;
+font-style: inherit;">print</span>(<span class="ss" style="color: #20794D;
+background-color: null;
+font-style: inherit;">f'step=</span><span class="sc" style="color: #5E5E5E;
+background-color: null;
+font-style: inherit;">{</span>i<span class="sc" style="color: #5E5E5E;
+background-color: null;
+font-style: inherit;">}</span><span class="ss" style="color: #20794D;
+background-color: null;
+font-style: inherit;">; loss=</span><span class="sc" style="color: #5E5E5E;
+background-color: null;
+font-style: inherit;">{</span>loss<span class="sc" style="color: #5E5E5E;
+background-color: null;
+font-style: inherit;">:.2f}</span><span class="ss" style="color: #20794D;
+background-color: null;
+font-style: inherit;">'</span>)</span></code></pre></div>
+<div class="cell-output cell-output-stdout">
+<pre><code>step=0; loss=2.40
+step=1; loss=2.36
+step=2; loss=2.30
+step=3; loss=2.21
+step=4; loss=2.11
+step=5; loss=1.98
+step=6; loss=1.85
+step=7; loss=1.72
+step=8; loss=1.58
+step=9; loss=1.46</code></pre>
+</div>
+</div>
+<p>As you can see, our loss keeps going down!</p>
+<p>If you keep running this loop for long enough however, you’ll see that the loss eventually starts increasing for a while. That’s because once the parameters get close to the correct answer, our parameter updates will jump right over the correct answer! To avoid this, we need to decrease our learning rate as we train. This is done using a <em>learning rate schedule</em>, and can be automated in most deep learning frameworks, such as fastai and PyTorch.</p>
+<p><mark>&lt;mark&gt;This might be the case (overshooting), but the code above also contains a bug: the value of <code>abc.grad</code> is accumulated for each iteration of the loop. We therefore need to reset the gradient each iteration:&lt;/mark&gt;</mark></p>
+<div id="cell-59" class="cell" data-execution_count="101">
+<div class="sourceCode cell-code" id="cb35" style="background: #f1f3f5;"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb35-1">abc <span class="op" style="color: #5E5E5E;
+background-color: null;
+font-style: inherit;">=</span> torch.tensor([<span class="fl" style="color: #AD0000;
+background-color: null;
+font-style: inherit;">1.1</span>,<span class="fl" style="color: #AD0000;
+background-color: null;
+font-style: inherit;">1.1</span>,<span class="fl" style="color: #AD0000;
+background-color: null;
+font-style: inherit;">1.1</span>])</span>
+<span id="cb35-2">abc.requires_grad_()</span>
+<span id="cb35-3"></span>
+<span id="cb35-4"><span class="cf" style="color: #003B4F;
+background-color: null;
+font-weight: bold;
+font-style: inherit;">for</span> i <span class="kw" style="color: #003B4F;
+background-color: null;
+font-weight: bold;
+font-style: inherit;">in</span> <span class="bu" style="color: null;
+background-color: null;
+font-style: inherit;">range</span>(<span class="dv" style="color: #AD0000;
+background-color: null;
+font-style: inherit;">100</span>):</span>
+<span id="cb35-5">    loss <span class="op" style="color: #5E5E5E;
+background-color: null;
+font-style: inherit;">=</span> quad_mae(abc)</span>
+<span id="cb35-6">    loss.backward()</span>
+<span id="cb35-7">    <span class="cf" style="color: #003B4F;
+background-color: null;
+font-weight: bold;
+font-style: inherit;">with</span> torch.no_grad(): abc <span class="op" style="color: #5E5E5E;
+background-color: null;
+font-style: inherit;">-=</span> abc.grad<span class="op" style="color: #5E5E5E;
+background-color: null;
+font-style: inherit;">*</span><span class="fl" style="color: #AD0000;
+background-color: null;
+font-style: inherit;">0.1</span> <span class="co" style="color: #5E5E5E;
+background-color: null;
+font-style: inherit;"># I used a larger learning rate here</span></span>
+<span id="cb35-8">    abc.grad.zero_()  <span class="co" style="color: #5E5E5E;
+background-color: null;
+font-style: inherit;"># Reset gradients to zero</span></span>
+<span id="cb35-9">    <span class="bu" style="color: null;
+background-color: null;
+font-style: inherit;">print</span>(<span class="ss" style="color: #20794D;
+background-color: null;
+font-style: inherit;">f'step=</span><span class="sc" style="color: #5E5E5E;
+background-color: null;
+font-style: inherit;">{</span>i<span class="sc" style="color: #5E5E5E;
+background-color: null;
+font-style: inherit;">}</span><span class="ss" style="color: #20794D;
+background-color: null;
+font-style: inherit;">; loss=</span><span class="sc" style="color: #5E5E5E;
+background-color: null;
+font-style: inherit;">{</span>loss<span class="sc" style="color: #5E5E5E;
+background-color: null;
+font-style: inherit;">:.2f}</span><span class="ss" style="color: #20794D;
+background-color: null;
+font-style: inherit;">'</span>)</span></code></pre></div>
+<div class="cell-output cell-output-stdout">
+<pre><code>step=0; loss=2.42
+step=1; loss=2.21
+step=2; loss=2.01
+step=3; loss=1.82
+step=4; loss=1.67
+step=5; loss=1.55
+step=6; loss=1.46
+step=7; loss=1.38
+step=8; loss=1.31
+step=9; loss=1.24
+step=10; loss=1.19
+step=11; loss=1.17
+step=12; loss=1.14
+step=13; loss=1.12
+step=14; loss=1.10
+step=15; loss=1.10
+step=16; loss=1.10
+step=17; loss=1.09
+step=18; loss=1.09
+step=19; loss=1.09
+step=20; loss=1.09
+step=21; loss=1.08
+step=22; loss=1.08
+step=23; loss=1.08
+step=24; loss=1.07
+step=25; loss=1.07
+step=26; loss=1.07
+step=27; loss=1.07
+step=28; loss=1.06
+step=29; loss=1.06
+step=30; loss=1.06
+step=31; loss=1.05
+step=32; loss=1.05
+step=33; loss=1.05
+step=34; loss=1.05
+step=35; loss=1.04
+step=36; loss=1.04
+step=37; loss=1.04
+step=38; loss=1.03
+step=39; loss=1.03
+step=40; loss=1.03
+step=41; loss=1.04
+step=42; loss=1.03
+step=43; loss=1.03
+step=44; loss=1.03
+step=45; loss=1.03
+step=46; loss=1.02
+step=47; loss=1.03
+step=48; loss=1.02
+step=49; loss=1.02
+step=50; loss=1.02
+step=51; loss=1.02
+step=52; loss=1.01
+step=53; loss=1.01
+step=54; loss=1.02
+step=55; loss=1.01
+step=56; loss=1.01
+step=57; loss=1.01
+step=58; loss=1.01
+step=59; loss=1.01
+step=60; loss=1.01
+step=61; loss=1.01
+step=62; loss=1.01
+step=63; loss=1.01
+step=64; loss=1.01
+step=65; loss=1.00
+step=66; loss=1.01
+step=67; loss=1.01
+step=68; loss=1.01
+step=69; loss=1.01
+step=70; loss=1.00
+step=71; loss=1.01
+step=72; loss=1.00
+step=73; loss=1.00
+step=74; loss=1.00
+step=75; loss=0.99
+step=76; loss=1.00
+step=77; loss=1.00
+step=78; loss=1.01
+step=79; loss=1.00
+step=80; loss=1.00
+step=81; loss=0.99
+step=82; loss=1.00
+step=83; loss=1.00
+step=84; loss=1.00
+step=85; loss=1.00
+step=86; loss=1.00
+step=87; loss=0.99
+step=88; loss=0.99
+step=89; loss=0.99
+step=90; loss=1.00
+step=91; loss=0.99
+step=92; loss=0.99
+step=93; loss=0.99
+step=94; loss=0.99
+step=95; loss=0.99
+step=96; loss=1.00
+step=97; loss=0.99
+step=98; loss=0.99
+step=99; loss=0.99</code></pre>
+</div>
+</div>
+</section>
+<section id="how-a-neural-network-approximates-any-given-function" class="level2">
+<h2 class="anchored" data-anchor-id="how-a-neural-network-approximates-any-given-function">How a neural network approximates any given function</h2>
+<p>But neural nets are much more convenient and powerful than this example showed, because we can learn much more than just a quadratic with them. How does <em>that</em> work?</p>
+<p>The trick is that a neural network is a very expressive function. In fact – it’s <a href="https://en.wikipedia.org/wiki/Universal_approximation_theorem">infinitely expressive</a>. A neural network can approximate any computable function, given enough parameters. A “computable function” can cover just about anything you can imagine: understand and translate human speech; paint a picture; diagnose a disease from medical imaging; write an essay; etc…</p>
+<p>The way a neural network approximates a function actually turns out to be very simple. The key trick is to combine two extremely basic steps:</p>
+<ol type="1">
+<li>Matrix multiplication, which is just multiplying things together and then adding them up</li>
+<li>The function <img src="https://latex.codecogs.com/png.latex?max(x,0)">, which simply replaces all negative numbers with zero.</li>
+</ol>
+<p>In PyTorch, the function <img src="https://latex.codecogs.com/png.latex?max(x,0)"> is written as <code>np.clip(x,0)</code>. The combination of a linear function and this <em>max()</em> is called a <em>rectified linear function</em>, and it can be implemented like this:</p>
+<div id="cell-62" class="cell" data-execution_count="102">
+<div class="sourceCode cell-code" id="cb37" style="background: #f1f3f5;"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb37-1"><span class="kw" style="color: #003B4F;
+background-color: null;
+font-weight: bold;
+font-style: inherit;">def</span> rectified_linear(m,b,x):</span>
+<span id="cb37-2">    y <span class="op" style="color: #5E5E5E;
+background-color: null;
+font-style: inherit;">=</span> m<span class="op" style="color: #5E5E5E;
+background-color: null;
+font-style: inherit;">*</span>x<span class="op" style="color: #5E5E5E;
+background-color: null;
+font-style: inherit;">+</span>b</span>
+<span id="cb37-3">    <span class="cf" style="color: #003B4F;
+background-color: null;
+font-weight: bold;
+font-style: inherit;">return</span> torch.clip(y, <span class="fl" style="color: #AD0000;
+background-color: null;
+font-style: inherit;">0.</span>)</span></code></pre></div>
+</div>
+<p>Here’s what it looks like:</p>
+<div id="cell-64" class="cell" data-execution_count="103">
+<div class="sourceCode cell-code" id="cb38" style="background: #f1f3f5;"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb38-1">plot_function(partial(rectified_linear, <span class="dv" style="color: #AD0000;
+background-color: null;
+font-style: inherit;">1</span>,<span class="dv" style="color: #AD0000;
+background-color: null;
+font-style: inherit;">1</span>))</span></code></pre></div>
+<div class="cell-output cell-output-display">
+<div>
+<figure class="figure">
+<p><img src="https://dronelab.dev/posts/how-does-a-neural-net-really-work/index_files/figure-html/cell-28-output-1.png" class="img-fluid figure-img"></p>
+</figure>
+</div>
+</div>
+</div>
+<p>BTW, instead of <code>torch.clip(y, 0.)</code>, we can instead use <code>F.relu(x)</code>, which does exactly the same thing. In PyTorch, <code>F</code> refers to the <code>torch.nn.functional</code> module.</p>
+<div id="cell-66" class="cell" data-execution_count="104">
+<div class="sourceCode cell-code" id="cb39" style="background: #f1f3f5;"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb39-1"><span class="im" style="color: #00769E;
+background-color: null;
+font-style: inherit;">import</span> torch.nn.functional <span class="im" style="color: #00769E;
+background-color: null;
+font-style: inherit;">as</span> F</span>
+<span id="cb39-2"><span class="kw" style="color: #003B4F;
+background-color: null;
+font-weight: bold;
+font-style: inherit;">def</span> rectified_linear2(m,b,x): <span class="cf" style="color: #003B4F;
+background-color: null;
+font-weight: bold;
+font-style: inherit;">return</span> F.relu(m<span class="op" style="color: #5E5E5E;
+background-color: null;
+font-style: inherit;">*</span>x<span class="op" style="color: #5E5E5E;
+background-color: null;
+font-style: inherit;">+</span>b)</span>
+<span id="cb39-3">plot_function(partial(rectified_linear2, <span class="dv" style="color: #AD0000;
+background-color: null;
+font-style: inherit;">1</span>,<span class="dv" style="color: #AD0000;
+background-color: null;
+font-style: inherit;">1</span>))</span></code></pre></div>
+<div class="cell-output cell-output-display">
+<div>
+<figure class="figure">
+<p><img src="https://dronelab.dev/posts/how-does-a-neural-net-really-work/index_files/figure-html/cell-29-output-1.png" class="img-fluid figure-img"></p>
+</figure>
+</div>
+</div>
+</div>
+<p>To understand how this function works, try using this interactive version to play around with the parameters <code>m</code> and <code>b</code>:</p>
+<div id="cell-68" class="cell" data-execution_count="105">
+<div class="sourceCode cell-code" id="cb40" style="background: #f1f3f5;"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb40-1"><span class="at" style="color: #657422;
+background-color: null;
+font-style: inherit;">@interact</span>(m<span class="op" style="color: #5E5E5E;
+background-color: null;
+font-style: inherit;">=</span><span class="fl" style="color: #AD0000;
+background-color: null;
+font-style: inherit;">1.5</span>, b<span class="op" style="color: #5E5E5E;
+background-color: null;
+font-style: inherit;">=</span><span class="fl" style="color: #AD0000;
+background-color: null;
+font-style: inherit;">1.5</span>)</span>
+<span id="cb40-2"><span class="kw" style="color: #003B4F;
+background-color: null;
+font-weight: bold;
+font-style: inherit;">def</span> plot_relu(m, b):</span>
+<span id="cb40-3">    plot_function(partial(rectified_linear, m,b), ylim<span class="op" style="color: #5E5E5E;
+background-color: null;
+font-style: inherit;">=</span>(<span class="op" style="color: #5E5E5E;
+background-color: null;
+font-style: inherit;">-</span><span class="dv" style="color: #AD0000;
+background-color: null;
+font-style: inherit;">1</span>,<span class="dv" style="color: #AD0000;
+background-color: null;
+font-style: inherit;">4</span>))</span></code></pre></div>
+<div class="cell-output cell-output-display">
+<script type="application/vnd.jupyter.widget-view+json">
+{"model_id":"f3afb19605bd4e6487a62045859946af","version_major":2,"version_minor":0,"quarto_mimetype":"application/vnd.jupyter.widget-view+json"}
+</script>
+</div>
+</div>
+<p>As you see, <code>m</code> changes the slope, and <code>b</code> changes where the “hook” appears. This function doesn’t do much on its own, but look what happens when we add two of them together:</p>
+<div id="cell-70" class="cell" data-execution_count="106">
+<div class="sourceCode cell-code" id="cb41" style="background: #f1f3f5;"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb41-1"><span class="kw" style="color: #003B4F;
+background-color: null;
+font-weight: bold;
+font-style: inherit;">def</span> double_relu(m1,b1,m2,b2,x):</span>
+<span id="cb41-2">    <span class="cf" style="color: #003B4F;
+background-color: null;
+font-weight: bold;
+font-style: inherit;">return</span> rectified_linear(m1,b1,x) <span class="op" style="color: #5E5E5E;
+background-color: null;
+font-style: inherit;">+</span> rectified_linear(m2,b2,x)</span>
+<span id="cb41-3"></span>
+<span id="cb41-4"><span class="at" style="color: #657422;
+background-color: null;
+font-style: inherit;">@interact</span>(m1<span class="op" style="color: #5E5E5E;
+background-color: null;
+font-style: inherit;">=-</span><span class="fl" style="color: #AD0000;
+background-color: null;
+font-style: inherit;">1.5</span>, b1<span class="op" style="color: #5E5E5E;
+background-color: null;
+font-style: inherit;">=-</span><span class="fl" style="color: #AD0000;
+background-color: null;
+font-style: inherit;">1.5</span>, m2<span class="op" style="color: #5E5E5E;
+background-color: null;
+font-style: inherit;">=</span><span class="fl" style="color: #AD0000;
+background-color: null;
+font-style: inherit;">1.5</span>, b2<span class="op" style="color: #5E5E5E;
+background-color: null;
+font-style: inherit;">=</span><span class="fl" style="color: #AD0000;
+background-color: null;
+font-style: inherit;">1.5</span>)</span>
+<span id="cb41-5"><span class="kw" style="color: #003B4F;
+background-color: null;
+font-weight: bold;
+font-style: inherit;">def</span> plot_double_relu(m1, b1, m2, b2):</span>
+<span id="cb41-6">    plot_function(partial(double_relu, m1,b1,m2,b2), ylim<span class="op" style="color: #5E5E5E;
+background-color: null;
+font-style: inherit;">=</span>(<span class="op" style="color: #5E5E5E;
+background-color: null;
+font-style: inherit;">-</span><span class="dv" style="color: #AD0000;
+background-color: null;
+font-style: inherit;">1</span>,<span class="dv" style="color: #AD0000;
+background-color: null;
+font-style: inherit;">6</span>))</span></code></pre></div>
+<div class="cell-output cell-output-display">
+<script type="application/vnd.jupyter.widget-view+json">
+{"model_id":"dfe6583dfc6d4dca8dd96fd1840748c9","version_major":2,"version_minor":0,"quarto_mimetype":"application/vnd.jupyter.widget-view+json"}
+</script>
+</div>
+</div>
+<p>If you play around with that for a while, you notice something quite profound: with enough of these rectified linear functions added together, you could approximate any function with a single input, to whatever accuracy you like! Any time the function doesn’t quite match, you can just add a few more additions to the mix to make it a bit closer. As an experiment, perhaps you’d like to try creating your own <code>plot_triple_relu</code> interactive function, and maybe even include the scatter plot of our data from before, to see how close you can get?</p>
+<p>This exact same approach can be expanded to functions of 2, 3, or more parameters.</p>
+<p><mark>&lt;mark&gt;And here ends Jeremy’s notebook. We know that the trick to create a neural net is to add these two concepts together by connecting linear functions with a ReLU function in between. That will be something for the next lesson (chapter four of the book). See you then!&lt;/mark&gt;</mark></p>
+
+
+</section>
+
+
+<div id="quarto-appendix" class="default"><section id="footnotes" class="footnotes footnotes-end-of-document"><h2 class="anchored quarto-appendix-heading">Footnotes</h2>
+
+<ol>
+<li id="fn1"><p>Did you know I used the &lt;mark&gt; tag for that? I’m so grateful they named it like that!↩︎</p></li>
+</ol>
+</section></div> ]]></description>
+  <category>machine learning</category>
+  <category>fast.ai</category>
+  <guid>https://dronelab.dev/posts/how-does-a-neural-net-really-work/</guid>
+  <pubDate>Sat, 07 Jun 2025 21:00:00 GMT</pubDate>
+  <media:content url="https://dronelab.dev/posts/how-does-a-neural-net-really-work/how-does-a-neural-net-work.png" medium="image" type="image/png" height="81" width="144"/>
+</item>
+<item>
+  <title>Interlude: Getting reproducible training results with Fast.ai + PyTorch</title>
   <dc:creator>Mark Pors</dc:creator>
   <link>https://dronelab.dev/posts/getting-reproducible-results/</link>
   <description><![CDATA[ 
@@ -593,7 +1673,7 @@ font-style: inherit;">=</span>error_rate)</span>
 <span id="cb13-16">learn.fine_tune(<span class="dv" style="color: #AD0000;
 background-color: null;
 font-style: inherit;">3</span>)</span></code></pre></div>
-<p>If you prefer to just use PyTorch, use the <a href="https://colab.research.google.com/drive/1DB--1tnAOGdc5wgHNFc0KE5xhcJFRXgh?usp=sharing" target="_blank">PyTorch notebook</a> (Claude generated this based on the Fast.ai version).</p>
+<p>If you prefer to just use PyTorch, use the <a href="https://colab.research.google.com/drive/1DB--1tnAOGdc5wgHNFc0KE5xhcJFRXgh?usp=sharing" target="_blank">PyTorch notebook</a> (Claude generated this based on the Fast.ai version) <sup>5</sup>.</p>
 <p>Once you move from experimentation to full-scale training, you can flip <code>torch.backends.cudnn.deterministic = False</code> to potentially regain speed. Just remember that it will sacrifice strict repeatability.</p>
 </section>
 <section id="whats-next" class="level2">
@@ -611,6 +1691,7 @@ font-style: inherit;">3</span>)</span></code></pre></div>
 <li id="fn2"><p>With what I know now, this is because I didn’t recreate the dataloaders between runs. If we did that and used a CPU, the results would be reproducible.↩︎</p></li>
 <li id="fn3"><p>This is the default in my case; it is calculated as <code>min(16, os.cpu_count())</code>.↩︎</p></li>
 <li id="fn4"><p>This stays repeatable unless your model calls a layer that can’t guarantee identical results on the GPU; in that case, the numbers may shift a bit between runs, or PyTorch will throw a warning.↩︎</p></li>
+<li id="fn5"><p>I found a few excellent blog posts mainly focused on reproducibility with PyTorch: <a href="https://darinabal.medium.com/deep-learning-reproducible-results-using-pytorch-42034da5ad7">Reproducible Deep Learning Using PyTorch</a>, and <a href="https://medium.com/@heyamit10/pytorch-reproducibility-a-practical-guide-d6f573cba679">PyTorch Reproducibility: A Practical Guide</a>.↩︎</p></li>
 </ol>
 </section></div> ]]></description>
   <category>machine learning</category>
@@ -806,7 +1887,7 @@ TL;DR
 <p>Baseline: A simple model which you are confident should perform reasonably well. It should be very simple to implement, and very easy to test, so that you can then test each of your improved ideas, and make sure they are always better than your baseline. Without starting with a sensible baseline, it is very difficult to know whether your super-fancy models are actually any good.</p>
 </blockquote>
 <p>So, that’s what I am going to do: fine-tune an image classifier with a limited amount of data and with a simple base model.</p>
-<p>The testing ground for my drone has a couple of very obvious obstacles: lamps handing from the ceiling. So this is going to be a lamp or no-lamp in the room image classifier.</p>
+<p>The testing ground for my drone has a couple of very obvious obstacles: lamps hanging from the ceiling. So this is going to be a lamp or no-lamp in the room image classifier.</p>
 </section>
 <section id="lamp-or-no-lamp-image-classifier" class="level2">
 <h2 class="anchored" data-anchor-id="lamp-or-no-lamp-image-classifier">Lamp or no-lamp image classifier 😞 → 😐 → 🙂 → 😊 → 😃 → 😁</h2>

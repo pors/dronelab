@@ -116,6 +116,7 @@ function gtag(){dataLayer.push(arguments);}
 gtag('js', new Date());
 gtag('config', 'G-J790G06FED', { 'anonymize_ip': true});
 </script>
+<style>html{ scroll-behavior: smooth; }</style>
 
 
 <link rel="stylesheet" href="../../styles.css">
@@ -137,7 +138,7 @@ gtag('config', 'G-J790G06FED', { 'anonymize_ip': true});
 <meta name="twitter:image-width" content="600">
 </head>
 
-<body class="nav-fixed fullcontent quarto-light">
+<body class="nav-fixed quarto-light">
 
 <div id="quarto-search-results"></div>
   <header id="quarto-header" class="headroom fixed-top">
@@ -187,7 +188,40 @@ gtag('config', 'G-J790G06FED', { 'anonymize_ip': true});
 <div id="quarto-content" class="quarto-container page-columns page-rows-contents page-layout-article page-navbar">
 <!-- sidebar -->
 <!-- margin-sidebar -->
-    
+    <div id="quarto-margin-sidebar" class="sidebar margin-sidebar">
+        <nav id="TOC" role="doc-toc" class="toc-active" data-toc-expanded="3">
+    <h2 id="toc-title">Contents</h2>
+   
+  <ul>
+  <li><a href="#keyboard-navigation" id="toc-keyboard-navigation" class="nav-link active" data-scroll-target="#keyboard-navigation">Keyboard navigation</a>
+  <ul>
+  <li><a href="#the-secret-sauce-event-based-controls" id="toc-the-secret-sauce-event-based-controls" class="nav-link" data-scroll-target="#the-secret-sauce-event-based-controls">The secret sauce: Event-based controls</a></li>
+  <li><a href="#smooth-flying-with-velocity-controls" id="toc-smooth-flying-with-velocity-controls" class="nav-link" data-scroll-target="#smooth-flying-with-velocity-controls">Smooth flying with velocity controls</a></li>
+  <li><a href="#the-heartbeat-why-frame-rate-matters" id="toc-the-heartbeat-why-frame-rate-matters" class="nav-link" data-scroll-target="#the-heartbeat-why-frame-rate-matters">The Heartbeat: Why frame rate matters</a></li>
+  <li><a href="#why-not-send-commands-immediately" id="toc-why-not-send-commands-immediately" class="nav-link" data-scroll-target="#why-not-send-commands-immediately">Why not send commands immediately?</a></li>
+  </ul></li>
+  <li><a href="#video-streaming-snapshots" id="toc-video-streaming-snapshots" class="nav-link" data-scroll-target="#video-streaming-snapshots">Video streaming &amp; snapshots</a>
+  <ul>
+  <li><a href="#video-streaming" id="toc-video-streaming" class="nav-link" data-scroll-target="#video-streaming">Video streaming</a>
+  <ul class="collapse">
+  <li><a href="#setting-up-the-stream" id="toc-setting-up-the-stream" class="nav-link" data-scroll-target="#setting-up-the-stream">Setting Up the Stream</a></li>
+  <li><a href="#capturing-and-processing-frames" id="toc-capturing-and-processing-frames" class="nav-link" data-scroll-target="#capturing-and-processing-frames">Capturing and processing frames</a></li>
+  <li><a href="#frame-transformation" id="toc-frame-transformation" class="nav-link" data-scroll-target="#frame-transformation">Frame transformation</a></li>
+  <li><a href="#displaying-in-pygame" id="toc-displaying-in-pygame" class="nav-link" data-scroll-target="#displaying-in-pygame">Displaying in pygame</a></li>
+  </ul></li>
+  <li><a href="#video-snapshots" id="toc-video-snapshots" class="nav-link" data-scroll-target="#video-snapshots">Video snapshots</a>
+  <ul class="collapse">
+  <li><a href="#first-add-the-necessary-import" id="toc-first-add-the-necessary-import" class="nav-link" data-scroll-target="#first-add-the-necessary-import">1. First, add the necessary import</a></li>
+  <li><a href="#create-a-directory-to-store-images" id="toc-create-a-directory-to-store-images" class="nav-link" data-scroll-target="#create-a-directory-to-store-images">2. Create a directory to store images</a></li>
+  <li><a href="#add-a-key-handler-for-taking-snapshots" id="toc-add-a-key-handler-for-taking-snapshots" class="nav-link" data-scroll-target="#add-a-key-handler-for-taking-snapshots">3. Add a key handler for taking snapshots</a></li>
+  <li><a href="#add-the-snapshot-method" id="toc-add-the-snapshot-method" class="nav-link" data-scroll-target="#add-the-snapshot-method">4. Add the snapshot method</a></li>
+  </ul></li>
+  <li><a href="#lets-try-it-out" id="toc-lets-try-it-out" class="nav-link" data-scroll-target="#lets-try-it-out">Let’s try it out!</a></li>
+  </ul></li>
+  <li><a href="#whats-next" id="toc-whats-next" class="nav-link" data-scroll-target="#whats-next">What’s next?</a></li>
+  </ul>
+</nav>
+    </div>
 <!-- main -->
 <main class="content" id="quarto-document-content"><header id="title-block-header" class="quarto-title-block"><h1 class="title display-7">Key navigation &amp; Video snapshots</h1></header>
 
@@ -893,4 +927,5 @@ TL;DR
 
 
 
+<script src="../../site_libs/quarto-html/zenscroll-min.js"></script>
 </body></html>

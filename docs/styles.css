@@ -11,3 +11,21 @@
         padding-bottom: 0.5em;
     }
 }
+
+mark {
+  background: #fff8b5;
+  color: #2d2d2d;
+}
+
+mark > code, 
+mark code {
+  background: #e2e8f0; /* light, cool grey (Tailwind's slate-200) */
+  color: #222;
+  padding: 0.05em 0.3em;
+  border-radius: 0.2em;
+  font-family: 'Fira Mono', 'Consolas', monospace;
+  font-size: 0.8em;
+  box-shadow: 0 1px 1px rgba(0,0,0,0.05);
+  border: 1px solid #d1d5db;
+  vertical-align: 2px;
+}

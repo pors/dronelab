@@ -116,6 +116,7 @@ function gtag(){dataLayer.push(arguments);}
 gtag('js', new Date());
 gtag('config', 'G-J790G06FED', { 'anonymize_ip': true});
 </script>
+<style>html{ scroll-behavior: smooth; }</style>
 
 
 <link rel="stylesheet" href="../../styles.css">
@@ -137,7 +138,7 @@ gtag('config', 'G-J790G06FED', { 'anonymize_ip': true});
 <meta name="twitter:image-width" content="600">
 </head>
 
-<body class="nav-fixed fullcontent quarto-light">
+<body class="nav-fixed quarto-light">
 
 <div id="quarto-search-results"></div>
   <header id="quarto-header" class="headroom fixed-top">
@@ -187,7 +188,27 @@ gtag('config', 'G-J790G06FED', { 'anonymize_ip': true});
 <div id="quarto-content" class="quarto-container page-columns page-rows-contents page-layout-article page-navbar">
 <!-- sidebar -->
 <!-- margin-sidebar -->
-    
+    <div id="quarto-margin-sidebar" class="sidebar margin-sidebar">
+        <nav id="TOC" role="doc-toc" class="toc-active" data-toc-expanded="3">
+    <h2 id="toc-title">Contents</h2>
+   
+  <ul>
+  <li><a href="#the-path-to-autonomous-flying" id="toc-the-path-to-autonomous-flying" class="nav-link active" data-scroll-target="#the-path-to-autonomous-flying">The path to autonomous flying</a></li>
+  <li><a href="#naive-approach-1-image-classification" id="toc-naive-approach-1-image-classification" class="nav-link" data-scroll-target="#naive-approach-1-image-classification">Naive approach #1: Image classification</a></li>
+  <li><a href="#lamp-or-no-lamp-image-classifier" id="toc-lamp-or-no-lamp-image-classifier" class="nav-link" data-scroll-target="#lamp-or-no-lamp-image-classifier">Lamp or no-lamp image classifier 😞 → 😐 → 🙂 → 😊 → 😃 → 😁</a>
+  <ul>
+  <li><a href="#first-attempt" id="toc-first-attempt" class="nav-link" data-scroll-target="#first-attempt">First attempt 😞</a></li>
+  <li><a href="#cleanup-of-the-image-labels" id="toc-cleanup-of-the-image-labels" class="nav-link" data-scroll-target="#cleanup-of-the-image-labels">Cleanup of the image labels</a></li>
+  <li><a href="#second-attempt" id="toc-second-attempt" class="nav-link" data-scroll-target="#second-attempt">Second attempt 😐</a></li>
+  <li><a href="#third-attempt-better-resizing-and-augmentation" id="toc-third-attempt-better-resizing-and-augmentation" class="nav-link" data-scroll-target="#third-attempt-better-resizing-and-augmentation">Third attempt 😐: Better resizing and Augmentation</a></li>
+  <li><a href="#fourth-attempt-smaller-batch-size" id="toc-fourth-attempt-smaller-batch-size" class="nav-link" data-scroll-target="#fourth-attempt-smaller-batch-size">Fourth attempt 🙂: smaller batch size</a></li>
+  <li><a href="#fifth-attempt-use-a-better-base-model" id="toc-fifth-attempt-use-a-better-base-model" class="nav-link" data-scroll-target="#fifth-attempt-use-a-better-base-model">Fifth attempt 😊: use a better base model</a></li>
+  <li><a href="#sixth-attempt-collect-more-data" id="toc-sixth-attempt-collect-more-data" class="nav-link" data-scroll-target="#sixth-attempt-collect-more-data">Sixth attempt 🤨: collect more data</a></li>
+  </ul></li>
+  <li><a href="#whats-next" id="toc-whats-next" class="nav-link" data-scroll-target="#whats-next">What’s next?</a></li>
+  </ul>
+</nav>
+    </div>
 <!-- main -->
 <main class="content" id="quarto-document-content"><header id="title-block-header" class="quarto-title-block"><h1 class="title display-7">Fly a drone with: Image classification</h1></header>
 
@@ -251,7 +272,7 @@ TL;DR
 <p>Baseline: A simple model which you are confident should perform reasonably well. It should be very simple to implement, and very easy to test, so that you can then test each of your improved ideas, and make sure they are always better than your baseline. Without starting with a sensible baseline, it is very difficult to know whether your super-fancy models are actually any good.</p>
 </blockquote>
 <p>So, that’s what I am going to do: fine-tune an image classifier with a limited amount of data and with a simple base model.</p>
-<p>The testing ground for my drone has a couple of very obvious obstacles: lamps handing from the ceiling. So this is going to be a lamp or no-lamp in the room image classifier.</p>
+<p>The testing ground for my drone has a couple of very obvious obstacles: lamps hanging from the ceiling. So this is going to be a lamp or no-lamp in the room image classifier.</p>
 </section>
 <section id="lamp-or-no-lamp-image-classifier" class="level2">
 <h2 class="anchored" data-anchor-id="lamp-or-no-lamp-image-classifier">Lamp or no-lamp image classifier 😞 → 😐 → 🙂 → 😊 → 😃 → 😁</h2>
@@ -774,4 +795,5 @@ TL;DR
 
 
 
+<script src="../../site_libs/quarto-html/zenscroll-min.js"></script>
 </body></html>
