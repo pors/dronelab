@@ -1,5 +1,6 @@
 {
     "cSpell.words": [
+        "classifly",
         "CUDA",
         "cudnn",
         "dataloaders",
@@ -7,15 +8,20 @@
         "djitellopy",
         "dronelab",
         "EASA",
+        "evals",
         "gamesir",
         "holybro",
         "Kaggle",
+        "mopad",
         "numpy",
+        "overfit",
+        "Overfitting",
         "plotly",
         "pygame",
         "RMTT",
         "Robo",
         "SOTA",
-        "timm"
+        "timm",
+        "underfitting"
     ]
 }

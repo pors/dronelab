@@ -52,7 +52,7 @@ Jeremy Howard is the man behind both the [Fast.ai library](https://github.com/fa
 
 So, that's what I am going to do: fine-tune an image classifier with a limited amount of data and with a simple base model.
 
-The testing ground for my drone has a couple of very obvious obstacles: lamps handing from the ceiling. So this is going to be a lamp or no-lamp in the room image classifier.
+The testing ground for my drone has a couple of very obvious obstacles: lamps hanging from the ceiling. So this is going to be a lamp or no-lamp in the room image classifier.
 
 ## Lamp or no-lamp image classifier 😞 → 😐 → 🙂 → 😊 → 😃 → 😁
 

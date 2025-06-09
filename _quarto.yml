@@ -10,6 +10,7 @@ project:
     navigate: true
 
 website:
+  draft-mode: gone
   title: "dronelab.dev"
   open-graph:
     image: holybro-x500.png
@@ -43,10 +44,15 @@ website:
     image-alt: "DroneLab - Coding Autonomous Drones in Baby Steps."
 format:
   html:
-    theme:
-      - flatly
+    theme: flatly
     css: styles.css
     title-block-style: none
+    toc: true
+    toc-location: right
+    toc-title: "Contents"
+    toc-depth: 4
+    toc-expand: 3
+    smooth-scroll: true
 
 execute:
   cache: true

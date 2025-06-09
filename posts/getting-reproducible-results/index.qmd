@@ -1,5 +1,5 @@
 ---
-title: "Getting reproducible training results with Fast.ai + PyTorch"
+title: "Interlude: Getting reproducible training results with Fast.ai + PyTorch"
 author: "Mark Pors"
 date: "2025-05-25"
 categories: [machine learning, colab, computer vision, fast.ai, pytorch]
