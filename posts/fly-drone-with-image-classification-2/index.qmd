@@ -1,7 +1,7 @@
 ---
 title: "Fly a drone with: Image classification - Part 2"
 author: "Mark Pors"
-date: "2025-05-22"
+date: "2025-08-30"
 categories: [drone, code, tello, machine learning, image classification, fast.ai]
 image: image-classification-lamps2.png
 series: "Code, Fly & AI"
@@ -28,30 +28,243 @@ keywords
 
 :::
 
-## How we can improve the classifier
+## Let's improve the image classifier
 
-We left off with a ["lamp or no-lamp" image classifier](../fly-drone-with-image-classification/) that was pretty good with a less than 5% error rate. However, I had some doubts about over-fitting due to playing with the meta parameters (like the mini-batch size).
+We left off with a ["lamp or no-lamp" image classifier](../fly-drone-with-image-classification/) that was pretty good with a less than 5% error rate. However, I had some doubts about overfitting caused by playing with the meta parameters (like the mini-batch size).
 
-So the first thing to figure out is: are we over-fitting?
+So let's take a step back to a simple baseline and try to improve it by:
 
-When I'm confident we are good, we can try:
-
-* apply tricks from [chapter five](https://github.com/fastai/fastbook/blob/master/05_pet_breeds.ipynb){target="_blank"} in the fast.ai book
-* collect more images to train on
-* larger models
+* applying more tricks from [the fastai book](https://github.com/fastai/fastbook/){target="_blank"}
+* collecting more images to train on
+* using larger models.
 
 I think this is the right order to do things. We still keep the idea of a baseline model intact (before we move on to more data and larger models), secondly, lager models don't do well with a small dataset. Lots of model parameters allow memorization if the dataset is small.
 
-## Are we over-fitting?
+While we are trying to improve the model we keep an eye out if we are overfitting.
+
+## Overfitting
+
+Let's dive a bit into overfitting so we will recognize it when it's happening and we can address it with each improvement we made.
+
+What is it? What can cause it? How to detect it? What to do about it?
+
+### What is overfitting?
+
+Overfitting is when our model learns the training data too good, including its noise and specific details, to the point that it performs worse on new, unseen data (the validation set).
+
+In other words: the model memorizes *all* details of the training set and becomes a perfect model for that data. Like a very high order polynomial function covering a simple quadratic function including the measured noise. The curve will pass through every data point perfectly, but it’ll wiggle all over the place and doesn't capture the real underlying pattern.
+
+It works amazingly well on the training set, but it doesn't generalize, so it won't work that good on the validation set (or on real world data after deployment).
+
+### What can cause overfitting?
+
+Below are some possible causes of overfitting. This list is not complete, but is relevant to our current situation, and my level of understanding right now:
+
+* Larger models: can learn more complex patterns but also overfit more easily (like the polynomial example above)
+* Insufficient training data: same as a too large model, just the other side of the same coin
+* Noisy data: the models trains on wrong labels, so obviously it won't do well on real-world data (we saw that in my first attempts with badly labelled data)
+
+The mini-batch size can also contribute to overfitting, but apparently it is not as black and white. Both a too small and a too large batch size can cause overfitting. We'll get into that later.
+
+### How to detect overfitting?
+
+Now we know what overfitting is, the obvious sign is that the training loss continues to decrease across epochs, while the validation loss starts to increase. Or less extreme: the validation loss doesn't increase, but its loss decrease slows down.
+
+It would be handy if we could plot that, that would make it easy to spot.
+
+Oh look, that is built in into fastai:
+
+```python
+learn.fine_tune(10)
+learn.recorder.plot_loss()
+```
+
+![Learning curve](learning-curve.png)
+
+The validation loss curve has a resolution of epochs (10 in this case), the training loss curve is based on mini-batches so the resolution is higher.
+
+This chart gives us a clear insight, that after two epochs, the validation loss no longer decreases, while the training loss keeps on going down. 
+
+To visualize a bit more data I (I, Claude) created this dashboard that includes the train/valid loss gap, and the error rate:
+
+![Fast.ai compatible Training Analysis Dashboard](dashboard.png)
+
+The source code for that is here: [Fast.ai compatible Training Analysis Dashboard](https://gist.github.com/pors/79ea28bbce5d25e6b3bdba128aef0533){target="_blank"}.
+
+### What to do about it?
+
+To fix overfitting we should oppose the causes as mentioned before, so:
+
+* smaller models
+* more data
+* fix noisy data
+
+This is also what is stated, more or less, in the [fast.ai book](https://github.com/fastai/fastbook/tree/master):
+
+![Steps to reducing overfitting](reducing-overfitting.png)
+
+This image is from a part of the book that hasn't been covered yet in the lessons I have attended. So I'm not familiar with all methods, but I know about data augmentation. I think this will be the first thing to try (again) and see how it affects overfitting and performance.
+
+## Back to the baseline
+
+Our last attempt used a larger model, and I didn't yet know how to keep experiments reproducible. In the meantime I dived into that particular problem and we are going to apply that newfound wisdom first. Here is the post about my model training reproducibility journey: [Getting reproducible training results with Fast.ai + PyTorch](../getting-reproducible-results/).
+
+I'm going to start off with the experiment I did before I changed the mini-batch size and added a larger base model. And I'll make sure the experiment is reproducible. When we have that we can try to determine if we are overfitting before continuing to improve the model with new experiments.
+
+Let's start with resizing by cropping and padding zeroes: [Is there a lamp? Part 2. Baseline](https://colab.research.google.com/drive/1cpjPkvp3RRWpMLLMVrZugCRpilckAtQv?usp=sharing){target="_blank"}
+
+Then we do some more simple experiments about how we resize images:
+
+1. Squish
+2. RandomResizedCrop
+
+The results of that are here: [Is there a lamp? Part 2. Baseline #2](https://colab.research.google.com/drive/19Ep4yRNZrRmz5mT3VlSqGklHlFpcsLMp?usp=sharing){target="_blank"}
+
+The first experiment's results look nice and conservative, and the error_rate gets stuck after the third epoch. So most likely no overfitting there and room to improve. So that is what we go with from here on.
+
+## Can we improve on the baseline?
+
+Let's try a couple of things to improve the error_rate without signs of overfitting:
+
+* Data augmentation
+* Adjust the learning rate
+* Change the batch size
+
+There are other things we could do here, like manually unfreezing layers and determining optimal learning rates after that (as described in chapter five of the fastai book). We'll leave that for another time though!
+
+#### Data augmentation
+
+We don't have a lot of data (in comparison with the base model size), so maybe data augmentation can improve things a bit.
+
+**Finding**: with data augmentation, overfitting starts at the fourth epoch, so that is an improvement. However the error_rate increases after the second epoch. All in all, we didn't gain anything here.
+
+#### Learning rate
+
+The learning rate determines how large steps we make in updating the weights and biases based on the loss gradient. In chapter four of the fastai book this was made very clear as:
+
+```python
+weights = weights - lr * weights.grad
+```
+
+Fastai has a cool function we can use to find the "best" learning rate. We call it before we call fine_tune:
+
+```python
+suggestions = learn.lr_find()
+print(f"Valley suggestion: {suggestions.valley}")
+```
+
+This outputs this chart:
+
+![Learning rate finder result chart](lr-finder.png)
+
+How to read this?
+
+* Flat/Noisy bit (left side): With super-low learning rates, the loss kinda just sits there or jumps around randomly. Basically, the model isn’t really catching on yet.
+* Sweet spot (going downhill): Crank up the learning rate a bit, and the loss starts dropping. Now we're talking our model's actually getting smarter.
+* Bottoming out: Eventually, we hit a sweet spot: the lowest loss we can get.
+* Blowing up (right side): Push the learning rate too far and things go wild—loss spikes, and our model basically loses its mind (jumping from top to top skipping the valleys is what I think here).
+
+So, what is this orange valley dot? This usually corresponds to a point where the loss was decreasing steeply, just before it starts to flatten out or increase. It's often a good, safe starting point, and so that is the learning rate the fastai library recommends.
+
+We can apply this lr value to training as:
+
+```python
+learn.fine_tune(10, base_lr=0.0012)
+```
+
+::: {.callout-note}
+The `fine_tune` function already does some smart stuff with the learning rate; `base_lr` is used "as is" for the first epoch (which only fine-tunes the head). For subsequent epochs the learning rate for earlier layers is reduced, with the `base_lr` as the starting point. Anyway, no need to go into that any further at this stage.
+:::
+
+Now, this `0.0012` is very close to the default which is `0.001`, so we don't get a real different result.
+
+Let's try a smaller lr: `0.0004`, and look, now things change:
+
+![Training Analysis Dashboard with lr==0.0004](dashboard-lr-0_0004.png)
+
+What do we see here?
+
+1. Overfitting completely gone
+2. The `error_rate` bottoms out at about 10%.
+
+**Finding**: the smaller learning rate suppressed overfitting and give most likely a more realistic result for our current data set.
+
+#### Mini-batch size
+
+Let's try smaller mini-batch sizes again, as I did in the previous blog post. The results were quite a bit better, but maybe it was mostly overfitting? Now we have to tools to evaluate that we can do the experiment again.
+
+What happens when we lower the batch size? Each training step is based on less data, so there is more noise and it is less reliable. At the same time, it is less likely to get stuck in local minima. I don't really have any intuition for this, so let's just try it out.
+
+::: {.callout-note}
+The optimal learning rate will change with a different batch size. A larger batch size is more accurate, so we can make larger steps. With noisy small batch step we better we careful and move slower. Let's see if `lr_find()` agrees with this :)
+:::
+
+Like the previous time I tried `bs=16` (recommended lr = 0.001) and `bs=8` (recommended lr=0.00023, so lower as expected). Without going in all the details, in both experiments I saw overfitting and not a great error_rate until the 5th ot 6th epoch were overfitting was persistent. In other words: a smaller batch size doesn't help us here.
+
+### So, did we improve on the baseline?
+
+Looking back at the experiments I did, nothing helped us to get the `error_rate` down without significant overfitting. What did bring us something was that lowering the learning rate a bit (while not changing anything else) prevented overfitting, even over 10 epochs. The `error_rate` bottomed at 10%, but most likely this is a more reliable result (better generalization).
+
+All in all, I think our dataset is just too small to get any form of improvement to our model. There is however one more thing I want to try...
+
+## Try a smaller base model
+
+Resnet18 is a small model by today's standards; it has 11.7M parameters. That is still huge for our tiny dataset.
+
+Also, our goal in the end is to run the model on an edge GPU (on the drone). In other words: we want an as lightweight model as possible. Let's see what is available on `timm` with the huggingface app I built: [Image Model Performance Analysis](https://huggingface.co/spaces/pors/Which-image-models-are-best){target="_blank"}.
+
+Based on that chart we see that the models that are both fast and accurate are from the MobileNetv4 family. Let's give two of them a try:
+
+* [mobilenetv4_conv_small.e2400_r224_in1k](https://huggingface.co/timm/mobilenetv4_conv_small.e2400_r224_in1k)
+* [mobilenetv4_conv_medium.e500_r224_in1k](https://huggingface.co/timm/mobilenetv4_conv_medium.e500_r224_in1k).
+
+Here is how to decode the model names:
+
+```txt
+mobilenetv4_conv_medium.e500_r224_in1k
+│                         │   │    │
+│                         │   │    └── dataset the weights were trained on
+│                         │   └─────── training crop-size (resolution)
+│                         └─────────── effective epochs
+└───────────────────────────────────── model architecture / variant
+```
+
+#### Results
+
+The `small` model did pretty similar to the resnet18 model, so that is encouraging. Also around a 10% `error_rate` without overfitting. 
+
+The `medium` model however was a mess. Training was out of control (super high spikes in validation loss) and the `error_rate` never got even close to 10%, more like 20%. A quick chat with chatgpt o3 indicated that this medium model (because of its architecture) most likely needs more training images. So we park that for now, and see how it does when we do have more data.
+
+## Moar data
+
+FIRST Check imagenet: https://chatgpt.com/c/684697e3-2f74-8011-97e4-83d86279200f 
+https://github.com/Alibaba-MIIL/ImageNet21K/issues/12?utm_source=chatgpt.com
+https://github.com/Alibaba-MIIL/ImageNet21K/blob/main/visualize_detector.py
+https://huggingface.co/datasets/gmongaras/Imagenet21K/viewer/default/train?q=lamp
+
+https://universe.roboflow.com/furniture/living-room-efo1p/dataset/10
+https://research.google/blog/open-images-v7-now-featuring-point-labels/
 
 
 
+ more data (see chatgpt suggestions https://chatgpt.com/c/682209c4-8378-8011-be8f-0769e8159e9e and https://chatgpt.com/c/6821fb1d-857c-8011-a3b2-cdd77e285a79 and https://chatgpt.com/c/6821f9f6-da74-8011-8bdd-b9eb2904500f).
 
+@@@ Some good options for interior images include Unsplash and Pexels for free stock photos, Google's Open Images dataset which has room interiors, and real estate websites like Zillow or Realtor.com. You could also scrape interior design sites like Houzz, but check their terms of service first.
 
+@@@ 	•	Unsplash: search “interior” or “ceiling” – has tags, easy to filter
+	•	Pexels / Pixabay: similar deal
+	•	Zillow / real estate listings: tons of room photos, many without lamps
+	•	Interior design blogs / IKEA website: a goldmine of stylized “clean” rooms
+
+## Try a larger base model
 
 
 
 ## Introducing a test dataset
+
+@@@ IN NEW POST
+
+@@@ First: https://chatgpt.com/share/683db5da-151c-8011-8d98-fb9a650a49b9
 
 A test dataset that the model has never seen before is a great way to determine if I played with the meta-parameters in my favour. 
 
@@ -59,7 +272,11 @@ But is this actually true? As soon as I use the test set to make decisions, I ag
 
 @@@ and create a test set!
 
-@@@ other ideas: split out lamp closeups in its own class, use a better model, more data (see chatgpt suggestions https://chatgpt.com/c/682209c4-8378-8011-be8f-0769e8159e9e and https://chatgpt.com/c/6821fb1d-857c-8011-a3b2-cdd77e285a79 and https://chatgpt.com/c/6821f9f6-da74-8011-8bdd-b9eb2904500f).
+
+
+
+
+@@@ other ideas: split out lamp closeups in its own class, use a better model
 
 @@@ test-set model run (from drone shots).
 

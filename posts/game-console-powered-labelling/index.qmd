@@ -1,0 +1,88 @@
+---
+title: "How I Used a Game Controller to Label 1000 Images in an Hour"
+author: "Mark Pors"
+date: "2025-06-10"
+categories: [machine learning, image classification, open-source]
+image: classifly.png
+---
+
+@@@ seo headers / twitter stuff
+
+::: {.callout-tip collapse="true"}
+## TL;DR
+@@@
+:::
+
+@@@ screenshot from the video here
+
+## More data needed
+
+While trying to improve my [image classifier](../fly-drone-with-image-classification/), all roads led to one conclusion: more training data needed!
+
+My background is mostly in software development with scripting languages, so my default mode is: type something => get instant gratification. Not so much in machine learning...
+
+> How do data scientists do it? Start a training run, wait for ages, try something else. Oh man, I can't get used to it!
+>
+> -- Mark Pors
+
+Truly profound stuff right there.
+
+And if you think this is the worst, there is also something called data annotation. You know, what we did for free for Google by solving a captcha to get access to a website.
+
+> Every time I realize I need more training data, I panic a little. More data means labeling hundreds of images. OMFG!
+>
+> -- Also Mark Pors (clearly a philosopher)
+
+I shouldn't complain though, I just heard on a podcast that Fei-Fei Li (the creator of ImageNet) hand-labeled the first version of Caltech-101 which had about 9000 images. But she had help from here mother! [^1]
+
+## Make labeling a bit less painful
+
+My image classifier is a simple binary classifier: is there a lamp hanging from the ceiling or not? I thought I could cheat by using an amazing model to label them for me. I used the SOTA [CLIP model](https://github.com/openai/CLIP){target="_blank"}, which predicts the most relevant text snippet given an image. It seems it hasn't seen many lamps during its training, because it detected only a handful of images having a lamp in it (out of 1300 images).
+
+So it seems that if there is no pre-annotated dataset to work with you have to do the labeling yourself by hand.
+
+In a [Fast.ai Discord](https://discord.com/invite/V4w5ACA8Dj){target="_blank"} channel a user posted a video where he showed the use of a game controller to annotate LLM evals in a notebook. This is the project: [mopad](https://github.com/koaning/mopad){target="_blank"}. Thanks Vincent for inspiring me to use a game controller for this tedious job.
+
+If you have followed along in my journey to ML enlightenment (not likely), you know I own a game controller, and that I created a python package to use it in any Python program: [gamesir_t1d](https://github.com/pors/gamesir_t1d/){target="_blank"}.
+
+Since autonomous drones don't need a controller, and I'm also not a gamer, I'm happy to find some use for it: classify images with a game controller and make it (sort of) fun.
+
+## Introducing classifly
+
+Hacking is way more fun than labeling data, and after a day or two I had built this desktop app that helps me to classify images: [classifly](https://github.com/pors/classifly){target="_blank"}. The fly is because it goes fast, got it? And because drones :)
+
+From the README:
+
+Speed up image labeling with a game controller! 🎮
+
+Classifly is a fast, gamified image labeling tool designed for binary classification tasks. Navigate through your image dataset using a game controller or keyboard, making the tedious task of labeling images feel more like playing a game.
+
+![Python](https://img.shields.io/badge/python-3.8+-blue.svg)
+![PySide6](https://img.shields.io/badge/PySide6-6.9.0-green.svg)
+![License](https://img.shields.io/badge/license-MIT-blue.svg)
+
+![Classifly screenshot](classifly.png)
+
+#### Features
+
+- **Game Controller Support**: Use Xbox, PlayStation, or GameSir controllers for rapid classification
+- **Cyberpunk UI**: Neon-themed interface with glowing effects and visual feedback
+- **Three-way Classification**: Sort images into two categories plus a "skip/unknown" option
+- **Real-time Stats**: Track your progress with live counters, elapsed time, and ETA
+- **Undo Support**: Made a mistake? Just press the undo button
+- **Keyboard Fallback**: No controller? Use arrow keys
+- **Batch Processing**: Handle up to 1000 images per session
+
+## Setting the world record
+
+Time to set a new world record for manually labeling `lamp/no lamp` images. Watch the video below to see how I broke it:
+
+@@@
+
+
+
+## What's next
+
+After collecting and labeling more images, it's back to training the model. This is the first part of it: [Fly a drone with image classification](../fly-drone-with-image-classification/).
+
+ [^1]: [Andrew Ng and Fei-Fei Li Discuss Human-Centered Artificial Intelligence - Stanford Online](https://www.youtube.com/watch?v=UNhC6Ox0T0o)
